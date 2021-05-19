@@ -30,7 +30,7 @@ public class ReportElementEntity {
     String name;
 
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_subReports_fk") /*, indexes = {@Index(name = "treeReportEmbeddable_subReports_idx", columnList = "treeReportEmbeddable_id")} */)
+    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_subReports_fk"))
     List<ReportValueEmbeddable> values;
 
 }

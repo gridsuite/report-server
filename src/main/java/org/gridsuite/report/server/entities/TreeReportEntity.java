@@ -21,8 +21,10 @@ import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +32,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Table(name = "treeReport", indexes = @Index(name = "treeReport_idnode_idx", columnList = "idNode"))
 public class TreeReportEntity {
 
     @Id
@@ -41,7 +44,7 @@ public class TreeReportEntity {
     String name;
 
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_name_fk") /*, indexes = {@Index(name = "treeReportEmbeddable_subReports_idx", columnList = "treeReportEmbeddable_id")} */)
+    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_name_fk"))
     List<ReportValueEmbeddable> values;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

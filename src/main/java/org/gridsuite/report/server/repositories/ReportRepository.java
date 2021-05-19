@@ -9,12 +9,8 @@ package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -22,11 +18,4 @@ import java.util.UUID;
  */
 @Repository
 public interface ReportRepository extends JpaRepository<ReportEntity, UUID> {
-
-    @Query(value = "FROM #{#entityName} as t where t.reportId IN :uuidSet")
-    Collection<ReportEntity> findAllByIdReport(Set<UUID> uuidSet);
-
-    @Modifying
-    @Query(value = "DELETE FROM #{#entityName} AS t WHERE t.reportId = :id")
-    void deleteByReportId(UUID id);
 }

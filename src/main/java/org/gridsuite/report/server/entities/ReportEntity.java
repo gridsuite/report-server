@@ -23,7 +23,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "report")
+@Table(name = "report", indexes = @Index(name = "reportEntity_reportId_idx", columnList = "reportId"))
 public class ReportEntity {
 
     @Id

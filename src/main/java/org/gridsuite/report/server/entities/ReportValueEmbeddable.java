@@ -28,7 +28,7 @@ public class ReportValueEmbeddable {
         DOUBLE,
         INTEGER,
         STRING
-    };
+    }
 
     String name;
     String value;

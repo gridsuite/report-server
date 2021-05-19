@@ -50,7 +50,7 @@ public class ReportService {
 
     private ReporterModel toDto(ReportEntity element) {
         Map<String, String> dict = element.getDictionary();
-        ReporterModel report = new ReporterModel(element.getReportId().toString(), element.getReportId().toString());
+        var report = new ReporterModel(element.getReportId().toString(), element.getReportId().toString());
         element.getRoots().forEach(root -> report.addSubReporter(toDto(root, dict)));
         return report;
     }
@@ -70,7 +70,7 @@ public class ReportService {
     }
 
     private ReporterModel toDto(TreeReportEntity element, Map<String, String> dict) {
-        ReporterModel reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
+        var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
         element.getReports().forEach(report -> reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues())));
         element.getSubReports().forEach(report -> reportModel.addSubReporter(toDto(report, dict)));
         return reportModel;
