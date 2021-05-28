@@ -109,10 +109,17 @@ public class ReportService {
     }
 
     public void createReports(UUID id, ReporterModel report) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Create report {}", report.getDefaultName());
+        var reportEntity = reportRepository.findById(id);
+        if (reportEntity.isPresent()) {
+            LOGGER.debug("Report {} present, append ", report.getDefaultName());
+            reportEntity.map(entity -> entity.getRoots().add(toEntity(report, entity.getDictionary())));
+            reportRepository.save(reportEntity.get());
+        } else {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Create report {}", report.getDefaultName());
+            }
+            reportRepository.save(toEntity(id, report));
         }
-        reportRepository.save(toEntity(id, report));
     }
 
     @Transactional
