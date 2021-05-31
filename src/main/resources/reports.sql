@@ -26,7 +26,7 @@
         primary key (ReportEntity_reportId, dictionary_KEY)
     );
 
-    create table TreeReportEntity (
+    create table treeReport (
        idNode uuid not null,
         name varchar(255),
         treeReportEntity_idNode uuid,
@@ -41,12 +41,14 @@
         value varchar(255),
         valueType int4
     );
+create index reportEntity_reportId_idx on report (reportId);
 create index reportEntity_dictionary_id_index on ReportEntity_dictionary (ReportEntity_reportId);
+create index treeReport_idnode_idx on treeReport (idNode);
 
     alter table if exists ReportElementEntity 
        add constraint reportElementEntity_idNode_fk 
        foreign key (treeReportEntity_idNode) 
-       references TreeReportEntity;
+       references treeReport;
 
     alter table if exists ReportElementEntity_values 
        add constraint treeReportEmbeddable_subReports_fk 
@@ -58,12 +60,12 @@ create index reportEntity_dictionary_id_index on ReportEntity_dictionary (Report
        foreign key (ReportEntity_reportId) 
        references report;
 
-    alter table if exists TreeReportEntity 
+    alter table if exists treeReport 
        add constraint treeReportEntity_idNode_fk 
        foreign key (treeReportEntity_idNode) 
-       references TreeReportEntity;
+       references treeReport;
 
-    alter table if exists TreeReportEntity 
+    alter table if exists treeReport 
        add constraint treeReportEntity_reportId_fk 
        foreign key (reportEntity_reportId) 
        references report;
@@ -71,4 +73,4 @@ create index reportEntity_dictionary_id_index on ReportEntity_dictionary (Report
     alter table if exists TreeReportEntity_values 
        add constraint treeReportEmbeddable_name_fk 
        foreign key (TreeReportEntity_idNode) 
-       references TreeReportEntity;
+       references treeReport;
