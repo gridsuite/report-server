@@ -113,14 +113,14 @@ public class ReportService {
         Optional<ReportEntity> reportEntity = overwrite ? Optional.empty() : reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Report {} present, append ", report.getDefaultName());
-            reportEntity.map(entity -> entity.getRoots().add(toEntity(report, entity.getDictionary())));
+            reportEntity.get().getRoots().add(toEntity(report, reportEntity.get().getDictionary()));
             reportRepository.save(reportEntity.get());
         } else {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Create report {}", report.getDefaultName());
             }
             try {
-                deleteReport(id);
+                reportRepository.deleteById(id);
             } catch (EmptyResultDataAccessException ignored) {
             }
             reportRepository.save(toEntity(id, report));
