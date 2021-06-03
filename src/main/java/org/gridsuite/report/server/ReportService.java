@@ -17,6 +17,7 @@ import org.gridsuite.report.server.repositories.ReportRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,8 +109,8 @@ public class ReportService {
         return new ReportValueEmbeddable(entryValue.getKey(), entryValue.getValue().getValue(), entryValue.getValue().getType());
     }
 
-    public void createReports(UUID id, ReporterModel report) {
-        var reportEntity = reportRepository.findById(id);
+    public void createReports(UUID id, ReporterModel report, boolean overwrite) {
+        Optional<ReportEntity> reportEntity = overwrite ? Optional.empty() : reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Report {} present, append ", report.getDefaultName());
             reportEntity.map(entity -> entity.getRoots().add(toEntity(report, entity.getDictionary())));
@@ -117,6 +118,10 @@ public class ReportService {
         } else {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Create report {}", report.getDefaultName());
+            }
+            try {
+                deleteReport(id);
+            } catch (EmptyResultDataAccessException ignored) {
             }
             reportRepository.save(toEntity(id, report));
         }
