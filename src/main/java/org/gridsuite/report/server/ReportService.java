@@ -17,7 +17,6 @@ import org.gridsuite.report.server.repositories.ReportRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -110,19 +109,16 @@ public class ReportService {
     }
 
     public void createReports(UUID id, ReporterModel report, boolean overwrite) {
-        Optional<ReportEntity> reportEntity = overwrite ? Optional.empty() : reportRepository.findById(id);
+        Optional<ReportEntity> reportEntity = reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Report {} present, append ", report.getDefaultName());
+            if (overwrite) {
+                var toRemove = reportEntity.get().getRoots().stream().filter(tre -> tre.getName().equals(report.getTaskKey())).collect(Collectors.toList());
+                toRemove.forEach(r -> reportEntity.get().getRoots().remove(r));
+            }
             reportEntity.get().getRoots().add(toEntity(report, reportEntity.get().getDictionary()));
             reportRepository.save(reportEntity.get());
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Create report {}", report.getDefaultName());
-            }
-            try {
-                reportRepository.deleteById(id);
-            } catch (EmptyResultDataAccessException ignored) {
-            }
             reportRepository.save(toEntity(id, report));
         }
     }
