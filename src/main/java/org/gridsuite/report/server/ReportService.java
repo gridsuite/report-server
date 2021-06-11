@@ -29,9 +29,6 @@ import java.util.stream.Collectors;
 @Service
 public class ReportService {
 
-    @Autowired
-    ReportService self;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
 
     private final ReportRepository reportRepository;
@@ -123,7 +120,6 @@ public class ReportService {
         }
     }
 
-    @Transactional
     public void deleteReport(UUID id) {
         Objects.requireNonNull(id);
         reportRepository.deleteById(id);

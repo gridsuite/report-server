@@ -26,14 +26,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
- * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
 @RestController
 @RequestMapping(value = "/" + ReportApi.API_VERSION)
 @Api(value = "Reports server")
-@ComponentScan(basePackageClasses = ReportService.class)
 public class ReportController {
 
     private final ReportService service;

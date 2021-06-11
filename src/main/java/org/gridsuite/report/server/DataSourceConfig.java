@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
+ * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
 @Configuration
 @PropertySource(value = {"classpath:database.properties"})

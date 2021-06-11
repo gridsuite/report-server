@@ -13,7 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 /**
- * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
 @SuppressWarnings("checkstyle:HideUtilityClassConstructor")
 @SpringBootApplication
@@ -23,8 +23,4 @@ public class ReportApplication {
         SpringApplication.run(ReportApplication.class, args);
     }
 
-    @Bean
-    public Module module() {
-        return new ContingencyJsonModule();
-    }
 }

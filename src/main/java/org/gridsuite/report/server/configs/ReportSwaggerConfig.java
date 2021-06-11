@@ -20,7 +20,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
- * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
 @Configuration
 @EnableSwagger2

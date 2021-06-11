@@ -7,7 +7,7 @@
 package org.gridsuite.report.server;
 
 /**
- * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
+ * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
 public final class ReportApi {
 
