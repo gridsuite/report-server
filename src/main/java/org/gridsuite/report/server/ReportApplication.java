@@ -6,11 +6,8 @@
  */
 package org.gridsuite.report.server;
 
-import com.fasterxml.jackson.databind.Module;
-import com.powsybl.contingency.json.ContingencyJsonModule;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
