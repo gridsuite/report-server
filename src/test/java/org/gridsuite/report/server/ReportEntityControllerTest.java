@@ -128,7 +128,7 @@ public class ReportEntityControllerTest  {
             .andExpect(status().isOk())
             .andExpect(content().json(expectedReport));
 
-        insertReport(report1Id, toString(REPORT_TWO));
+        insertReport(report1Id, toString(REPORT_TWO), true);
 
         testImported(report1Id, REPORT_CONCAT);
 

@@ -14,6 +14,7 @@ import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.ReportValueEmbeddable;
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.gridsuite.report.server.repositories.ReportRepository;
+import org.gridsuite.report.server.repositories.TreeReportRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,9 +31,11 @@ public class ReportService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
 
     private final ReportRepository reportRepository;
+    private final TreeReportRepository treeReportRepository;
 
-    public ReportService(final ReportRepository reportRepository) {
+    public ReportService(final ReportRepository reportRepository, TreeReportRepository treeReportRepository) {
         this.reportRepository = reportRepository;
+        this.treeReportRepository = treeReportRepository;
     }
 
     List<ReporterModel> getReports() {
@@ -45,8 +48,9 @@ public class ReportService {
 
     private ReporterModel toDto(ReportEntity element) {
         Map<String, String> dict = element.getDictionary();
-        var report = new ReporterModel(element.getReportId().toString(), element.getReportId().toString());
-        element.getRoots().forEach(root -> report.addSubReporter(toDto(root, dict)));
+        var report = new ReporterModel(element.getId().toString(), element.getId().toString());
+        treeReportRepository.findAllRootsByReportId(element.getId())
+            .forEach(root -> report.addSubReporter(toDto(root, dict)));
         return report;
     }
 
@@ -77,17 +81,17 @@ public class ReportService {
     }
 
     private ReportEntity toEntity(UUID id, ReporterModel reportElement) {
-        var persistedReport = reportRepository.findById(id).orElseGet(() -> new ReportEntity(id, new ArrayList<>(), new HashMap<>()));
-        persistedReport.getRoots().add(toEntity(reportElement, persistedReport.getDictionary()));
+        var persistedReport = reportRepository.findById(id).orElseGet(() -> reportRepository.save(new ReportEntity(id, new HashMap<>())));
+        treeReportRepository.save(toEntity(persistedReport, reportElement, persistedReport.getDictionary()));
         return persistedReport;
     }
 
-    private TreeReportEntity toEntity(ReporterModel reporterModel, Map<String, String> dict) {
+    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, Map<String, String> dict) {
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
-        return new TreeReportEntity(null, reporterModel.getTaskKey(),
+        return new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
             toValueEntityList(reporterModel.getTaskValues()),
             reporterModel.getReports().stream().map(report  -> toEntity(report, dict)).collect(Collectors.toList()),
-            reporterModel.getSubReporters().stream().map(subReport -> toEntity(subReport, dict)).collect(Collectors.toList()));
+            reporterModel.getSubReporters().stream().map(subReport -> toEntity(null, subReport, dict)).collect(Collectors.toList()));
     }
 
     private ReportElementEntity toEntity(Report report, Map<String, String> dict) {
@@ -108,18 +112,17 @@ public class ReportService {
         if (reportEntity.isPresent()) {
             LOGGER.debug("Report {} present, append ", report.getDefaultName());
             if (overwrite) {
-                var toRemove = reportEntity.get().getRoots().stream().filter(tre -> tre.getName().equals(report.getTaskKey())).collect(Collectors.toList());
-                toRemove.forEach(r -> reportEntity.get().getRoots().remove(r));
+                treeReportRepository.deleteByReportIdAndName(reportEntity.get().getId(), report.getTaskKey());
             }
-            reportEntity.get().getRoots().add(toEntity(report, reportEntity.get().getDictionary()));
-            reportRepository.save(reportEntity.get());
+            treeReportRepository.save(toEntity(reportEntity.get(), report, reportEntity.get().getDictionary()));
         } else {
-            reportRepository.save(toEntity(id, report));
+            toEntity(id, report);
         }
     }
 
     public void deleteReport(UUID id) {
         Objects.requireNonNull(id);
+        treeReportRepository.deleteByReportId(id);
         reportRepository.deleteById(id);
     }
 

@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,23 +22,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "report", indexes = @Index(name = "reportEntity_reportId_idx", columnList = "reportId"))
+@Table(name = "report", indexes = @Index(name = "reportEntity_reportId_idx", columnList = "id"))
 public class ReportEntity {
 
     @Id
-    @Column(name = "reportId")
-    private UUID reportId;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name  =  "reportEntity_reportId",
-        referencedColumnName  =  "reportId",
-        foreignKey = @ForeignKey(
-            name = "treeReportEntity_reportId_fk"
-        ), nullable = true)
-    List<TreeReportEntity> roots;
+    @Column(name = "id")
+    private UUID id;
 
     @Column(name = "dictionary")
-    @CollectionTable(foreignKey = @ForeignKey(name = "reportEntity_dictionary_fk"), indexes = @Index(name = "reportEntity_dictionary_id_index", columnList = "reportEntity_reportId"))
+    @CollectionTable(foreignKey = @ForeignKey(name = "reportEntity_dictionary_fk"), indexes = @Index(name = "reportEntity_dictionary_id_index", columnList = "reportEntity_id"))
     @ElementCollection
     Map<String, String> dictionary;
 
