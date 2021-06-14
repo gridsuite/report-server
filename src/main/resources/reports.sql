@@ -1,7 +1,7 @@
 
     create table report (
-       reportId uuid not null,
-        primary key (reportId)
+       id uuid not null,
+        primary key (id)
     );
 
     create table ReportElementEntity (
@@ -20,17 +20,17 @@
     );
 
     create table ReportEntity_dictionary (
-       ReportEntity_reportId uuid not null,
+       ReportEntity_id uuid not null,
         dictionary varchar(255),
         dictionary_KEY varchar(255) not null,
-        primary key (ReportEntity_reportId, dictionary_KEY)
+        primary key (ReportEntity_id, dictionary_KEY)
     );
 
-    create table treeReport (
+    create table treeReportEntity (
        idNode uuid not null,
         name varchar(255),
+        report uuid,
         treeReportEntity_idNode uuid,
-        reportEntity_reportId uuid,
         primary key (idNode)
     );
 
@@ -41,14 +41,16 @@
         value varchar(255),
         valueType int4
     );
-create index reportEntity_reportId_idx on report (reportId);
-create index reportEntity_dictionary_id_index on ReportEntity_dictionary (ReportEntity_reportId);
-create index treeReport_idnode_idx on treeReport (idNode);
+create index reportEntity_reportId_idx on report (id);
+create index reportEntity_dictionary_id_index on ReportEntity_dictionary (ReportEntity_id);
+create index treeReport_idnode_idx on treeReportEntity (idNode);
+create index treeReport_name_idx on treeReportEntity (name);
+create index treeReport_repordId_idx on treeReportEntity (report);
 
     alter table if exists ReportElementEntity 
        add constraint reportElementEntity_idNode_fk 
        foreign key (treeReportEntity_idNode) 
-       references treeReport;
+       references treeReportEntity;
 
     alter table if exists ReportElementEntity_values 
        add constraint treeReportEmbeddable_subReports_fk 
@@ -57,20 +59,20 @@ create index treeReport_idnode_idx on treeReport (idNode);
 
     alter table if exists ReportEntity_dictionary 
        add constraint reportEntity_dictionary_fk 
-       foreign key (ReportEntity_reportId) 
+       foreign key (ReportEntity_id) 
        references report;
 
-    alter table if exists treeReport 
+    alter table if exists treeReportEntity 
+       add constraint report_id_fk_constraint 
+       foreign key (report) 
+       references report;
+
+    alter table if exists treeReportEntity 
        add constraint treeReportEntity_idNode_fk 
        foreign key (treeReportEntity_idNode) 
-       references treeReport;
-
-    alter table if exists treeReport 
-       add constraint treeReportEntity_reportId_fk 
-       foreign key (reportEntity_reportId) 
-       references report;
+       references treeReportEntity;
 
     alter table if exists TreeReportEntity_values 
        add constraint treeReportEmbeddable_name_fk 
        foreign key (TreeReportEntity_idNode) 
-       references treeReport;
+       references treeReportEntity;
