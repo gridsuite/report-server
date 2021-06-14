@@ -23,6 +23,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -36,7 +37,7 @@ import java.util.UUID;
 @Table(name = "treeReportEntity", indexes = {
     @Index(name = "treeReport_idnode_idx", columnList = "idNode"),
     @Index(name = "treeReport_name_idx", columnList = "name"),
-    @Index(name = "treeReport_repordId_idx", columnList = "report")
+    @Index(name = "treeReport_repordId_idx", columnList = "report"),
 })
 public class TreeReportEntity {
 
@@ -53,22 +54,17 @@ public class TreeReportEntity {
     private ReportEntity report;
 
     @ElementCollection
-    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_name_fk"))
+    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_name_fk"),
+        indexes = @Index(name = "treeReportEntity_value_ixd", columnList = "treereportentity_idNode"))
     List<ReportValueEmbeddable> values;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name  =  "treeReportEntity_idNode",
-        referencedColumnName  =  "idNode",
-        foreignKey = @ForeignKey(
-            name = "reportElementEntity_idNode_fk"
-        ), nullable = true)
+    @JoinTable(foreignKey = @ForeignKey(name = "treeReportEntity_ReportElementEntity_reportIdNode_fk"),
+        indexes = @Index(name = "TreeReportEntity_report_idNode_idx",  columnList = "TreeReportEntity_idNode"))
     List<ReportElementEntity> reports;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name  =  "treeReportEntity_idNode",
-        referencedColumnName  =  "idNode",
-        foreignKey = @ForeignKey(
-            name = "treeReportEntity_idNode_fk"
-        ), nullable = true)
+    @JoinTable(foreignKey = @ForeignKey(name = "treeReportEntity_treeReportElementEntity_reportIdNode_fk"),
+        indexes = @Index(name = "TreeReportEntity_treeReport_idNode_idx",  columnList = "TreeReportEntity_idNode"))
     List<TreeReportEntity> subReports;
 }
