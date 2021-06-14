@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {ReportApplication.class})
 public class ReportEntityControllerTest  {
 
-    public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION + "/report/";
+    public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION + "/reports/";
     @Autowired
     private MockMvc mvc;
 

@@ -38,15 +38,15 @@ public class ReportController {
         this.service = service;
     }
 
-    @GetMapping(value = "report", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "reports", produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Get all reports", response = Collection.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "All reports")})
     public ResponseEntity<List<ReporterModel>> getReports() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getReports());
     }
 
-    @GetMapping(value = "report/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Get report by id", response = Collection.class)
+    @GetMapping(value = "reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Get report by id", response = ReporterModel.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The report"),
         @ApiResponse(code = 404, message = "The report does not exists")})
     public ResponseEntity<ReporterModel> getReport(@PathVariable("id") UUID id) {
@@ -60,14 +60,14 @@ public class ReportController {
 
     }
 
-    @PutMapping(value = "report/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation(value = "Create reports", response = Report.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The reports have been successfully created")})
     public void createReport(@PathVariable("id") UUID id, @RequestParam(name = "overwrite", defaultValue = "false", required = false) Boolean overwrite, @RequestBody(required = true) ReporterModel report) {
         service.createReports(id, report, overwrite);
     }
 
-    @DeleteMapping(value = "report/{id}")
+    @DeleteMapping(value = "reports/{id}")
     @ApiOperation(value = "delete the report")
     @ApiResponse(code = 200, message = "The report has been deleted")
     public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID id) {
