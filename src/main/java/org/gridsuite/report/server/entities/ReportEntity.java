@@ -23,7 +23,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "report", indexes = @Index(name = "reportEntity_reportId_idx", columnList = "id"))
-public class ReportEntity {
+public class ReportEntity extends AbstractManuallyAssignedIdentifierEntity<UUID> {
 
     @Id
     @Column(name = "id")
