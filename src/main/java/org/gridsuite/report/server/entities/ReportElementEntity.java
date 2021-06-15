@@ -21,7 +21,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @Entity
-@Table(indexes = @Index(name = "reportElementEntity_idReport", columnList = "idReport"))
+@Table(name = "reportElement", indexes = @Index(name = "reportElementEntity_idReport", columnList = "idReport"))
 public class ReportElementEntity {
 
     @Id
