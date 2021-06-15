@@ -9,7 +9,6 @@ package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,16 +21,14 @@ import java.util.UUID;
 @Repository
 public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UUID> {
 
-    List<TreeReportEntity> findAllRootsByReportId(UUID uuid);
+    List<TreeReportEntity> findAllByReportId(UUID uuid);
 
-    List<TreeReportEntity> findAllRootsByReportIdAndName(UUID reportId, String name);
+    List<TreeReportEntity> findAllByReportIdAndName(UUID reportId, String name);
 
     @Transactional
-    @Modifying
     void deleteByReportId(UUID reportId);
 
     @Transactional
-    @Modifying
     void deleteByReportIdAndName(UUID reportId, String name);
 
 }

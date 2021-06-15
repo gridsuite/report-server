@@ -49,7 +49,7 @@ public class ReportService {
     private ReporterModel toDto(ReportEntity element) {
         Map<String, String> dict = element.getDictionary();
         var report = new ReporterModel(element.getId().toString(), element.getId().toString());
-        treeReportRepository.findAllRootsByReportId(element.getId())
+        treeReportRepository.findAllByReportId(element.getId())
             .forEach(root -> report.addSubReporter(toDto(root, dict)));
         return report;
     }
