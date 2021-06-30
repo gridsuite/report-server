@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "reportTree": {
+    "taskKey": "testImport",
+    "reports": [
+      {
+        "reportKey": "novalueReport"
+      }
+    ],
+    "subReporters": [
+      {
+        "taskKey": "testNewValue",
+        "subReporters": [
+          {
+            "taskKey": "fixUcteNodes"
+          }
+        ]
+      }
+    ]
+  },
+  "dics": {
+    "default": {
+      "fixUcteNodes": "Fix UCTE nodes",
+      "testImport": "test Second import",
+      "novalueReport": "No value report",
+      "testNewValue": "test on more"
+    }
+  }
+}
