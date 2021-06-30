@@ -26,8 +26,8 @@ spring:
           schema-generation:
             scripts:
               #action: create
-              create-target: src/main/resources/reports.sql
+              create-target: src/main/resources/report.sql
               create-source: metadata
 
-dbName: reports
+dbName: report
 dbApi: jdbc
