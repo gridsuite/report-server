@@ -30,6 +30,9 @@ import javax.persistence.Table;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
+ */
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor

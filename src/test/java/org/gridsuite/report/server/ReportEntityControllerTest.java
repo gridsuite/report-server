@@ -40,8 +40,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * @author Geoffroy Jamgotchian <geoffroy.jamgotchian at rte-france.com>
- * @author Franck Lecuyer <franck.lecuyer at rte-france.com>
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
 @RunWith(SpringRunner.class)
