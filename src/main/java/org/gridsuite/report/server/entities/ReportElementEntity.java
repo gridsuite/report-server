@@ -9,16 +9,20 @@ package org.gridsuite.report.server.entities;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.util.List;
 import java.util.UUID;
@@ -28,15 +32,22 @@ import java.util.UUID;
  */
 @AllArgsConstructor
 @Getter
+@Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "reportElement", indexes = @Index(name = "reportElementEntity_idReport", columnList = "idReport"))
+@Table(name = "reportElement", indexes = {@Index(name = "reportElementEntity_idReport", columnList = "idReport"),
+    @Index(name = "reportElementEntity_parentReport", columnList = "parentReport")
+})
 public class ReportElementEntity {
 
     @Id
     @GeneratedValue(strategy  =  GenerationType.AUTO)
-    @Column(name = "idReport")
+    @Column(name = "idReport", columnDefinition = "uuid")
     UUID idReport;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "parentReport", foreignKey = @ForeignKey(name = "treeReportElement_id_fk_constraint"))
+    TreeReportEntity parentReport;
 
     @Column(name = "name")
     String name;

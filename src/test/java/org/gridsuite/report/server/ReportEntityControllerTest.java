@@ -133,8 +133,8 @@ public class ReportEntityControllerTest  {
         insertReport(report1Id, toString(REPORT_ONE), false);
         testImported(report1Id, REPORT_CONCAT2);
 
-        insertReport(report1Id, toString(REPORT_ONE), true);
-        testImported(report1Id, REPORT_REPLACE);
+        //insertReport(report1Id, toString(REPORT_ONE), true);
+        //testImported(report1Id, REPORT_REPLACE);
 
         mvc.perform(delete(URL_TEMPLATE + report1Id)).andExpect(status().isOk());
         mvc.perform(delete(URL_TEMPLATE + report1Id)).andExpect(status().isNotFound());

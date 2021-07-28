@@ -9,6 +9,7 @@ package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +26,24 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     List<TreeReportEntity> findAllByReportIdAndName(UUID reportId, String name);
 
-    @Transactional
-    void deleteByReportId(UUID reportId);
+    List<TreeReportEntity> findAllByParentReportIdNode(UUID uuid);
+
+    @Query(value = "Select Cast(t.idNode as varchar) from treereport t where t.report = ?1", nativeQuery = true)
+    List<String> getIdNodesByParentReportId(UUID parentId);
 
     @Transactional
-    void deleteByReportIdAndName(UUID reportId, String name);
+    default void deleteAllById(List<UUID> lst) {
+        lst.forEach(this::deleteById);
+    }
+
+    /* get all treeReports id, from the given root to the last leaf sub report */
+    @Query(value = "WITH RECURSIVE get_nodes(idNode, strIdNode) AS ("
+        + "SELECT t.idNode, Cast(t.idNode as varchar) FROM treeReport t where t.idNode = ?1 "
+        + "UNION ALL("
+        + "SELECT t.idNode, Cast(t.idNode as varchar)"
+        + "FROM treeReport t, get_nodes sg "
+        + "WHERE t.parentreport = sg.idNode)) "
+        + "SELECT strIdNode from get_nodes", nativeQuery = true)
+    List<String> getSubReportsNodes(UUID reportId);
 
 }
