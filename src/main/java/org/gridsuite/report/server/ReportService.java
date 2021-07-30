@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -63,39 +61,33 @@ public class ReportService {
     }
 
     class CacheEntities {
-        List<TreeReportEntity> tre = new ArrayList<>();
-        List<ReportEntity> re = new ArrayList<>();
-        List<ReportElementEntity> ree = new ArrayList<>();
+        List<TreeReportEntity> treeReportsNodes = new ArrayList<>();
+        List<ReportEntity> report = new ArrayList<>();
+        List<ReportElementEntity> reportElements = new ArrayList<>();
 
         TreeReportEntity cache(TreeReportEntity t) {
-            tre.add(t);
+            treeReportsNodes.add(t);
             return t;
         }
 
         ReportEntity cache(ReportEntity r) {
-            re.add(r);
+            report.add(r);
             return r;
         }
 
         ReportElementEntity cache(ReportElementEntity r) {
-            ree.add(r);
+            reportElements.add(r);
             return r;
         }
 
         void commitInsert() {
 
-            partitionRun(re, reportRepository::saveAll);
-            partitionRun(tre, treeReportRepository::saveAll);
-            partitionRun(ree, reportElementRepository::saveAll);
-
-/*
-            re.forEach(entityManager::persist);
-            tre.forEach(entityManager::persist);
-            ree.forEach(entityManager::persist);
-*/
-            tre.clear();
-            re.clear();
-            ree.clear();
+            partitionRun(report, reportRepository::saveAll);
+            partitionRun(treeReportsNodes, treeReportRepository::saveAll);
+            partitionRun(reportElements, reportElementRepository::saveAll);
+            treeReportsNodes.clear();
+            report.clear();
+            reportElements.clear();
         }
     }
 
@@ -162,9 +154,6 @@ public class ReportService {
         return new ReportValueEmbeddable(entryValue.getKey(), entryValue.getValue().getValue(), entryValue.getValue().getType());
     }
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     @Transactional
     public void createReports(UUID id, ReporterModel report, boolean overwrite) {
         CacheEntities em = new CacheEntities();
@@ -180,30 +169,24 @@ public class ReportService {
         } else {
             toEntity(id, report, em);
         }
-        LOGGER.info("end " + (System.currentTimeMillis() - start));
         em.commitInsert();
-        LOGGER.info("commit " + (System.currentTimeMillis() - start));
     }
 
     <E> void partitionRun(List<E> elements, Consumer<List<E>> function) {
-        for (List<E> slice : Lists.partition(elements, 100)) {
+        for (List<E> slice : Lists.partition(elements, 10000)) {
             function.accept(slice);
         }
     }
 
     private void deleteRoot(UUID id) {
         List<String> treeReport = treeReportRepository.getSubReportsNodes(id);
-        LOGGER.info("get all subreports" + treeReport.size());
         List<String> elements = new ArrayList<>();
         partitionRun(treeReport, e ->
             elements.addAll(reportElementRepository.getNodesIdForReportNative(e.stream().map(UUID::fromString).collect(Collectors.toSet()))));
-        LOGGER.info("get all reports leafs" + elements.size());
         partitionRun(elements, e ->
             reportElementRepository.deleteAllById(e.stream().map(UUID::fromString).collect(Collectors.toList())));
-        LOGGER.info("deleted all reports leafs" + elements.size());
         partitionRun(treeReport, e ->
             treeReportRepository.deleteAllById(e.stream().map(UUID::fromString).collect(Collectors.toList())));
-        LOGGER.info("deleted all subreports" + treeReport.size());
     }
 
     @Transactional

@@ -12,8 +12,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +31,6 @@ import java.util.UUID;
 @RequestMapping(value = "/" + ReportApi.API_VERSION)
 @Api(value = "Reports server")
 public class ReportController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReportController.class);
 
     private final ReportService service;
 
@@ -68,9 +64,7 @@ public class ReportController {
     @ApiOperation(value = "Create reports", response = Report.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "The reports have been successfully created")})
     public void createReport(@PathVariable("id") UUID id, @RequestParam(name = "overwrite", defaultValue = "false", required = false) Boolean overwrite, @RequestBody(required = true) ReporterModel report) {
-        LOGGER.info("start import " + id.toString());
         service.createReports(id, report, overwrite);
-        LOGGER.info("end import " + id.toString());
     }
 
     @DeleteMapping(value = "reports/{id}")
@@ -78,9 +72,7 @@ public class ReportController {
     @ApiResponse(code = 200, message = "The report has been deleted")
     public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID id) {
         try {
-            LOGGER.info("start delete " + id.toString());
             service.deleteReport(id);
-            LOGGER.info("end delete " + id.toString());
         } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }

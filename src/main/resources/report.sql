@@ -49,6 +49,7 @@ create index reportEntity_dictionary_id_index on ReportEntity_dictionary (Report
 create index treeReport_idnode_idx on treeReport (idNode);
 create index treeReport_name_idx on treeReport (name);
 create index treeReport_repordId_idx on treeReport (report);
+create index treeReport_parentReport_idx on treeReport (parentReport);
 create index treeReportEntity_value_ixd on TreeReportEntity_values (TreeReportEntity_idNode);
 
     alter table if exists reportElement 
