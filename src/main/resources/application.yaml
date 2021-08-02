@@ -1,5 +1,6 @@
 server:
   port: 5028
+  forward-headers-strategy: framework
 
 spring:
   datasource:
@@ -28,6 +29,10 @@ spring:
               #action: create
               create-target: src/main/resources/report.sql
               create-source: metadata
+
+springdoc:
+  swagger-ui:
+    path: swagger-ui.html
 
 dbName: report
 dbApi: jdbc
