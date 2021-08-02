@@ -30,9 +30,5 @@ spring:
               create-target: src/main/resources/report.sql
               create-source: metadata
 
-springdoc:
-  swagger-ui:
-    path: swagger-ui.html
-
 dbName: report
 dbApi: jdbc
