@@ -7,18 +7,15 @@
 package org.gridsuite.report.server;
 
 import com.powsybl.commons.reporter.ReporterModel;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collection;
-import com.powsybl.commons.reporter.Report;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
@@ -29,7 +26,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping(value = "/" + ReportApi.API_VERSION)
-@Api(value = "Reports server")
+@Tag(name = "Reports server")
 public class ReportController {
 
     private final ReportService service;
@@ -39,16 +36,16 @@ public class ReportController {
     }
 
     @GetMapping(value = "reports", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Get all reports", response = Collection.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "All reports")})
+    @Operation(summary = "Get all reports")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "All reports")})
     public ResponseEntity<List<ReporterModel>> getReports() {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getReports());
     }
 
     @GetMapping(value = "reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Get report by id", response = ReporterModel.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "The report"),
-        @ApiResponse(code = 404, message = "The report does not exists")})
+    @Operation(summary = "Get report by id")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report"),
+        @ApiResponse(responseCode = "404", description = "The report does not exists")})
     public ResponseEntity<ReporterModel> getReport(@PathVariable("id") UUID id) {
         try {
             return ResponseEntity.ok()
@@ -61,15 +58,15 @@ public class ReportController {
     }
 
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Create reports", response = Report.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "The reports have been successfully created")})
+    @Operation(summary = "Create reports")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
     public void createReport(@PathVariable("id") UUID id, @RequestParam(name = "overwrite", defaultValue = "false", required = false) Boolean overwrite, @RequestBody(required = true) ReporterModel report) {
         service.createReports(id, report, overwrite);
     }
 
     @DeleteMapping(value = "reports/{id}")
-    @ApiOperation(value = "delete the report")
-    @ApiResponse(code = 200, message = "The report has been deleted")
+    @Operation(summary = "delete the report")
+    @ApiResponse(responseCode = "200", description = "The report has been deleted")
     public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID id) {
         try {
             service.deleteReport(id);
