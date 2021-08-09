@@ -157,7 +157,6 @@ public class ReportService {
     @Transactional
     public void createReports(UUID id, ReporterModel report, boolean overwrite) {
         CacheEntities em = new CacheEntities();
-        long start = System.currentTimeMillis();
         Optional<ReportEntity> reportEntity = reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Report {} present, append ", report.getDefaultName());
