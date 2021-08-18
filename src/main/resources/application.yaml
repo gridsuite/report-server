@@ -30,5 +30,6 @@ spring:
               create-target: src/main/resources/report.sql
               create-source: metadata
 
-dbName: report
+dbName: gridsuite
+query: ?currentSchema=report
 dbApi: jdbc
