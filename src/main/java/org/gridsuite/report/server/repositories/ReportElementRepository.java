@@ -9,9 +9,7 @@ package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,12 +23,8 @@ public interface ReportElementRepository extends JpaRepository<ReportElementEnti
 
     List<ReportElementEntity> findAllByParentReportIdNode(UUID uuid);
 
-    @Transactional
-    default void deleteAllById(Collection<UUID> lst) {
-        lst.forEach(this::deleteById);
-    }
+    List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdNodeIn(Collection<UUID> reportId);
 
-    @Query(value = "select Cast(r.idReport as varchar) from ReportElement r where r.parentReport in (?1)", nativeQuery = true)
-    List<String> getNodesIdForReportNative(Collection<UUID> reportId);
-
+    /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
+    void deleteAllByIdReportIn(List<UUID> lst);
 }

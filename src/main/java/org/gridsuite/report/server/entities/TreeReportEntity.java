@@ -44,6 +44,10 @@ import java.util.UUID;
 })
 public class TreeReportEntity {
 
+    public interface ProjectionIdNode {
+        UUID getIdNode();
+    }
+
     @Id
     @GeneratedValue(strategy  =  GenerationType.AUTO)
     @Column(name = "idNode", columnDefinition = "uuid")

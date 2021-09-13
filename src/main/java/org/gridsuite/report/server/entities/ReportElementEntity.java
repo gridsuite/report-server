@@ -40,6 +40,10 @@ import java.util.UUID;
 })
 public class ReportElementEntity {
 
+    public interface ProjectionIdReport {
+        UUID getIdReport();
+    }
+
     @Id
     @GeneratedValue(strategy  =  GenerationType.AUTO)
     @Column(name = "idReport", columnDefinition = "uuid")

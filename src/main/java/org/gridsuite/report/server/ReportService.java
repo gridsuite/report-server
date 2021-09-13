@@ -6,7 +6,6 @@
  */
 package org.gridsuite.report.server;
 
-import com.google.common.collect.Lists;
 import com.powsybl.commons.reporter.Report;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.reporter.TypedValue;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -60,37 +58,6 @@ public class ReportService {
         return report;
     }
 
-    class CacheEntities {
-        List<TreeReportEntity> treeReportsNodes = new ArrayList<>();
-        List<ReportEntity> report = new ArrayList<>();
-        List<ReportElementEntity> reportElements = new ArrayList<>();
-
-        TreeReportEntity cache(TreeReportEntity t) {
-            treeReportsNodes.add(t);
-            return t;
-        }
-
-        ReportEntity cache(ReportEntity r) {
-            report.add(r);
-            return r;
-        }
-
-        ReportElementEntity cache(ReportElementEntity r) {
-            reportElements.add(r);
-            return r;
-        }
-
-        void commitInsert() {
-
-            partitionRun(report, reportRepository::saveAll);
-            partitionRun(treeReportsNodes, treeReportRepository::saveAll);
-            partitionRun(reportElements, reportElementRepository::saveAll);
-            treeReportsNodes.clear();
-            report.clear();
-            reportElements.clear();
-        }
-    }
-
     private Map<String, TypedValue> toDtoValueMap(List<ReportValueEmbeddable> values) {
         Map<String, TypedValue> res = new HashMap<>();
         values.forEach(value -> res.put(value.getName(), toDto(value)));
@@ -99,12 +66,9 @@ public class ReportService {
 
     private TypedValue toDto(ReportValueEmbeddable value) {
         switch (value.getValueType()) {
-            case DOUBLE:
-                return new TypedValue(Double.valueOf(value.getValue()), value.getType());
-            case INTEGER:
-                return new TypedValue(Integer.valueOf(value.getValue()), value.getType());
-            default:
-                return new TypedValue(value.getValue(), value.getType());
+            case DOUBLE: return new TypedValue(Double.valueOf(value.getValue()), value.getType());
+            case INTEGER: return new TypedValue(Integer.valueOf(value.getValue()), value.getType());
+            default: return new TypedValue(value.getValue(), value.getType());
         }
     }
 
@@ -122,28 +86,24 @@ public class ReportService {
         return toDto(reportRepository.getOne(id));
     }
 
-    private ReportEntity toEntity(UUID id, ReporterModel reportElement, CacheEntities em) {
-        var persistedReport = reportRepository.findById(id).orElseGet(() -> em.cache(new ReportEntity(id, new HashMap<>())));
-        em.cache(toEntity(persistedReport, reportElement, null, persistedReport.getDictionary(), em));
+    private ReportEntity toEntity(UUID id, ReporterModel reportElement) {
+        var persistedReport = reportRepository.findById(id).orElseGet(() -> reportRepository.save(new ReportEntity(id, new HashMap<>())));
+        toEntity(persistedReport, reportElement, null, persistedReport.getDictionary());
         return persistedReport;
     }
 
-    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode, Map<String, String> dict, CacheEntities em) {
+    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode, Map<String, String> dict) {
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
-
-        var treeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-            toValueEntityList(reporterModel.getTaskValues()), parentNode);
-        em.cache(treeReportEntity);
-        reporterModel.getSubReporters()
-            .forEach(report -> em.cache(toEntity(null, report, treeReportEntity, dict, em)));
-        reporterModel.getReports()
-            .forEach(report -> em.cache(toEntity(treeReportEntity, report, dict)));
+        var treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
+                toValueEntityList(reporterModel.getTaskValues()), parentNode));
+        reporterModel.getReports().forEach(report  -> toEntity(treeReportEntity, report, dict));
+        reporterModel.getSubReporters().forEach(subReport -> toEntity(null, subReport, treeReportEntity, dict));
         return treeReportEntity;
     }
 
     private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
         dict.put(report.getReportKey(), report.getDefaultMessage());
-        return new ReportElementEntity(null, parentReport, report.getReportKey(), toValueEntityList(report.getValues()));
+        return reportElementRepository.save(new ReportElementEntity(null, parentReport, report.getReportKey(), toValueEntityList(report.getValues())));
     }
 
     private List<ReportValueEmbeddable> toValueEntityList(Map<String, TypedValue> values) {
@@ -156,7 +116,6 @@ public class ReportService {
 
     @Transactional
     public void createReports(UUID id, ReporterModel report, boolean overwrite) {
-        CacheEntities em = new CacheEntities();
         Optional<ReportEntity> reportEntity = reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Report {} present, append ", report.getDefaultName());
@@ -164,34 +123,31 @@ public class ReportService {
                 treeReportRepository.findAllByReportIdAndName(reportEntity.get().getId(), report.getTaskKey())
                     .forEach(r -> deleteRoot(r.getIdNode()));
             }
-            em.cache(toEntity(reportEntity.get(), report, null, reportEntity.get().getDictionary(), em));
+            toEntity(reportEntity.get(), report, null, reportEntity.get().getDictionary());
         } else {
-            toEntity(id, report, em);
+            toEntity(id, report);
         }
-        em.commitInsert();
     }
 
-    <E> void partitionRun(List<E> elements, Consumer<List<E>> function) {
-        for (List<E> slice : Lists.partition(elements, 10000)) {
-            function.accept(slice);
-        }
+    private static UUID bytesToUUID(byte[] bytes) {
+        java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(bytes);
+        long high = bb.getLong();
+        long low = bb.getLong();
+        return new UUID(high, low);
     }
 
     private void deleteRoot(UUID id) {
-        List<String> treeReport = treeReportRepository.getSubReportsNodes(id);
-        List<String> elements = new ArrayList<>();
-        partitionRun(treeReport, e ->
-            elements.addAll(reportElementRepository.getNodesIdForReportNative(e.stream().map(UUID::fromString).collect(Collectors.toSet()))));
-        partitionRun(elements, e ->
-            reportElementRepository.deleteAllById(e.stream().map(UUID::fromString).collect(Collectors.toList())));
-        partitionRun(treeReport, e ->
-            treeReportRepository.deleteAllById(e.stream().map(UUID::fromString).collect(Collectors.toList())));
+        List<UUID> treeReport = treeReportRepository.getSubReportsNodes(id).stream().map(ReportService::bytesToUUID).collect(Collectors.toList());
+        List<UUID> elements = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReport)
+            .stream().map(ReportElementEntity.ProjectionIdReport::getIdReport).collect(Collectors.toList());
+        reportElementRepository.deleteAllByIdReportIn(elements);
+        treeReportRepository.deleteAllByIdNodeIn(treeReport);
     }
 
     @Transactional
     public void deleteReport(UUID id) {
         Objects.requireNonNull(id);
-        treeReportRepository.getIdNodesByParentReportId(id).forEach(r -> deleteRoot(UUID.fromString(r)));
+        treeReportRepository.findIdNodeByReportId(id).forEach(r -> deleteRoot(r.getIdNode()));
         reportRepository.deleteById(id);
     }
 
