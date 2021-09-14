@@ -10,8 +10,8 @@ package org.gridsuite.report.server.entities;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -23,9 +23,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.List;
 import java.util.UUID;
@@ -37,16 +35,22 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @Table(name = "treeReport", indexes = {
     @Index(name = "treeReport_idnode_idx", columnList = "idNode"),
     @Index(name = "treeReport_name_idx", columnList = "name"),
     @Index(name = "treeReport_repordId_idx", columnList = "report"),
+    @Index(name = "treeReport_parentReport_idx", columnList = "parentReport"),
 })
 public class TreeReportEntity {
 
+    public interface ProjectionIdNode {
+        UUID getIdNode();
+    }
+
     @Id
     @GeneratedValue(strategy  =  GenerationType.AUTO)
-    @Column(name = "idNode")
+    @Column(name = "idNode", columnDefinition = "uuid")
     UUID idNode;
 
     @Column(name = "name")
@@ -61,13 +65,7 @@ public class TreeReportEntity {
         indexes = @Index(name = "treeReportEntity_value_ixd", columnList = "treereportentity_idNode"))
     List<ReportValueEmbeddable> values;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinTable(foreignKey = @ForeignKey(name = "treeReportEntity_ReportElementEntity_reportIdNode_fk"),
-        indexes = @Index(name = "TreeReportEntity_report_idNode_idx",  columnList = "TreeReportEntity_idNode"))
-    List<ReportElementEntity> reports;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinTable(foreignKey = @ForeignKey(name = "treeReportEntity_treeReportElementEntity_reportIdNode_fk"),
-        indexes = @Index(name = "TreeReportEntity_treeReport_idNode_idx",  columnList = "TreeReportEntity_idNode"))
-    List<TreeReportEntity> subReports;
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "parentReport", foreignKey = @ForeignKey(name = "treeReport_id_fk_constraint"))
+    TreeReportEntity parentReport;
 }

@@ -61,6 +61,7 @@ public class ReportController {
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
     public void createReport(@PathVariable("id") UUID id, @RequestParam(name = "overwrite", defaultValue = "false", required = false) Boolean overwrite, @RequestBody(required = true) ReporterModel report) {
+
         service.createReports(id, report, overwrite);
     }
 
@@ -70,7 +71,7 @@ public class ReportController {
     public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID id) {
         try {
             service.deleteReport(id);
-        } catch (EmptyResultDataAccessException ignored) {
+        } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().build();

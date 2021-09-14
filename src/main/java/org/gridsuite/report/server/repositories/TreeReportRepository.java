@@ -9,8 +9,8 @@ package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,10 +25,22 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     List<TreeReportEntity> findAllByReportIdAndName(UUID reportId, String name);
 
-    @Transactional
-    void deleteByReportId(UUID reportId);
+    List<TreeReportEntity> findAllByParentReportIdNode(UUID uuid);
 
-    @Transactional
-    void deleteByReportIdAndName(UUID reportId, String name);
+    List<TreeReportEntity.ProjectionIdNode> findIdNodeByReportId(UUID parentId);
+
+    /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
+    void deleteAllByIdNodeIn(List<UUID> lst);
+
+    /* get all treeReports id, from the given root to the last leaf sub report */
+    @Query(value = "WITH RECURSIVE get_nodes(idNode) AS ("
+        + "SELECT t.idNode FROM treeReport t where t.idNode = ?1 "
+        + "UNION ALL("
+        + "SELECT t.idNode "
+        + "FROM treeReport t, get_nodes sg "
+        + "WHERE t.parentreport = sg.idNode)) "
+        + "SELECT idNode from get_nodes", nativeQuery = true)
+    //TODO we should be able to get hibernate to do this projection..
+    List<byte[]> getSubReportsNodes(UUID reportId);
 
 }

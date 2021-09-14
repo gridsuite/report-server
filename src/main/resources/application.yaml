@@ -17,10 +17,14 @@ spring:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
     properties:
       hibernate:
+        order_inserts: true
+        order_updates: true
         format_sql: true
         # Used when action: create is uncommented
         hbm2ddl:
           delimiter: ;
+        jdbc:
+          batch_size: 100
       # Uncomment action to automatically generate the database sql schema file
       javax:
         persistence:
@@ -29,6 +33,8 @@ spring:
               #action: create
               create-target: src/main/resources/report.sql
               create-source: metadata
+
+query: ?reWriteBatchedInserts=true
 
 dbName: report
 dbApi: jdbc
