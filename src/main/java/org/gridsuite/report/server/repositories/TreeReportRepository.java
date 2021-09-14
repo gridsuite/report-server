@@ -39,8 +39,12 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
         + "SELECT t.idNode "
         + "FROM treeReport t, get_nodes sg "
         + "WHERE t.parentreport = sg.idNode)) "
-        + "SELECT idNode from get_nodes", nativeQuery = true)
+        + "SELECT cast(idNode as varchar) from get_nodes", nativeQuery = true)
     //TODO we should be able to get hibernate to do this projection..
-    List<byte[]> getSubReportsNodes(UUID reportId);
+    //TODO we cast to varchar otherwise we get
+    //     org.hibernate.MappingException: No Dialect mapping for JDBC type: 1111
+    //     To be revisited when https://github.com/spring-projects/spring-data-jpa/issues/1796
+    //     is fixed.
+    List<String> getSubReportsNodes(UUID reportId);
 
 }

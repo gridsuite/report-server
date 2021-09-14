@@ -129,15 +129,8 @@ public class ReportService {
         }
     }
 
-    private static UUID bytesToUUID(byte[] bytes) {
-        java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(bytes);
-        long high = bb.getLong();
-        long low = bb.getLong();
-        return new UUID(high, low);
-    }
-
     private void deleteRoot(UUID id) {
-        List<UUID> treeReport = treeReportRepository.getSubReportsNodes(id).stream().map(ReportService::bytesToUUID).collect(Collectors.toList());
+        List<UUID> treeReport = treeReportRepository.getSubReportsNodes(id).stream().map(UUID::fromString).collect(Collectors.toList());
         List<UUID> elements = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReport)
             .stream().map(ReportElementEntity.ProjectionIdReport::getIdReport).collect(Collectors.toList());
         reportElementRepository.deleteAllByIdReportIn(elements);
