@@ -30,7 +30,8 @@ public class ReportEntity extends AbstractManuallyAssignedIdentifierEntity<UUID>
     private UUID id;
 
     @Column(name = "dictionary")
-    @CollectionTable(foreignKey = @ForeignKey(name = "reportEntity_dictionary_fk"), indexes = @Index(name = "reportEntity_dictionary_id_index", columnList = "reportEntity_id"))
+    @CollectionTable(name = "report_dictionary",
+        foreignKey = @ForeignKey(name = "reportEntity_dictionary_fk"), indexes = @Index(name = "reportEntity_dictionary_id_index", columnList = "reportEntity_id"))
     @ElementCollection
     Map<String, String> dictionary;
 
