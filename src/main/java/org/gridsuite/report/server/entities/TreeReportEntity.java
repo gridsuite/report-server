@@ -37,10 +37,10 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "tree_report", indexes = {
-    @Index(name = "treeReport_idnode_idx", columnList = "idNode"),
-    @Index(name = "treeReport_name_idx", columnList = "name"),
-    @Index(name = "treeReport_repordId_idx", columnList = "report"),
-    @Index(name = "treeReport_parentReport_idx", columnList = "parentReport"),
+    @Index(name = "tree_report_idnode_idx", columnList = "idNode"),
+    @Index(name = "tree_report_name_idx", columnList = "name"),
+    @Index(name = "tree_report_repordId_idx", columnList = "report"),
+    @Index(name = "tree_report_parentReport_idx", columnList = "parentReport"),
 })
 public class TreeReportEntity {
 
@@ -62,7 +62,7 @@ public class TreeReportEntity {
 
     @ElementCollection
     @CollectionTable(name = "treereport_values", foreignKey = @ForeignKey(name = "treeReportEmbeddable_name_fk"),
-        indexes = @Index(name = "treeReportEntity_value_ixd", columnList = "treereportentity_idNode"))
+        indexes = @Index(name = "treeReportEntity_value_ixd", columnList = "tree_report_entity_id_node"))
     List<ReportValueEmbeddable> values;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)

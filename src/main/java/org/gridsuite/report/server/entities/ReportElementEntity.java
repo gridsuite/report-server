@@ -36,7 +36,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "report_element", indexes = {@Index(name = "reportElementEntity_idReport", columnList = "idReport"),
-    @Index(name = "reportElementEntity_parentReport", columnList = "parentReport")
+    @Index(name = "reportElementEntity_parentReport", columnList = "parent_report")
 })
 public class ReportElementEntity {
 
@@ -50,7 +50,7 @@ public class ReportElementEntity {
     UUID idReport;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "parentReport", foreignKey = @ForeignKey(name = "treeReportElement_id_fk_constraint"))
+    @JoinColumn(name = "parent_report", foreignKey = @ForeignKey(name = "treeReportElement_id_fk_constraint"))
     TreeReportEntity parentReport;
 
     @Column(name = "name")
@@ -59,7 +59,7 @@ public class ReportElementEntity {
     @ElementCollection
     @CollectionTable(name = "reportelemententity_values",
         foreignKey = @ForeignKey(name = "treeReportEmbeddable_subReports_fk"),
-        indexes = @Index(name = "reportElement_values_index", columnList = "reportElementEntity_idReport"))
+        indexes = @Index(name = "reportElement_values_index", columnList = "report_element_entity_id_report"))
     List<ReportValueEmbeddable> values;
 
 }

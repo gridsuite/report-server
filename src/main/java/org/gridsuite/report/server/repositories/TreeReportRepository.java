@@ -34,11 +34,11 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     /* get all treeReports id, from the given root to the last leaf sub report */
     @Query(value = "WITH RECURSIVE get_nodes(idNode) AS ("
-        + "SELECT t.idNode FROM treeReport t where t.idNode = ?1 "
+        + "SELECT t.id_node FROM tree_report t where t.id_node = ?1 "
         + "UNION ALL("
-        + "SELECT t.idNode "
-        + "FROM treeReport t, get_nodes sg "
-        + "WHERE t.parentreport = sg.idNode)) "
+        + "SELECT t.id_node "
+        + "FROM tree_report t, get_nodes sg "
+        + "WHERE t.parent_report = sg.idNode)) "
         + "SELECT cast(idNode as varchar) from get_nodes", nativeQuery = true)
     //TODO we should be able to get hibernate to do this projection..
     //TODO we cast to varchar otherwise we get
