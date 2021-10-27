@@ -36,7 +36,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "reportElement", indexes = {@Index(name = "reportElementEntity_idReport", columnList = "idReport"),
-    @Index(name = "reportElementEntity_parentReport", columnList = "parent_report")
+    @Index(name = "reportElementEntity_parentReport", columnList = "parentReport")
 })
 public class ReportElementEntity {
 
@@ -50,7 +50,7 @@ public class ReportElementEntity {
     UUID idReport;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
-    @JoinColumn(name = "parent_report", foreignKey = @ForeignKey(name = "treeReportElement_id_fk_constraint"))
+    @JoinColumn(name = "parentReport", foreignKey = @ForeignKey(name = "treeReportElement_id_fk_constraint"))
     TreeReportEntity parentReport;
 
     @Column(name = "name")
