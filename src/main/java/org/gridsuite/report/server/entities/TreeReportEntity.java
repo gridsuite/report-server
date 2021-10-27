@@ -61,7 +61,7 @@ public class TreeReportEntity {
     private ReportEntity report;
 
     @ElementCollection
-    @CollectionTable(name = "treereport_values", foreignKey = @ForeignKey(name = "treeReportEmbeddable_name_fk"),
+    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_name_fk"),
         indexes = @Index(name = "treeReportEntity_value_ixd", columnList = "tree_report_entity_id_node"))
     List<ReportValueEmbeddable> values;
 
