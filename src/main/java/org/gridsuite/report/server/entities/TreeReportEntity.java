@@ -36,7 +36,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "tree_report", indexes = {
+@Table(name = "treeReport", indexes = {
     @Index(name = "tree_report_idnode_idx", columnList = "idNode"),
     @Index(name = "tree_report_name_idx", columnList = "name"),
     @Index(name = "tree_report_repordId_idx", columnList = "report"),

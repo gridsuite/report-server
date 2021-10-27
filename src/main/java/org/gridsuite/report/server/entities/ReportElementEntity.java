@@ -35,7 +35,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "report_element", indexes = {@Index(name = "reportElementEntity_idReport", columnList = "idReport"),
+@Table(name = "reportElement", indexes = {@Index(name = "reportElementEntity_idReport", columnList = "idReport"),
     @Index(name = "reportElementEntity_parentReport", columnList = "parent_report")
 })
 public class ReportElementEntity {
@@ -57,9 +57,9 @@ public class ReportElementEntity {
     String name;
 
     @ElementCollection
-    @CollectionTable(name = "reportelemententity_values",
+    @CollectionTable(name = "reportElementEntityValues",
         foreignKey = @ForeignKey(name = "treeReportEmbeddable_subReports_fk"),
-        indexes = @Index(name = "reportElement_values_index", columnList = "report_element_entity_id_report"))
+        indexes = @Index(name = "reportElementValues_index", columnList = "report_element_entity_id_report"))
     List<ReportValueEmbeddable> values;
 
 }

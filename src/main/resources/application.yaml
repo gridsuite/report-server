@@ -18,7 +18,6 @@ spring:
       hibernate:
         order_inserts: true
         order_updates: true
-        format_sql: true
         # Used when action: create is uncommented
         hbm2ddl:
           delimiter: ;
