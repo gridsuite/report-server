@@ -1,0 +1,115 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.10.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-1">
+        <createTable tableName="report">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="reportPK"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-2">
+        <createTable tableName="report_element">
+            <column name="id_report" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="report_elementPK"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="parent_report" type="UUID"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-3">
+        <createTable tableName="report_element_entity_values">
+            <column name="report_element_entity_id_report" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="type" type="VARCHAR(255)"/>
+            <column name="value" type="VARCHAR(255)"/>
+            <column name="value_type" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-4">
+        <createTable tableName="report_entity_dictionary">
+            <column name="report_entity_id" type="UUID">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="dictionary" type="VARCHAR(255)"/>
+            <column name="dictionary_key" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-5">
+        <createTable tableName="tree_report">
+            <column name="id_node" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="tree_reportPK"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="parent_report" type="UUID"/>
+            <column name="report" type="UUID"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-6">
+        <createTable tableName="tree_report_entity_values">
+            <column name="tree_report_entity_id_node" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="type" type="VARCHAR(255)"/>
+            <column name="value" type="VARCHAR(255)"/>
+            <column name="value_type" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-7">
+        <createIndex indexName="reportElementEntity_parentReport" tableName="report_element">
+            <column name="parent_report"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-8">
+        <createIndex indexName="reportElementValues_index" tableName="report_element_entity_values">
+            <column name="report_element_entity_id_report"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-9">
+        <createIndex indexName="reportEntity_dictionary_id_index" tableName="report_entity_dictionary">
+            <column name="report_entity_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-10">
+        <createIndex indexName="treeReportEntity_value_ixd" tableName="tree_report_entity_values">
+            <column name="tree_report_entity_id_node"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-11">
+        <createIndex indexName="tree_report_name_idx" tableName="tree_report">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-12">
+        <createIndex indexName="tree_report_parentReport_idx" tableName="tree_report">
+            <column name="parent_report"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-13">
+        <createIndex indexName="tree_report_repordId_idx" tableName="tree_report">
+            <column name="report"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-14">
+        <addForeignKeyConstraint baseColumnNames="report_entity_id" baseTableName="report_entity_dictionary" constraintName="reportEntity_dictionary_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="report" validate="true"/>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-15">
+        <addForeignKeyConstraint baseColumnNames="report" baseTableName="tree_report" constraintName="report_id_fk_constraint" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="report" validate="true"/>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-16">
+        <addForeignKeyConstraint baseColumnNames="parent_report" baseTableName="report_element" constraintName="treeReportElement_id_fk_constraint" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_node" referencedTableName="tree_report" validate="true"/>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-17">
+        <addForeignKeyConstraint baseColumnNames="tree_report_entity_id_node" baseTableName="tree_report_entity_values" constraintName="treeReportEmbeddable_name_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_node" referencedTableName="tree_report" validate="true"/>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-18">
+        <addForeignKeyConstraint baseColumnNames="report_element_entity_id_report" baseTableName="report_element_entity_values" constraintName="treeReportEmbeddable_subReports_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_report" referencedTableName="report_element" validate="true"/>
+    </changeSet>
+    <changeSet author="borsenbergerjac (generated)" id="1635327442334-19">
+        <addForeignKeyConstraint baseColumnNames="parent_report" baseTableName="tree_report" constraintName="treeReport_id_fk_constraint" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_node" referencedTableName="tree_report" validate="true"/>
+    </changeSet>
+</databaseChangeLog>

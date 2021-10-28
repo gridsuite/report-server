@@ -58,7 +58,7 @@ public class ReportElementEntity {
 
     @ElementCollection
     @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_subReports_fk"),
-        indexes = @Index(name = "reportElement_values_index", columnList = "reportElementEntity_idReport"))
+        indexes = @Index(name = "reportElementValues_index", columnList = "report_element_entity_id_report"))
     List<ReportValueEmbeddable> values;
 
 }
