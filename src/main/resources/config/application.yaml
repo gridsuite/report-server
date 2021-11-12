@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: report-server
+
+queryBegin: '&'
+customQuery: ${customQueryBegin}reWriteBatchedInserts=true
+dbName: report
