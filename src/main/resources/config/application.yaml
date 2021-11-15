@@ -2,6 +2,14 @@ spring:
   application:
     name: report-server
 
+  jpa:
+    properties:
+      hibernates:
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 100
+
 queryBegin: '&'
 customQuery: ${customQueryBegin}reWriteBatchedInserts=true
 dbName: report
