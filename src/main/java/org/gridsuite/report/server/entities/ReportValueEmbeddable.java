@@ -9,6 +9,7 @@ package org.gridsuite.report.server.entities;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 /**
@@ -40,6 +41,7 @@ public class ReportValueEmbeddable {
     }
 
     String name;
+    @Column(columnDefinition = "TEXT")
     String value;
     String type;
     ValueType valueType;
