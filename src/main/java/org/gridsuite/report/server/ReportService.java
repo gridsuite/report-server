@@ -104,12 +104,10 @@ public class ReportService {
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
         IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), idx, treeReportEntity, dict));
-        //subReporters.forEach(subReport -> toEntity(null, subReport, treeReportEntity, dict));
 
         Collection<Report> reports = reporterModel.getReports();
         List<Report> reportsAsList = new ArrayList<>(reports);
         IntStream.range(0, reportsAsList.size()).forEach(idx -> toEntity(treeReportEntity, reportsAsList.get(idx), idx, dict));
-        //reports.forEach(report  -> toEntity(treeReportEntity, report, dict));
 
         return treeReportEntity;
     }
