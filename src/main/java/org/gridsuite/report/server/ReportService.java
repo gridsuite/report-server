@@ -97,7 +97,13 @@ public class ReportService {
         return persistedReport;
     }
 
-    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, int inParentIdx, TreeReportEntity parentNode, Map<String, String> dict) {
+    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, int inParentIdxPresel, TreeReportEntity parentNode,
+        Map<String, String> dict) {
+        assert inParentIdxPresel >= 0 || parentNode == null;
+
+        int inParentIdx = inParentIdxPresel >= 0 ? inParentIdxPresel
+            : treeReportRepository.getMaxInReport(persistedReport.getId()) + 1;
+
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         var treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
                 toValueEntityList(reporterModel.getTaskValues()), parentNode, inParentIdx));
@@ -134,8 +140,9 @@ public class ReportService {
                 treeReportRepository.findAllByReportIdAndName(reportEntity.get().getId(), report.getTaskKey())
                     .forEach(r -> deleteRoot(r.getIdNode()));
             }
-            toEntity(reportEntity.get(), report, 0, null, reportEntity.get().getDictionary());
+            toEntity(reportEntity.get(), report, -1, null, reportEntity.get().getDictionary());
         } else {
+            LOGGER.debug("Report {} absent, create ", report.getDefaultName());
             toEntity(id, report);
         }
     }

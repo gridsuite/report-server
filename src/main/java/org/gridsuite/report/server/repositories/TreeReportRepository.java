@@ -47,4 +47,7 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
     //     is fixed.
     List<String> getSubReportsNodes(UUID reportId);
 
+    @Query(value = "SELECT coalesce(max(tr.in_parent_idx), 0) FROM tree_report tr WHERE tr.report = ?1", nativeQuery = true)
+    Integer getMaxInReport(UUID reportId);
+
 }
