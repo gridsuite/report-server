@@ -55,7 +55,8 @@ public class ReportService {
         Map<String, String> dict = element.getDictionary();
         var report = new ReporterModel(element.getId().toString(), element.getId().toString());
         List<TreeReportEntity> allByReportId = treeReportRepository.findAllByReportId(element.getId());
-        allByReportId.sort(Comparator.comparingInt(TreeReportEntity::getInParentIdx));
+        // using Long.signum (and not '<' ) to circumvent possible long overflow
+        allByReportId.sort((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()));
         allByReportId.forEach(root -> report.addSubReporter(toDto(root, dict)));
         return report;
     }
@@ -77,7 +78,8 @@ public class ReportService {
     private ReporterModel toDto(TreeReportEntity element, Map<String, String> dict) {
         var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
         List<ReportElementEntity> reportElements = reportElementRepository.findAllByParentReportIdNode(element.getIdNode());
-        reportElements.sort(Comparator.comparingInt(ReportElementEntity::getIdxInParent));
+        // using Long.signum (and not '<' ) to circumvent possible long overflow
+        reportElements.sort((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()));
         reportElements.forEach(report ->
             reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
         );
@@ -93,34 +95,31 @@ public class ReportService {
 
     private ReportEntity toEntity(UUID id, ReporterModel reportElement) {
         var persistedReport = reportRepository.findById(id).orElseGet(() -> reportRepository.save(new ReportEntity(id, new HashMap<>())));
-        toEntity(persistedReport, reportElement, 0, null, persistedReport.getDictionary());
+        toEntity(persistedReport, reportElement, null, persistedReport.getDictionary());
         return persistedReport;
     }
 
-    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, int inParentIdxPresel, TreeReportEntity parentNode,
+    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode,
         Map<String, String> dict) {
-        assert inParentIdxPresel >= 0 || parentNode == null;
-
-        int inParentIdx = inParentIdxPresel >= 0 ? inParentIdxPresel
-            : treeReportRepository.getMaxInReport(persistedReport.getId()) + 1;
 
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         var treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-                toValueEntityList(reporterModel.getTaskValues()), parentNode, inParentIdx));
+                toValueEntityList(reporterModel.getTaskValues()), parentNode, System.nanoTime()));
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
-        IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), idx, treeReportEntity, dict));
+        IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), treeReportEntity, dict));
 
         Collection<Report> reports = reporterModel.getReports();
         List<Report> reportsAsList = new ArrayList<>(reports);
-        IntStream.range(0, reportsAsList.size()).forEach(idx -> toEntity(treeReportEntity, reportsAsList.get(idx), idx, dict));
+        IntStream.range(0, reportsAsList.size()).forEach(idx -> toEntity(treeReportEntity, reportsAsList.get(idx), dict));
 
         return treeReportEntity;
     }
 
-    private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, int idxInParent, Map<String, String> dict) {
+    private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
         dict.put(report.getReportKey(), report.getDefaultMessage());
-        return reportElementRepository.save(new ReportElementEntity(null, parentReport, idxInParent, report.getReportKey(), toValueEntityList(report.getValues())));
+        return reportElementRepository.save(new ReportElementEntity(null, parentReport, System.nanoTime(),
+            report.getReportKey(), toValueEntityList(report.getValues())));
     }
 
     private List<ReportValueEmbeddable> toValueEntityList(Map<String, TypedValue> values) {
@@ -140,7 +139,7 @@ public class ReportService {
                 treeReportRepository.findAllByReportIdAndName(reportEntity.get().getId(), report.getTaskKey())
                     .forEach(r -> deleteRoot(r.getIdNode()));
             }
-            toEntity(reportEntity.get(), report, -1, null, reportEntity.get().getDictionary());
+            toEntity(reportEntity.get(), report, null, reportEntity.get().getDictionary());
         } else {
             LOGGER.debug("Report {} absent, create ", report.getDefaultName());
             toEntity(id, report);

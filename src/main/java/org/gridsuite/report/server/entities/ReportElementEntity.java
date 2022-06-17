@@ -24,6 +24,7 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -54,7 +55,7 @@ public class ReportElementEntity {
     TreeReportEntity parentReport;
 
     @Column
-    int idxInParent;
+    long nanos;
 
     @Column(name = "name")
     String name;

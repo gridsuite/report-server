@@ -70,5 +70,5 @@ public class TreeReportEntity {
     TreeReportEntity parentReport;
 
     @Column
-    int inParentIdx;
+    long nanos;
 }
