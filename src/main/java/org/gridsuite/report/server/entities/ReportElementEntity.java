@@ -24,6 +24,7 @@ import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -49,9 +50,12 @@ public class ReportElementEntity {
     @Column(name = "idReport", columnDefinition = "uuid")
     UUID idReport;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parentReport", foreignKey = @ForeignKey(name = "treeReportElement_id_fk_constraint"))
     TreeReportEntity parentReport;
+
+    @Column
+    long nanos;
 
     @Column(name = "name")
     String name;

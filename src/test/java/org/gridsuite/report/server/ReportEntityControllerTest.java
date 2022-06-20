@@ -33,7 +33,6 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
-import static org.apache.commons.lang3.StringUtils.join;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -89,10 +88,6 @@ public class ReportEntityControllerTest  {
 
     private void cleanDB() {
         reportService.deleteAll();
-    }
-
-    public String joinWithComma(Object... array) {
-        return join(array, ",");
     }
 
     private static final String REPORT_ONE = "/reportOne.json";

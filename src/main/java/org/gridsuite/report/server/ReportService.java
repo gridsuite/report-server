@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -53,8 +54,10 @@ public class ReportService {
     private ReporterModel toDto(ReportEntity element) {
         Map<String, String> dict = element.getDictionary();
         var report = new ReporterModel(element.getId().toString(), element.getId().toString());
-        treeReportRepository.findAllByReportId(element.getId())
-            .forEach(root -> report.addSubReporter(toDto(root, dict)));
+        List<TreeReportEntity> allByReportId = treeReportRepository.findAllByReportId(element.getId());
+        // using Long.signum (and not '<' ) to circumvent possible long overflow
+        allByReportId.sort((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()));
+        allByReportId.forEach(root -> report.addSubReporter(toDto(root, dict)));
         return report;
     }
 
@@ -74,8 +77,12 @@ public class ReportService {
 
     private ReporterModel toDto(TreeReportEntity element, Map<String, String> dict) {
         var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
-        reportElementRepository.findAllByParentReportIdNode(element.getIdNode())
-            .forEach(report -> reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues())));
+        List<ReportElementEntity> reportElements = reportElementRepository.findAllByParentReportIdNode(element.getIdNode());
+        // using Long.signum (and not '<' ) to circumvent possible long overflow
+        reportElements.sort((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()));
+        reportElements.forEach(report ->
+            reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
+        );
         treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
             .forEach(report -> reportModel.addSubReporter(toDto(report, dict)));
         return reportModel;
@@ -83,7 +90,7 @@ public class ReportService {
 
     ReporterModel getReport(UUID id) {
         Objects.requireNonNull(id);
-        return toDto(reportRepository.getOne(id));
+        return toDto(reportRepository.getById(id));
     }
 
     private ReportEntity toEntity(UUID id, ReporterModel reportElement) {
@@ -92,18 +99,27 @@ public class ReportService {
         return persistedReport;
     }
 
-    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode, Map<String, String> dict) {
+    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode,
+        Map<String, String> dict) {
+
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         var treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-                toValueEntityList(reporterModel.getTaskValues()), parentNode));
-        reporterModel.getReports().forEach(report  -> toEntity(treeReportEntity, report, dict));
-        reporterModel.getSubReporters().forEach(subReport -> toEntity(null, subReport, treeReportEntity, dict));
+                toValueEntityList(reporterModel.getTaskValues()), parentNode, System.nanoTime()));
+
+        List<ReporterModel> subReporters = reporterModel.getSubReporters();
+        IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), treeReportEntity, dict));
+
+        Collection<Report> reports = reporterModel.getReports();
+        List<Report> reportsAsList = new ArrayList<>(reports);
+        IntStream.range(0, reportsAsList.size()).forEach(idx -> toEntity(treeReportEntity, reportsAsList.get(idx), dict));
+
         return treeReportEntity;
     }
 
     private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
         dict.put(report.getReportKey(), report.getDefaultMessage());
-        return reportElementRepository.save(new ReportElementEntity(null, parentReport, report.getReportKey(), toValueEntityList(report.getValues())));
+        return reportElementRepository.save(new ReportElementEntity(null, parentReport, System.nanoTime(),
+            report.getReportKey(), toValueEntityList(report.getValues())));
     }
 
     private List<ReportValueEmbeddable> toValueEntityList(Map<String, TypedValue> values) {
@@ -125,6 +141,7 @@ public class ReportService {
             }
             toEntity(reportEntity.get(), report, null, reportEntity.get().getDictionary());
         } else {
+            LOGGER.debug("Report {} absent, create ", report.getDefaultName());
             toEntity(id, report);
         }
     }
