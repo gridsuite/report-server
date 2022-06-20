@@ -56,7 +56,7 @@ public class TreeReportEntity {
     @Column(name = "name")
     String name;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "report", foreignKey = @ForeignKey(name = "report_id_fk_constraint"))
     private ReportEntity report;
 
@@ -65,7 +65,10 @@ public class TreeReportEntity {
         indexes = @Index(name = "treeReportEntity_value_ixd", columnList = "tree_report_entity_id_node"))
     List<ReportValueEmbeddable> values;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parentReport", foreignKey = @ForeignKey(name = "treeReport_id_fk_constraint"))
     TreeReportEntity parentReport;
+
+    @Column
+    long nanos;
 }
