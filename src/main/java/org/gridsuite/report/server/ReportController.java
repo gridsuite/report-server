@@ -9,6 +9,7 @@ package org.gridsuite.report.server;
 import com.powsybl.commons.reporter.ReporterModel;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,21 +47,22 @@ public class ReportController {
     @Operation(summary = "Get report by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    public ResponseEntity<ReporterModel> getReport(@PathVariable("id") UUID id) {
+    public ResponseEntity<ReporterModel> getReport(@PathVariable("id") UUID id,
+                                                   @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
+                                                   @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.getReport(id));
         } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
+            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(new ReporterModel(UUID.randomUUID().toString(), defaultName));
         }
-
     }
 
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
-    public void createReport(@PathVariable("id") UUID id, @RequestParam(name = "overwrite", defaultValue = "false", required = false) Boolean overwrite, @RequestBody(required = true) ReporterModel report) {
+    public void createReport(@PathVariable("id") UUID id, @RequestParam(name = "overwrite", defaultValue = "false", required = false) Boolean overwrite, @RequestBody ReporterModel report) {
 
         service.createReports(id, report, overwrite);
     }
@@ -68,13 +70,13 @@ public class ReportController {
     @DeleteMapping(value = "reports/{id}")
     @Operation(summary = "delete the report")
     @ApiResponse(responseCode = "200", description = "The report has been deleted")
-    public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID id) {
+        public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID id,
+                                                 @Parameter(description = "Return 404 if report is not found") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound) {
         try {
             service.deleteReport(id);
         } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
+            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().build();
         }
         return ResponseEntity.ok().build();
     }
-
 }
