@@ -94,7 +94,6 @@ public class ReportEntityControllerTest  {
     private static final String REPORT_TWO = "/reportTwo.json";
     private static final String REPORT_CONCAT = "/reportConcat.json";
     private static final String REPORT_CONCAT2 = "/reportConcat2.json";
-    private static final String REPORT_REPLACE = "/reportReplace.json";
     private static final String EXPECTED_SINGLE_REPORT = "/expectedSingleReport.json";
 
     public String toString(String resourceName) {
@@ -121,15 +120,12 @@ public class ReportEntityControllerTest  {
             .andExpect(status().isOk())
             .andExpect(content().json(expectedReport));
 
-        insertReport(report1Id, toString(REPORT_TWO), true);
+        insertReport(report1Id, toString(REPORT_TWO));
 
         testImported(report1Id, REPORT_CONCAT);
 
-        insertReport(report1Id, toString(REPORT_ONE), false);
+        insertReport(report1Id, toString(REPORT_ONE));
         testImported(report1Id, REPORT_CONCAT2);
-
-        insertReport(report1Id, toString(REPORT_ONE), true);
-        testImported(report1Id, REPORT_REPLACE);
 
         mvc.perform(delete(URL_TEMPLATE + report1Id)).andExpect(status().isOk());
         mvc.perform(delete(URL_TEMPLATE + report1Id)).andExpect(status().isNotFound());
@@ -148,13 +144,6 @@ public class ReportEntityControllerTest  {
 
     private void insertReport(String reportsId, String content) throws Exception {
         mvc.perform(put(URL_TEMPLATE + reportsId)
-            .content(content)
-            .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk());
-    }
-
-    private void insertReport(String reportsId, String content, boolean overwrite) throws Exception {
-        mvc.perform(put(URL_TEMPLATE + reportsId + "?overwrite=" + overwrite)
             .content(content)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());

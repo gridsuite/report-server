@@ -131,14 +131,10 @@ public class ReportService {
     }
 
     @Transactional
-    public void createReports(UUID id, ReporterModel report, boolean overwrite) {
+    public void createReports(UUID id, ReporterModel report) {
         Optional<ReportEntity> reportEntity = reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Report {} present, append ", report.getDefaultName());
-            if (overwrite) {
-                treeReportRepository.findAllByReportIdAndName(reportEntity.get().getId(), report.getTaskKey())
-                    .forEach(r -> deleteRoot(r.getIdNode()));
-            }
             toEntity(reportEntity.get(), report, null, reportEntity.get().getDictionary());
         } else {
             LOGGER.debug("Report {} absent, create ", report.getDefaultName());

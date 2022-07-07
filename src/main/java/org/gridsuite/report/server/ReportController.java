@@ -62,9 +62,9 @@ public class ReportController {
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
-    public void createReport(@PathVariable("id") UUID id, @RequestParam(name = "overwrite", defaultValue = "false", required = false) Boolean overwrite, @RequestBody ReporterModel report) {
+    public void createReport(@PathVariable("id") UUID id, @RequestBody ReporterModel report) {
 
-        service.createReports(id, report, overwrite);
+        service.createReports(id, report);
     }
 
     @DeleteMapping(value = "reports/{id}")
