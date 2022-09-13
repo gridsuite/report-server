@@ -41,7 +41,7 @@ public class ReportValueEmbeddable {
     }
 
     String name;
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "value_", columnDefinition = "TEXT")
     String value;
     String type;
     ValueType valueType;
