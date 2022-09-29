@@ -13,5 +13,5 @@ spring:
 powsybl-ws:
   database:
     queryBegin: '&'
-    customQuery: ${customQueryBegin}reWriteBatchedInserts=true
+    customQuery: ${powsybl-ws.database.customQueryBegin}reWriteBatchedInserts=true
     name: report
