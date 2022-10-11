@@ -49,13 +49,13 @@ public class ReportController {
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
     public ResponseEntity<ReporterModel> getReport(@PathVariable("id") UUID id,
                                                    @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
-                                                   @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.getReport(id));
         } catch (EntityNotFoundException ignored) {
-            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(new ReporterModel(UUID.randomUUID().toString(), defaultName));
+            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(defaultName));
         }
     }
 
