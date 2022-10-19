@@ -94,9 +94,8 @@ public class ReportService {
         return toDto(reportRepository.getById(id));
     }
 
-    ReporterModel getEmptyReport(@NonNull String defaultName) {
-        String reportKey = UUID.randomUUID().toString();
-        ReporterModel reporter = new ReporterModel(reportKey, reportKey);
+    public ReporterModel getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
+        ReporterModel reporter = new ReporterModel(id.toString(), id.toString());
         reporter.addSubReporter(new ReporterModel(defaultName, defaultName));
         return reporter;
     }

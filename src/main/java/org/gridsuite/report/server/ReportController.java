@@ -55,7 +55,7 @@ public class ReportController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.getReport(id));
         } catch (EntityNotFoundException ignored) {
-            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(defaultName));
+            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName));
         }
     }
 
