@@ -15,6 +15,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import lombok.SneakyThrows;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,11 +91,17 @@ public class ReportEntityControllerTest  {
         reportService.deleteAll();
     }
 
+    private static final String REPORT_UUID = "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13";
+
     private static final String REPORT_ONE = "/reportOne.json";
     private static final String REPORT_TWO = "/reportTwo.json";
     private static final String REPORT_CONCAT = "/reportConcat.json";
     private static final String REPORT_CONCAT2 = "/reportConcat2.json";
     private static final String EXPECTED_SINGLE_REPORT = "/expectedSingleReport.json";
+
+    private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
+
+    private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
 
     public String toString(String resourceName) {
         try {
@@ -106,34 +113,44 @@ public class ReportEntityControllerTest  {
 
     @Test
     public void test() throws Exception {
-
-        String report1Id = "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13";
         String testReport1 = toString(REPORT_ONE);
-        insertReport(report1Id, testReport1);
+        insertReport(REPORT_UUID, testReport1);
 
         String expectedReport = toString(EXPECTED_SINGLE_REPORT);
         mvc.perform(get(URL_TEMPLATE))
             .andExpect(status().isOk())
             .andExpect(content().json("[" + expectedReport + "]"));
 
-        mvc.perform(get(URL_TEMPLATE + report1Id))
+        mvc.perform(get(URL_TEMPLATE + REPORT_UUID))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedReport));
 
-        insertReport(report1Id, toString(REPORT_TWO));
+        insertReport(REPORT_UUID, toString(REPORT_TWO));
 
-        testImported(report1Id, REPORT_CONCAT);
+        testImported(REPORT_UUID, REPORT_CONCAT);
 
-        insertReport(report1Id, toString(REPORT_ONE));
-        testImported(report1Id, REPORT_CONCAT2);
+        insertReport(REPORT_UUID, toString(REPORT_ONE));
+        testImported(REPORT_UUID, REPORT_CONCAT2);
 
-        mvc.perform(delete(URL_TEMPLATE + report1Id)).andExpect(status().isOk());
-        mvc.perform(delete(URL_TEMPLATE + report1Id)).andExpect(status().isNotFound());
+        mvc.perform(delete(URL_TEMPLATE + REPORT_UUID)).andExpect(status().isOk());
+        mvc.perform(delete(URL_TEMPLATE + REPORT_UUID)).andExpect(status().isNotFound());
 
-        mvc.perform(get(URL_TEMPLATE + report1Id))
+        mvc.perform(get(URL_TEMPLATE + REPORT_UUID))
             .andExpect(status().isNotFound());
 
         cleanDB();
+    }
+
+    @SneakyThrows
+    @Test
+    public void testDefaultEmptyReport() {
+        mvc.perform(get(URL_TEMPLATE + REPORT_UUID + "?errorOnReportNotFound=false"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
+
+        mvc.perform(get(URL_TEMPLATE + REPORT_UUID + "?errorOnReportNotFound=false&defaultName=test"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT2)));
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {

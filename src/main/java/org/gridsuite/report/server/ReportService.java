@@ -9,6 +9,7 @@ package org.gridsuite.report.server;
 import com.powsybl.commons.reporter.Report;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.reporter.TypedValue;
+import lombok.NonNull;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.ReportValueEmbeddable;
@@ -91,6 +92,12 @@ public class ReportService {
     ReporterModel getReport(UUID id) {
         Objects.requireNonNull(id);
         return toDto(reportRepository.getById(id));
+    }
+
+    public ReporterModel getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
+        ReporterModel reporter = new ReporterModel(id.toString(), id.toString());
+        reporter.addSubReporter(new ReporterModel(defaultName, defaultName));
+        return reporter;
     }
 
     private ReportEntity toEntity(UUID id, ReporterModel reportElement) {
