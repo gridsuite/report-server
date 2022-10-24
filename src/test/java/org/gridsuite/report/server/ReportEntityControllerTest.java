@@ -16,6 +16,7 @@ import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import lombok.SneakyThrows;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -87,7 +88,8 @@ public class ReportEntityControllerTest  {
 
     }
 
-    private void cleanDB() {
+    @After
+    public void tearDown() {
         reportService.deleteAll();
     }
 
@@ -119,7 +121,7 @@ public class ReportEntityControllerTest  {
         String expectedReport = toString(EXPECTED_SINGLE_REPORT);
         mvc.perform(get(URL_TEMPLATE))
             .andExpect(status().isOk())
-            .andExpect(content().json("[" + expectedReport + "]"));
+            .andExpect(content().json(expectedReport));
 
         mvc.perform(get(URL_TEMPLATE + REPORT_UUID))
             .andExpect(status().isOk())
@@ -135,10 +137,7 @@ public class ReportEntityControllerTest  {
         mvc.perform(delete(URL_TEMPLATE + REPORT_UUID)).andExpect(status().isOk());
         mvc.perform(delete(URL_TEMPLATE + REPORT_UUID)).andExpect(status().isNotFound());
 
-        mvc.perform(get(URL_TEMPLATE + REPORT_UUID))
-            .andExpect(status().isNotFound());
-
-        cleanDB();
+        mvc.perform(get(URL_TEMPLATE + REPORT_UUID)).andExpect(status().isNotFound());
     }
 
     @SneakyThrows

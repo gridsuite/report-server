@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -53,12 +54,11 @@ public class ReportService {
     }
 
     private ReporterModel toDto(ReportEntity element) {
-        Map<String, String> dict = element.getDictionary();
         var report = new ReporterModel(element.getId().toString(), element.getId().toString());
         List<TreeReportEntity> allByReportId = treeReportRepository.findAllByReportId(element.getId());
         // using Long.signum (and not '<' ) to circumvent possible long overflow
         allByReportId.sort((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()));
-        allByReportId.forEach(root -> report.addSubReporter(toDto(root, dict)));
+        allByReportId.forEach(root -> report.addSubReporter(toDto(root)));
         return report;
     }
 
@@ -76,7 +76,8 @@ public class ReportService {
         }
     }
 
-    private ReporterModel toDto(TreeReportEntity element, Map<String, String> dict) {
+    private ReporterModel toDto(TreeReportEntity element) {
+        Map<String, String> dict = element.getDictionary();
         var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
         List<ReportElementEntity> reportElements = reportElementRepository.findAllByParentReportIdNode(element.getIdNode());
         // using Long.signum (and not '<' ) to circumvent possible long overflow
@@ -85,13 +86,13 @@ public class ReportService {
             reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
         );
         treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
-            .forEach(report -> reportModel.addSubReporter(toDto(report, dict)));
+            .forEach(report -> reportModel.addSubReporter(toDto(report)));
         return reportModel;
     }
 
     ReporterModel getReport(UUID id) {
         Objects.requireNonNull(id);
-        return toDto(reportRepository.getById(id));
+        return toDto(reportRepository.findById(id).orElseThrow(EntityNotFoundException::new));
     }
 
     public ReporterModel getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
@@ -101,20 +102,19 @@ public class ReportService {
     }
 
     private ReportEntity toEntity(UUID id, ReporterModel reportElement) {
-        var persistedReport = reportRepository.findById(id).orElseGet(() -> reportRepository.save(new ReportEntity(id, new HashMap<>())));
-        toEntity(persistedReport, reportElement, null, persistedReport.getDictionary());
+        var persistedReport = reportRepository.findById(id).orElseGet(() -> reportRepository.save(new ReportEntity(id)));
+        toEntity(persistedReport, reportElement, null);
         return persistedReport;
     }
 
-    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode,
-        Map<String, String> dict) {
-
+    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
+        Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         var treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-                toValueEntityList(reporterModel.getTaskValues()), parentNode, System.nanoTime()));
+                toValueEntityList(reporterModel.getTaskValues()), parentNode, dict, System.nanoTime()));
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
-        IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), treeReportEntity, dict));
+        IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), treeReportEntity));
 
         Collection<Report> reports = reporterModel.getReports();
         List<Report> reportsAsList = new ArrayList<>(reports);
@@ -142,7 +142,7 @@ public class ReportService {
         Optional<ReportEntity> reportEntity = reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Report {} present, append ", report.getDefaultName());
-            toEntity(reportEntity.get(), report, null, reportEntity.get().getDictionary());
+            toEntity(reportEntity.get(), report, null);
         } else {
             LOGGER.debug("Report {} absent, create ", report.getDefaultName());
             toEntity(id, report);
@@ -165,6 +165,8 @@ public class ReportService {
     }
 
     public void deleteAll() {
+        reportElementRepository.deleteAll();
+        treeReportRepository.deleteAll();
         reportRepository.deleteAll();
     }
 }

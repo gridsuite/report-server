@@ -10,9 +10,8 @@ package org.gridsuite.report.server.entities;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import javax.persistence.*;
 
-import java.util.Map;
+import javax.persistence.*;
 import java.util.UUID;
 
 /**
@@ -28,10 +27,4 @@ public class ReportEntity extends AbstractManuallyAssignedIdentifierEntity<UUID>
     @Id
     @Column(name = "id")
     private UUID id;
-
-    @Column(name = "dictionary", length = 500)
-    @CollectionTable(foreignKey = @ForeignKey(name = "reportEntity_dictionary_fk"), indexes = @Index(name = "reportEntity_dictionary_id_index", columnList = "report_entity_id"))
-    @ElementCollection
-    Map<String, String> dictionary;
-
 }
