@@ -25,22 +25,4 @@
     <changeSet author="amarsli (generated)" id="1665568463907-11">
         <dropTable tableName="report_entity_dictionary"/>
     </changeSet>
-<!--    <changeSet author="amarsli (generated)" id="1665568463907-1">-->
-<!--        <dropPrimaryKey tableName="report_element"/>-->
-<!--    </changeSet>-->
-<!--    <changeSet author="amarsli (generated)" id="1665568463907-2">-->
-<!--        <addPrimaryKey columnNames="id_report" constraintName="report_elementPK" tableName="report_element"/>-->
-<!--    </changeSet>-->
-<!--    <changeSet author="amarsli (generated)" id="1665568463907-3">-->
-<!--        <dropPrimaryKey tableName="report"/>-->
-<!--    </changeSet>-->
-<!--    <changeSet author="amarsli (generated)" id="1665568463907-4">-->
-<!--        <addPrimaryKey columnNames="id" constraintName="reportPK" tableName="report"/>-->
-<!--    </changeSet>-->
-<!--    <changeSet author="amarsli (generated)" id="1665568463907-5">-->
-<!--        <dropPrimaryKey tableName="tree_report"/>-->
-<!--    </changeSet>-->
-<!--    <changeSet author="amarsli (generated)" id="1665568463907-6">-->
-<!--        <addPrimaryKey columnNames="id_node" constraintName="tree_reportPK" tableName="tree_report"/>-->
-<!--    </changeSet>-->
 </databaseChangeLog>
