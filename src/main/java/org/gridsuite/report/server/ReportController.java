@@ -7,7 +7,6 @@
 package org.gridsuite.report.server;
 
 import com.powsybl.commons.reporter.ReporterModel;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -40,22 +40,24 @@ public class ReportController {
     @Operation(summary = "Get all reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "All reports")})
     public ResponseEntity<List<ReporterModel>> getReports() {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getReports());
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getReports()
+            .stream().flatMap(r -> r.getSubReporters().stream()).collect(Collectors.toList())); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
     }
 
     @GetMapping(value = "reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get report by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    public ResponseEntity<ReporterModel> getReport(@PathVariable("id") UUID id,
+    public ResponseEntity<List<ReporterModel>> getReport(@PathVariable("id") UUID id,
                                                    @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
                                                    @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getReport(id));
+                .body(service.getReport(id)
+                    .getSubReporters()); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
         } catch (EntityNotFoundException ignored) {
-            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName));
+            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
         }
     }
 

@@ -1,0 +1,28 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.1.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <changeSet author="amarsli (generated)" id="1665568463907-7">
+        <createTable tableName="tree_report_entity_dictionary">
+            <column name="tree_report_entity_id_node" type="UUID">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="dictionary" type="VARCHAR(500)"/>
+            <column name="dictionary_key" type="VARCHAR(255)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="amarsli (generated)" id="1665568463907-8">
+        <createIndex indexName="treeReportEntity_dictionary_idNode_index" tableName="tree_report_entity_dictionary">
+            <column name="tree_report_entity_id_node"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="amarsli (generated)" id="1665568463907-9">
+        <addForeignKeyConstraint baseColumnNames="tree_report_entity_id_node" baseTableName="tree_report_entity_dictionary" constraintName="treeReportEntity_dictionary_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_node" referencedTableName="tree_report" validate="true"/>
+    </changeSet>
+    <changeSet author="amarsli (generated)" id="1665568463907-10">
+        <dropForeignKeyConstraint baseTableName="report_entity_dictionary" constraintName="reportEntity_dictionary_fk"/>
+    </changeSet>
+    <changeSet author="amarsli (generated)" id="1665568463907-11">
+        <dropTable tableName="report_entity_dictionary"/>
+    </changeSet>
+</databaseChangeLog>

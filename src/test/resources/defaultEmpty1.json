@@ -1,17 +1,13 @@
-{
-  "version": "1.0",
-  "reportTree": {
-    "taskKey": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-    "subReporters": [
-      {
-        "taskKey": "defaultName"
+[
+  {
+    "version": "1.0",
+    "reportTree": {
+      "taskKey": "defaultName"
+    },
+    "dics": {
+      "default": {
+        "defaultName": "defaultName"
       }
-    ]
-  },
-  "dics": {
-    "default": {
-      "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-      "defaultName": "defaultName"
     }
   }
-}
+]

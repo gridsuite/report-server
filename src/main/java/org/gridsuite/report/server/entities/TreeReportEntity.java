@@ -26,6 +26,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -68,6 +69,11 @@ public class TreeReportEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parentReport", foreignKey = @ForeignKey(name = "treeReport_id_fk_constraint"))
     TreeReportEntity parentReport;
+
+    @Column(name = "dictionary", length = 500)
+    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEntity_dictionary_fk"), indexes = @Index(name = "treeReportEntity_dictionary_idNode_index", columnList = "tree_report_entity_id_node"))
+    @ElementCollection
+    Map<String, String> dictionary;
 
     @Column
     long nanos;
