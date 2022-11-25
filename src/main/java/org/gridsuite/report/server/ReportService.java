@@ -55,10 +55,11 @@ public class ReportService {
 
     private ReporterModel toDto(ReportEntity element) {
         var report = new ReporterModel(element.getId().toString(), element.getId().toString());
-        List<TreeReportEntity> allByReportId = treeReportRepository.findAllByReportId(element.getId());
         // using Long.signum (and not '<' ) to circumvent possible long overflow
-        allByReportId.sort((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()));
-        allByReportId.forEach(root -> report.addSubReporter(toDto(root)));
+        treeReportRepository.findAllByReportId(element.getId())
+            .stream()
+            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
+            .forEach(treeReport -> report.addSubReporter(toDto(treeReport)));
         return report;
     }
 
@@ -79,14 +80,17 @@ public class ReportService {
     private ReporterModel toDto(TreeReportEntity element) {
         Map<String, String> dict = element.getDictionary();
         var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
-        List<ReportElementEntity> reportElements = reportElementRepository.findAllByParentReportIdNode(element.getIdNode());
         // using Long.signum (and not '<' ) to circumvent possible long overflow
-        reportElements.sort((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()));
-        reportElements.forEach(report ->
-            reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
-        );
+        reportElementRepository.findAllByParentReportIdNode(element.getIdNode())
+            .stream()
+            .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
+            .forEach(report ->
+                reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
+            );
         treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
-            .forEach(report -> reportModel.addSubReporter(toDto(report)));
+            .stream()
+            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
+            .forEach(treeReport -> reportModel.addSubReporter(toDto(treeReport)));
         return reportModel;
     }
 
