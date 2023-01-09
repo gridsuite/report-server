@@ -35,24 +35,14 @@ public class ReportService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
 
-    static final class Singleton {
-        private static class InstanceHolder {
-            public static final Singleton INSTANCE = new Singleton();
-        }
+    private static final long NANOS_FROM_EPOCH_TO_START;
 
-        private final long delta;
-
-        private Singleton() {
-            long nanoNow = System.nanoTime();
-            Date now = new Date();
-            long millis = now.getTime();
-            long nanoViaMillis = millis * 1000000;
-            delta = nanoNow - nanoViaMillis;
-        }
-
-        public static Singleton getInstance() {
-            return InstanceHolder.INSTANCE;
-        }
+    static {
+        long nanoNow = System.nanoTime();
+        Date now = new Date();
+        long millis = now.getTime();
+        long nanoViaMillis = millis * 1000000;
+        NANOS_FROM_EPOCH_TO_START = nanoNow - nanoViaMillis;
     }
 
     private final ReportRepository reportRepository;
@@ -135,7 +125,8 @@ public class ReportService {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         var treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-                toValueEntityList(reporterModel.getTaskValues()), parentNode, dict, System.nanoTime() - Singleton.getInstance().delta));
+                toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
+                System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
         IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), treeReportEntity));
@@ -150,7 +141,7 @@ public class ReportService {
     private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
         dict.put(report.getReportKey(), report.getDefaultMessage());
         return reportElementRepository.save(new ReportElementEntity(null, parentReport,
-            System.nanoTime() - Singleton.getInstance().delta,
+            System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
             report.getReportKey(), toValueEntityList(report.getValues())));
     }
 
