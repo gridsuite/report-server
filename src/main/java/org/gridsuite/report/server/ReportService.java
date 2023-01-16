@@ -27,6 +27,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import java.time.Instant;
+
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
@@ -39,9 +41,7 @@ public class ReportService {
 
     static {
         long nanoNow = System.nanoTime();
-        Date now = new Date();
-        long millis = now.getTime();
-        long nanoViaMillis = millis * 1000000;
+        long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
         NANOS_FROM_EPOCH_TO_START = nanoNow - nanoViaMillis;
     }
 
