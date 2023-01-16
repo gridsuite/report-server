@@ -23,9 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -34,6 +36,14 @@ import java.util.stream.IntStream;
 public class ReportService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
+
+    private static final long NANOS_FROM_EPOCH_TO_START;
+
+    static {
+        long nanoNow = System.nanoTime();
+        long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
+        NANOS_FROM_EPOCH_TO_START = nanoNow - nanoViaMillis;
+    }
 
     private final ReportRepository reportRepository;
     private final TreeReportRepository treeReportRepository;
@@ -115,7 +125,8 @@ public class ReportService {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         var treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-                toValueEntityList(reporterModel.getTaskValues()), parentNode, dict, System.nanoTime()));
+                toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
+                System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
         IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), treeReportEntity));
@@ -129,7 +140,8 @@ public class ReportService {
 
     private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
         dict.put(report.getReportKey(), report.getDefaultMessage());
-        return reportElementRepository.save(new ReportElementEntity(null, parentReport, System.nanoTime(),
+        return reportElementRepository.save(new ReportElementEntity(null, parentReport,
+            System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
             report.getReportKey(), toValueEntityList(report.getValues())));
     }
 
