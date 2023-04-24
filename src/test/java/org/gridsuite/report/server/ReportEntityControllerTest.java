@@ -47,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {ReportApplication.class})
-public class ReportEntityControllerTest  {
+public class ReportEntityControllerTest {
 
     public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION + "/reports/";
     @Autowired
