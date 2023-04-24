@@ -50,7 +50,7 @@ public class TreeReportEntity {
     }
 
     @Id
-    @GeneratedValue(strategy  =  GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "idNode", columnDefinition = "uuid")
     UUID idNode;
 

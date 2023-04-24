@@ -46,7 +46,7 @@ public class ReportElementEntity {
     }
 
     @Id
-    @GeneratedValue(strategy  =  GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "idReport", columnDefinition = "uuid")
     UUID idReport;
 
