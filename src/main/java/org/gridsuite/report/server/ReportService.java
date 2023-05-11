@@ -64,9 +64,10 @@ public class ReportService {
     }
 
     private ReporterModel toDto(ReportEntity element) {
-        var report = new ReporterModel(element.getId().toString(), element.getId().toString());
+        UUID elementId = Objects.requireNonNull(element.getId());
+        var report = new ReporterModel(elementId.toString(), elementId.toString());
         // using Long.signum (and not '<' ) to circumvent possible long overflow
-        treeReportRepository.findAllByReportId(element.getId())
+        treeReportRepository.findAllByReportId(elementId)
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
             .forEach(treeReport -> report.addSubReporter(toDto(treeReport)));
