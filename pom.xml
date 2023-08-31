@@ -117,7 +117,7 @@
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
         </dependency>
         <!-- to remove NoProviderFoundException on application startup https://github.com/springdoc/springdoc-openapi/issues/1979 -->
         <dependency>
