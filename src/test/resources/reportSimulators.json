@@ -1,0 +1,90 @@
+{
+  "version": "1.0",
+  "reportTree": {
+    "taskKey": "deleteSimulatorReportsTest",
+    "reports": [
+      {
+        "reportKey": "novalueReport"
+      }
+    ],
+    "subReporters": [
+      {
+        "taskKey": "randomSubReport",
+        "reports": [
+          {
+            "reportKey": "randomReport",
+            "values": {}
+          }
+        ]
+      },
+      {
+        "taskKey": "LoadFlow",
+        "subReporters": [
+          {
+            "taskKey": "LoadFlow",
+            "reports": [
+              {
+                "reportKey": "LoadFlow",
+                "values": {}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "taskKey": "SensitivityAnalysis",
+        "subReporters": [
+          {
+            "taskKey": "SensitivityAnalysis",
+            "reports": [
+              {
+                "reportKey": "SensitivityAnalysis",
+                "values": {}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "taskKey": "SecurityAnalysis",
+        "subReporters": [
+          {
+            "taskKey": "SecurityAnalysis",
+            "reports": [
+              {
+                "reportKey": "SecurityAnalysis",
+                "values": {}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "taskKey": "ShortCircuitAnalysis",
+        "subReporters": [
+          {
+            "taskKey": "ShortCircuitAnalysis",
+            "reports": [
+              {
+                "reportKey": "ShortCircuitAnalysis",
+                "values": {}
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "dics": {
+    "default": {
+      "deleteSimulatorReportsTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+      "LoadFlow": "LoadFlow",
+      "ShortCircuitAnalysis": "ShortCircuitAnalysis",
+      "SecurityAnalysis": "SecurityAnalysis",
+      "SensitivityAnalysis": "SensitivityAnalysis",
+      "novalueReport": "No value report",
+      "randomSubReport": "randomSubReport",
+      "randomReport": "randomReport"
+    }
+  }
+}

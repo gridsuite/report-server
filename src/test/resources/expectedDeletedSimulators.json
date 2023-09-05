@@ -1,0 +1,31 @@
+[
+  {
+    "version": "1.0",
+    "reportTree": {
+      "taskKey": "deleteSimulatorReportsTest",
+      "reports": [
+        {
+          "reportKey": "novalueReport"
+        }
+      ],
+      "subReporters": [
+        {
+          "taskKey": "randomSubReport",
+          "reports": [
+            {
+              "reportKey": "randomReport"
+            }
+          ]
+        }
+      ]
+    },
+    "dics": {
+      "default": {
+        "novalueReport": "No value report",
+        "deleteSimulatorReportsTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+        "randomSubReport": "randomSubReport",
+        "randomReport": "randomReport"
+      }
+    }
+  }
+]

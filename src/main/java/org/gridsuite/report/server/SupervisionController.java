@@ -21,11 +21,10 @@ public class SupervisionController {
         this.reportService = reportService;
     }
 
-    public final static String LOADFLOW_TYPE_REPORT = "LoadFlow";
-    public final static String SENSITIVITY_ANALYSIS_TYPE_REPORT = "SensitivityAnalysis";
-    public final static String SECURITY_ANALYSIS_TYPE_REPORT = "SecurityAnalysis";
-    public final static String SHORTCIRCUIT_TYPE_REPORT = "ShortCircuitAnalysis";
-
+    public static final String LOADFLOW_TYPE_REPORT = "LoadFlow";
+    public static final String SENSITIVITY_ANALYSIS_TYPE_REPORT = "SensitivityAnalysis";
+    public static final String SECURITY_ANALYSIS_TYPE_REPORT = "SecurityAnalysis";
+    public static final String SHORTCIRCUIT_TYPE_REPORT = "ShortCircuitAnalysis";
 
     @DeleteMapping(value = "/loadflow")
     @Operation(summary = "delete loadflow subreport from a parent report")
@@ -58,5 +57,4 @@ public class SupervisionController {
         reportService.deleteSubreporterByName(reportsList, SHORTCIRCUIT_TYPE_REPORT);
         return ResponseEntity.ok().build();
     }
-
 }
