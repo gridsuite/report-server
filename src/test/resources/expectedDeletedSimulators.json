@@ -22,7 +22,7 @@
     "dics": {
       "default": {
         "novalueReport": "No value report",
-        "deleteSimulatorReportsTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+        "deleteSimulatorReportsTest": "Test for simulators results reports deletion",
         "randomSubReport": "randomSubReport",
         "randomReport": "randomReport"
       }

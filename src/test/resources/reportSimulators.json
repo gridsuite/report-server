@@ -77,7 +77,7 @@
   },
   "dics": {
     "default": {
-      "deleteSimulatorReportsTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+      "deleteSimulatorReportsTest": "Test for simulators results reports deletion",
       "LoadFlow": "LoadFlow",
       "ShortCircuitAnalysis": "ShortCircuitAnalysis",
       "SecurityAnalysis": "SecurityAnalysis",
