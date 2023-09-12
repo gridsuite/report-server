@@ -105,6 +105,9 @@ public class ReportEntityControllerTest {
 
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
 
+    private static final String REPORT_SIMULATORS = "/reportSimulators.json";
+    private static final String EXPECTED_DELETED_SIMULATORS = "/expectedDeletedSimulators.json";
+
     public String toString(String resourceName) {
         try {
             return new String(ByteStreams.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream(resourceName))), StandardCharsets.UTF_8);
@@ -150,6 +153,41 @@ public class ReportEntityControllerTest {
         mvc.perform(get(URL_TEMPLATE + REPORT_UUID + "?errorOnReportNotFound=false&defaultName=test"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT2)));
+    }
+
+    @Test
+    public void testDeleteSubreports() throws Exception {
+        String testReport1 = toString(REPORT_SIMULATORS);
+        insertReport(REPORT_UUID, testReport1);
+
+        mvc.perform(delete(URL_TEMPLATE + "subreport")
+                .queryParam("reportsList", REPORT_UUID)
+                .queryParam("subreportKey", "LoadFlow"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        mvc.perform(delete(URL_TEMPLATE + "subreport")
+                .queryParam("reportsList", REPORT_UUID)
+                .queryParam("subreportKey", "SecurityAnalysis"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        mvc.perform(delete(URL_TEMPLATE + "subreport")
+                .queryParam("reportsList", REPORT_UUID)
+                .queryParam("subreportKey", "SensitivityAnalysis"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        mvc.perform(delete(URL_TEMPLATE + "subreport")
+                .queryParam("reportsList", REPORT_UUID)
+                .queryParam("subreportKey", "ShortCircuitAnalysis"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        String expectedReport = toString(EXPECTED_DELETED_SIMULATORS);
+        mvc.perform(get(URL_TEMPLATE))
+            .andExpect(status().isOk())
+            .andExpect(content().json(expectedReport));
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {

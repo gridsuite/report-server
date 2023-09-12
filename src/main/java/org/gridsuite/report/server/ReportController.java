@@ -81,4 +81,13 @@ public class ReportController {
         }
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping(value = "reports/subreport")
+    @Operation(summary = "delete subreports from a list of parent reports based on a subreport key")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been deleted")})
+    public ResponseEntity<Void> deleteLoadflowSubreport(@Parameter(description = "parent reports to parse") @RequestParam(name = "reportsList") List<UUID> reportsList,
+                                                        @Parameter(description = "subreport key to identify which to delete") @RequestParam(name = "subreportKey") String subeportKey) {
+        service.deleteSubreporterByName(reportsList, subeportKey);
+        return ResponseEntity.ok().build();
+    }
 }

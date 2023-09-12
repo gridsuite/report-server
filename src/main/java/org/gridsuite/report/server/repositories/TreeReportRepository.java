@@ -45,5 +45,5 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
     //     is fixed.
     List<String> getSubReportsNodes(UUID reportId);
 
-    void deleteAllByIdNode(UUID uuid);
+    List<TreeReportEntity> findAllByParentReportIdNodeAndName(UUID uuid, String name);
 }
