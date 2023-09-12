@@ -45,5 +45,5 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
     //     is fixed.
     List<String> getSubReportsNodes(UUID reportId);
 
-    List<TreeReportEntity> findAllByParentReportIdNodeAndName(UUID uuid, String name);
+    List<TreeReportEntity> findAllByReportIdAndName(UUID uuid, String name);
 }
