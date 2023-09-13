@@ -13,12 +13,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -82,12 +84,11 @@ public class ReportController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping(value = "reports/subreport")
+    @DeleteMapping(value = "reports/subreport", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "delete subreports from a list of parent reports based on a subreport key")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been deleted")})
-    public ResponseEntity<Void> deleteLoadflowSubreport(@Parameter(description = "parent reports to parse") @RequestParam(name = "reportsList") List<UUID> reportsList,
-                                                        @Parameter(description = "subreport key to identify which to delete") @RequestParam(name = "subreportKey") String subeportKey) {
-        service.deleteSubreporterByName(reportsList, subeportKey);
+    public ResponseEntity<Void> deleteReportByKey(@Parameter(description = "parent reports to parse and their associated subreport key to identify which to delete") @RequestBody Map<UUID, List<String>> reportsKeys) {
+        service.deleteTreeReport(reportsKeys);
         return ResponseEntity.ok().build();
     }
 }

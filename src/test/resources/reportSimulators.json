@@ -1,10 +1,11 @@
 {
   "version": "1.0",
-  "reportTree": {
-    "taskKey": "deleteSimulatorReportsTest",
+  "reportTree":
+    {
+    "taskKey": "LoadFlow",
     "reports": [
       {
-        "reportKey": "novalueReport"
+        "reportKey": "LoadFlow"
       }
     ],
     "subReporters": [
@@ -30,59 +31,12 @@
             ]
           }
         ]
-      },
-      {
-        "taskKey": "SensitivityAnalysis",
-        "subReporters": [
-          {
-            "taskKey": "SensitivityAnalysis",
-            "reports": [
-              {
-                "reportKey": "SensitivityAnalysis",
-                "values": {}
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "taskKey": "SecurityAnalysis",
-        "subReporters": [
-          {
-            "taskKey": "SecurityAnalysis",
-            "reports": [
-              {
-                "reportKey": "SecurityAnalysis",
-                "values": {}
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "taskKey": "ShortCircuitAnalysis",
-        "subReporters": [
-          {
-            "taskKey": "ShortCircuitAnalysis",
-            "reports": [
-              {
-                "reportKey": "ShortCircuitAnalysis",
-                "values": {}
-              }
-            ]
-          }
-        ]
       }
     ]
   },
   "dics": {
     "default": {
-      "deleteSimulatorReportsTest": "Test for simulators results reports deletion",
       "LoadFlow": "LoadFlow",
-      "ShortCircuitAnalysis": "ShortCircuitAnalysis",
-      "SecurityAnalysis": "SecurityAnalysis",
-      "SensitivityAnalysis": "SensitivityAnalysis",
-      "novalueReport": "No value report",
       "randomSubReport": "randomSubReport",
       "randomReport": "randomReport"
     }

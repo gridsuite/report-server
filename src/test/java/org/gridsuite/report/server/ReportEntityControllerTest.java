@@ -31,9 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -55,6 +53,9 @@ public class ReportEntityControllerTest {
 
     @Autowired
     private ReportService reportService;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Before
     public void setUp() {
@@ -159,35 +160,18 @@ public class ReportEntityControllerTest {
     public void testDeleteSubreports() throws Exception {
         String testReport1 = toString(REPORT_SIMULATORS);
         insertReport(REPORT_UUID, testReport1);
+        Map reportsKeys = new HashMap<>();
+        reportsKeys.put(REPORT_UUID, List.of("LoadFlow"));
 
         mvc.perform(delete(URL_TEMPLATE + "subreport")
-                .queryParam("reportsList", REPORT_UUID)
-                .queryParam("subreportKey", "LoadFlow"))
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(reportsKeys)))
             .andExpect(status().isOk())
             .andReturn();
 
-        mvc.perform(delete(URL_TEMPLATE + "subreport")
-                .queryParam("reportsList", REPORT_UUID)
-                .queryParam("subreportKey", "SecurityAnalysis"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        mvc.perform(delete(URL_TEMPLATE + "subreport")
-                .queryParam("reportsList", REPORT_UUID)
-                .queryParam("subreportKey", "SensitivityAnalysis"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        mvc.perform(delete(URL_TEMPLATE + "subreport")
-                .queryParam("reportsList", REPORT_UUID)
-                .queryParam("subreportKey", "ShortCircuitAnalysis"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        String expectedReport = toString(EXPECTED_DELETED_SIMULATORS);
         mvc.perform(get(URL_TEMPLATE))
             .andExpect(status().isOk())
-            .andExpect(content().json(expectedReport));
+            .andExpect(content().json("[]"));
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
