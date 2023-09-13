@@ -106,8 +106,7 @@ public class ReportEntityControllerTest {
 
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
 
-    private static final String REPORT_SIMULATORS = "/reportSimulators.json";
-    private static final String EXPECTED_DELETED_SIMULATORS = "/expectedDeletedSimulators.json";
+    private static final String REPORT_LOADFLOW = "/reportLoadflow.json";
 
     public String toString(String resourceName) {
         try {
@@ -158,7 +157,7 @@ public class ReportEntityControllerTest {
 
     @Test
     public void testDeleteSubreports() throws Exception {
-        String testReport1 = toString(REPORT_SIMULATORS);
+        String testReport1 = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReport1);
         Map reportsKeys = new HashMap<>();
         reportsKeys.put(REPORT_UUID, "LoadFlow");
