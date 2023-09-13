@@ -190,7 +190,7 @@ public class ReportService {
     @Transactional
     public void deleteTreeReport(Map<UUID, List<String>> reportsKey) {
         Objects.requireNonNull(reportsKey);
-        reportsKey.entrySet().forEach(reportKeys -> reportKeys.getValue().forEach(subreportKey -> deleteTreeReportByName(reportKeys.getKey(),subreportKey)));
+        reportsKey.entrySet().forEach(reportKeys -> reportKeys.getValue().forEach(subreportKey -> deleteTreeReportByName(reportKeys.getKey(), subreportKey)));
     }
 
     public void deleteTreeReportByName(UUID reportId, String computationSubreportKey) {
