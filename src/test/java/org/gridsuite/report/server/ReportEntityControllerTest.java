@@ -161,9 +161,9 @@ public class ReportEntityControllerTest {
         String testReport1 = toString(REPORT_SIMULATORS);
         insertReport(REPORT_UUID, testReport1);
         Map reportsKeys = new HashMap<>();
-        reportsKeys.put(REPORT_UUID, List.of("LoadFlow"));
+        reportsKeys.put(REPORT_UUID, "LoadFlow");
 
-        mvc.perform(delete(URL_TEMPLATE + "subreport")
+        mvc.perform(delete("/" + ReportApi.API_VERSION + "/" + "subreports")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reportsKeys)))
             .andExpect(status().isOk())

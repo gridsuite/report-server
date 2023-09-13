@@ -188,9 +188,9 @@ public class ReportService {
     }
 
     @Transactional
-    public void deleteSubreport(Map<UUID, List<String>> subreportsKey) {
+    public void deleteSubreport(Map<UUID, String> subreportsKey) {
         Objects.requireNonNull(subreportsKey);
-        subreportsKey.entrySet().forEach(reportKeys -> reportKeys.getValue().forEach(subreportKey -> deleteTreeReportByName(reportKeys.getKey(), subreportKey)));
+        subreportsKey.entrySet().forEach(reportKeys -> deleteTreeReportByName(reportKeys.getKey(), reportKeys.getValue()));
     }
 
     public void deleteTreeReportByName(UUID reportId, String computationSubreportKey) {
