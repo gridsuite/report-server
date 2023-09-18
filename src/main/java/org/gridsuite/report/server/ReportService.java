@@ -188,12 +188,12 @@ public class ReportService {
     }
 
     @Transactional
-    public void deleteSubreport(Map<UUID, String> subreportsKey) {
-        Objects.requireNonNull(subreportsKey);
-        subreportsKey.entrySet().forEach(reportKeys -> deleteTreeReportByName(reportKeys.getKey(), reportKeys.getValue()));
+    public void deleteTreeReports(Map<UUID, String> identifiers) {
+        Objects.requireNonNull(identifiers);
+        identifiers.forEach((key, value) -> deleteTreeReport(key, value));
     }
 
-    public void deleteTreeReportByName(UUID reportId, String computationSubreportKey) {
+    public void deleteTreeReport(UUID reportId, String computationSubreportKey) {
         Objects.requireNonNull(reportId);
         List<TreeReportEntity> treeReports = treeReportRepository.findAllByReportIdAndName(reportId, computationSubreportKey);
         treeReports.forEach(treeReport -> deleteRoot(treeReport.getIdNode()));

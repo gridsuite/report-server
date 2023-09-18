@@ -162,7 +162,7 @@ public class ReportEntityControllerTest {
         Map reportsKeys = new HashMap<>();
         reportsKeys.put(REPORT_UUID, "LoadFlow");
 
-        mvc.perform(delete("/" + ReportApi.API_VERSION + "/" + "subreports")
+        mvc.perform(delete("/" + ReportApi.API_VERSION + "/" + "treereports")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reportsKeys)))
             .andExpect(status().isOk())

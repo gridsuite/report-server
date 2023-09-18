@@ -83,11 +83,11 @@ public class ReportController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping(value = "subreports", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "delete subreports from a list of parent reports based on a subreport key")
+    @DeleteMapping(value = "treereports", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "delete treereports from a list of parent reports based on a key")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been deleted")})
-    public ResponseEntity<Void> deleteSubeportByKey(@Parameter(description = "parent reports to parse and their associated subreport key to identify which to delete") @RequestBody Map<UUID, String> subreportsKeys) {
-        service.deleteSubreport(subreportsKeys);
+    public ResponseEntity<Void> deleteTreeReports(@Parameter(description = "parent reports to parse and their associated tree report key to identify which to delete") @RequestBody Map<UUID, String> treeReportsKeys) {
+        service.deleteTreeReports(treeReportsKeys);
         return ResponseEntity.ok().build();
     }
 }
