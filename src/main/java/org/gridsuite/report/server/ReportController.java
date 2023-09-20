@@ -86,8 +86,8 @@ public class ReportController {
     @DeleteMapping(value = "treereports", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "delete treereports from a list of parent reports based on a key")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been deleted")})
-    public ResponseEntity<Void> deleteTreeReports(@Parameter(description = "parent reports to parse and their associated tree report key to identify which to delete") @RequestBody Map<UUID, String> treeReportsKeys) {
-        service.deleteTreeReports(treeReportsKeys);
+    public ResponseEntity<Void> deleteTreeReports(@Parameter(description = "parent reports to parse and their associated tree report key to identify which to delete") @RequestBody Map<UUID, String> identifiers) {
+        service.deleteTreeReports(identifiers);
         return ResponseEntity.ok().build();
     }
 }
