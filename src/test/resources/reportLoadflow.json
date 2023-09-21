@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "reportTree":
+    {
+    "taskKey": "LoadFlow",
+    "reports": [
+      {
+        "reportKey": "LoadFlow"
+      }
+    ],
+    "subReporters": [
+      {
+        "taskKey": "randomSubReport",
+        "reports": [
+          {
+            "reportKey": "randomReport",
+            "values": {}
+          }
+        ]
+      },
+      {
+        "taskKey": "LoadFlow",
+        "subReporters": [
+          {
+            "taskKey": "LoadFlow",
+            "reports": [
+              {
+                "reportKey": "LoadFlow",
+                "values": {}
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "dics": {
+    "default": {
+      "LoadFlow": "LoadFlow",
+      "randomSubReport": "randomSubReport",
+      "randomReport": "randomReport"
+    }
+  }
+}

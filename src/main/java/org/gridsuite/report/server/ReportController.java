@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -79,6 +80,14 @@ public class ReportController {
         } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {
             return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().build();
         }
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping(value = "treereports", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "delete treereports from a list of parent reports based on a key")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been deleted")})
+    public ResponseEntity<Void> deleteTreeReports(@Parameter(description = "parent reports to parse and their associated tree report key to identify which to delete") @RequestBody Map<UUID, String> identifiers) {
+        service.deleteTreeReports(identifiers);
         return ResponseEntity.ok().build();
     }
 }
