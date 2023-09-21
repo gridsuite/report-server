@@ -31,9 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -55,6 +53,9 @@ public class ReportEntityControllerTest {
 
     @Autowired
     private ReportService reportService;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Before
     public void setUp() {
@@ -105,6 +106,8 @@ public class ReportEntityControllerTest {
 
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
 
+    private static final String REPORT_LOADFLOW = "/reportLoadflow.json";
+
     public String toString(String resourceName) {
         try {
             return new String(ByteStreams.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream(resourceName))), StandardCharsets.UTF_8);
@@ -150,6 +153,24 @@ public class ReportEntityControllerTest {
         mvc.perform(get(URL_TEMPLATE + "/" + REPORT_UUID + "?errorOnReportNotFound=false&defaultName=test"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT2)));
+    }
+
+    @Test
+    public void testDeleteSubreports() throws Exception {
+        String testReport1 = toString(REPORT_LOADFLOW);
+        insertReport(REPORT_UUID, testReport1);
+        Map reportsKeys = new HashMap<>();
+        reportsKeys.put(REPORT_UUID, "LoadFlow");
+
+        mvc.perform(delete("/" + ReportApi.API_VERSION + "/" + "treereports")
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(reportsKeys)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        mvc.perform(get(URL_TEMPLATE))
+            .andExpect(status().isOk())
+            .andExpect(content().json("[]"));
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {

@@ -44,4 +44,6 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
     //     To be revisited when https://github.com/spring-projects/spring-data-jpa/issues/1796
     //     is fixed.
     List<String> getSubReportsNodes(UUID reportId);
+
+    List<TreeReportEntity> findAllByReportIdAndName(UUID uuid, String name);
 }
