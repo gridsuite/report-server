@@ -3,11 +3,9 @@
     <changeSet author="hedhiliabd" id="1689623201842-1">
         <modifyDataType columnName="value_type"
                         newDataType="tinyint"
-                        schemaName="public"
                         tableName="report_element_entity_values"/>
         <modifyDataType columnName="value_type"
                         newDataType="tinyint"
-                        schemaName="public"
                         tableName="tree_report_entity_values"/>
     </changeSet>
 </databaseChangeLog>
