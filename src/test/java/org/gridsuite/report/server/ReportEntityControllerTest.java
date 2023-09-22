@@ -47,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration(classes = {ReportApplication.class})
 public class ReportEntityControllerTest {
 
-    public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION + "/reports/";
+    public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION + "/reports";
     @Autowired
     private MockMvc mvc;
 
@@ -126,7 +126,7 @@ public class ReportEntityControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().json(expectedReport));
 
-        mvc.perform(get(URL_TEMPLATE + REPORT_UUID))
+        mvc.perform(get(URL_TEMPLATE + "/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andExpect(content().json(expectedReport));
 
@@ -137,20 +137,20 @@ public class ReportEntityControllerTest {
         insertReport(REPORT_UUID, toString(REPORT_ONE));
         testImported(REPORT_UUID, REPORT_CONCAT2);
 
-        mvc.perform(delete(URL_TEMPLATE + REPORT_UUID)).andExpect(status().isOk());
-        mvc.perform(delete(URL_TEMPLATE + REPORT_UUID)).andExpect(status().isNotFound());
+        mvc.perform(delete(URL_TEMPLATE + "/" + REPORT_UUID)).andExpect(status().isOk());
+        mvc.perform(delete(URL_TEMPLATE + "/" + REPORT_UUID)).andExpect(status().isNotFound());
 
-        mvc.perform(get(URL_TEMPLATE + REPORT_UUID)).andExpect(status().isNotFound());
+        mvc.perform(get(URL_TEMPLATE + "/" + REPORT_UUID)).andExpect(status().isNotFound());
     }
 
     @SneakyThrows
     @Test
     public void testDefaultEmptyReport() {
-        mvc.perform(get(URL_TEMPLATE + REPORT_UUID + "?errorOnReportNotFound=false"))
+        mvc.perform(get(URL_TEMPLATE + "/" + REPORT_UUID + "?errorOnReportNotFound=false"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
 
-        mvc.perform(get(URL_TEMPLATE + REPORT_UUID + "?errorOnReportNotFound=false&defaultName=test"))
+        mvc.perform(get(URL_TEMPLATE + "/" + REPORT_UUID + "?errorOnReportNotFound=false&defaultName=test"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT2)));
     }
@@ -174,13 +174,13 @@ public class ReportEntityControllerTest {
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
-        mvc.perform(get(URL_TEMPLATE + report1Id))
+        mvc.perform(get(URL_TEMPLATE + "/" + report1Id))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(reportConcat2)));
     }
 
     private void insertReport(String reportsId, String content) throws Exception {
-        mvc.perform(put(URL_TEMPLATE + reportsId)
+        mvc.perform(put(URL_TEMPLATE + "/" + reportsId)
             .content(content)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());

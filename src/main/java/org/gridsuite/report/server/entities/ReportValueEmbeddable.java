@@ -9,8 +9,8 @@ package org.gridsuite.report.server.entities;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>

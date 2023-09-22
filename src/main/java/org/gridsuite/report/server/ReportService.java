@@ -19,10 +19,11 @@ import org.gridsuite.report.server.repositories.ReportRepository;
 import org.gridsuite.report.server.repositories.TreeReportRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -178,7 +179,9 @@ public class ReportService {
     public void deleteReport(UUID id) {
         Objects.requireNonNull(id);
         treeReportRepository.findIdNodeByReportId(id).forEach(r -> deleteRoot(r.getIdNode()));
-        reportRepository.deleteById(id);
+        if (reportRepository.deleteReportById(id) == 0) {
+            throw new EmptyResultDataAccessException("No element found", 1);
+        }
     }
 
     public void deleteAll() {
