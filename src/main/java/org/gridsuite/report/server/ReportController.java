@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -51,11 +52,12 @@ public class ReportController {
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
     public ResponseEntity<List<ReporterModel>> getReport(@PathVariable("id") UUID id,
                                                    @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
-                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName,
+                                                   @Parameter(description = "Severity levels") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getReport(id)
+                .body(service.getReport(id, severityLevels)
                     .getSubReporters()); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
         } catch (EntityNotFoundException ignored) {
             return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());

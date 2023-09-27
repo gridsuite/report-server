@@ -26,6 +26,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -64,5 +65,11 @@ public class ReportElementEntity {
     @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_subReports_fk"),
         indexes = @Index(name = "reportElementValues_index", columnList = "report_element_entity_id_report"))
     List<ReportValueEmbeddable> values;
+
+    public boolean hasSeverity(Set<String> severityLevels) {
+        return severityLevels == null || values.stream().anyMatch(value -> value.getType().equalsIgnoreCase("SEVERITY") &&
+                value.getValueType() == ReportValueEmbeddable.ValueType.STRING &&
+                severityLevels.contains(value.getValue()));
+    }
 
 }

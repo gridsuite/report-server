@@ -61,17 +61,17 @@ public class ReportService {
     }
 
     List<ReporterModel> toDto(Collection<ReportEntity> reports) {
-        return reports.stream().map(this::toDto).collect(Collectors.toList());
+        return reports.stream().map(elt -> toDto(elt, Set.of())).collect(Collectors.toList());
     }
 
-    private ReporterModel toDto(ReportEntity element) {
+    private ReporterModel toDto(ReportEntity element, Set<String> severityLevels) {
         UUID elementId = Objects.requireNonNull(element.getId());
         var report = new ReporterModel(elementId.toString(), elementId.toString());
         // using Long.signum (and not '<' ) to circumvent possible long overflow
         treeReportRepository.findAllByReportId(elementId)
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> report.addSubReporter(toDto(treeReport)));
+            .forEach(treeReport -> report.addSubReporter(toDto(treeReport, severityLevels)));
         return report;
     }
 
@@ -89,26 +89,27 @@ public class ReportService {
         }
     }
 
-    private ReporterModel toDto(TreeReportEntity element) {
+    private ReporterModel toDto(TreeReportEntity element, Set<String> severityLevels) {
         Map<String, String> dict = element.getDictionary();
         var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
         // using Long.signum (and not '<' ) to circumvent possible long overflow
         reportElementRepository.findAllByParentReportIdNode(element.getIdNode())
             .stream()
             .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
+            .filter(report -> report.hasSeverity(severityLevels))
             .forEach(report ->
                 reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
             );
         treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> reportModel.addSubReporter(toDto(treeReport)));
+            .forEach(treeReport -> reportModel.addSubReporter(toDto(treeReport, severityLevels)));
         return reportModel;
     }
 
-    ReporterModel getReport(UUID id) {
+    ReporterModel getReport(UUID id, Set<String> severityLevels) {
         Objects.requireNonNull(id);
-        return toDto(reportRepository.findById(id).orElseThrow(EntityNotFoundException::new));
+        return toDto(reportRepository.findById(id).orElseThrow(EntityNotFoundException::new), severityLevels);
     }
 
     public ReporterModel getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
