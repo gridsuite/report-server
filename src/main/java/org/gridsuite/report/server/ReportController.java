@@ -64,6 +64,24 @@ public class ReportController {
         }
     }
 
+    @GetMapping(value = "treereports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get tree report by tree id")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report"),
+        @ApiResponse(responseCode = "404", description = "The report does not exists")})
+    public ResponseEntity<List<ReporterModel>> getTreeReport(@PathVariable("id") UUID id,
+                                                         @Parameter(description = "Return 404 if tree report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
+                                                         @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName,
+                                                         @Parameter(description = "Severity levels") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
+        try {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(service.getTreeReport(id, severityLevels)
+                            .getSubReporters()); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
+        } catch (EntityNotFoundException ignored) {
+            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
+        }
+    }
+
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})

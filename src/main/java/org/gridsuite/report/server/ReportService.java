@@ -71,7 +71,7 @@ public class ReportService {
         treeReportRepository.findAllByReportId(elementId)
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> report.addSubReporter(toDto(treeReport, severityLevels)));
+            .forEach(treeReport -> report.addSubReporter(toDto(treeReport, severityLevels, false)));
         return report;
     }
 
@@ -89,21 +89,37 @@ public class ReportService {
         }
     }
 
-    private ReporterModel toDto(TreeReportEntity element, Set<String> severityLevels) {
+    public ReporterModel getTreeReport(UUID treeReportId, Set<String> severityLevels) {
+        TreeReportEntity element = treeReportRepository.findByIdNode(treeReportId);
         Map<String, String> dict = element.getDictionary();
+        element.getValues().add(new ReportValueEmbeddable("treeId", element.getIdNode(), "TREEID"));
+        var report = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
+        report.addSubReporter(toDto(element, severityLevels, false));
+        //return report;
+
+        ReporterModel reporter = new ReporterModel(treeReportId.toString(), treeReportId.toString());
+        reporter.addSubReporter(report);
+        return reporter;
+    }
+
+    private ReporterModel toDto(TreeReportEntity element, Set<String> severityLevels, boolean onlyTree) {
+        Map<String, String> dict = element.getDictionary();
+        element.getValues().add(new ReportValueEmbeddable("treeId", element.getIdNode(), "TREEID"));
         var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
-        // using Long.signum (and not '<' ) to circumvent possible long overflow
-        reportElementRepository.findAllByParentReportIdNode(element.getIdNode())
-            .stream()
-            .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
-            .filter(report -> report.hasSeverity(severityLevels))
-            .forEach(report ->
-                reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
-            );
+        if (!onlyTree) {
+            // using Long.signum (and not '<' ) to circumvent possible long overflow
+            reportElementRepository.findAllByParentReportIdNode(element.getIdNode())
+                    .stream()
+                    .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
+                    .filter(report -> report.hasSeverity(severityLevels))
+                    .forEach(report ->
+                            reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
+                    );
+        }
         treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> reportModel.addSubReporter(toDto(treeReport, severityLevels)));
+            .forEach(treeReport -> reportModel.addSubReporter(toDto(treeReport, severityLevels, onlyTree)));
         return reportModel;
     }
 
