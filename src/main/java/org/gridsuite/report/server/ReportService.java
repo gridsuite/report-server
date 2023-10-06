@@ -40,6 +40,9 @@ public class ReportService {
 
     private static final long NANOS_FROM_EPOCH_TO_START;
 
+    public static final String UNKNOWN_SEVERITY = "UNKNOWN";
+    static final Map<String, Integer> SEVERITY_LEVELS = Map.of(UNKNOWN_SEVERITY, 0, "TRACE", 1, "INFO", 2, "WARN", 3, "ERROR", 4, "FATAL", 5);
+
     static {
         long nanoNow = System.nanoTime();
         long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
@@ -71,7 +74,7 @@ public class ReportService {
         treeReportRepository.findAllByReportId(elementId)
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> report.addSubReporter(toDto(treeReport, severityLevels, false)));
+            .forEach(treeReport -> report.addSubReporter(toDto(treeReport, severityLevels, false))); // TODO TEMPO norm true
         return report;
     }
 
@@ -89,32 +92,19 @@ public class ReportService {
         }
     }
 
-    public ReporterModel getTreeReport(UUID treeReportId, Set<String> severityLevels) {
-        TreeReportEntity element = treeReportRepository.findByIdNode(treeReportId);
+    private ReporterModel toDto(TreeReportEntity element, Set<String> severityLevels, boolean onlyTree) { // TODO remove onlyTree
         Map<String, String> dict = element.getDictionary();
-        element.getValues().add(new ReportValueEmbeddable("treeId", element.getIdNode(), "TREEID"));
-        var report = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
-        report.addSubReporter(toDto(element, severityLevels, false));
-        //return report;
-
-        ReporterModel reporter = new ReporterModel(treeReportId.toString(), treeReportId.toString());
-        reporter.addSubReporter(report);
-        return reporter;
-    }
-
-    private ReporterModel toDto(TreeReportEntity element, Set<String> severityLevels, boolean onlyTree) {
-        Map<String, String> dict = element.getDictionary();
-        element.getValues().add(new ReportValueEmbeddable("treeId", element.getIdNode(), "TREEID"));
+        element.getValues().add(new ReportValueEmbeddable("id", element.getIdNode(), "ID"));
         var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
         if (!onlyTree) {
             // using Long.signum (and not '<' ) to circumvent possible long overflow
             reportElementRepository.findAllByParentReportIdNode(element.getIdNode())
-                    .stream()
-                    .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
-                    .filter(report -> report.hasSeverity(severityLevels))
-                    .forEach(report ->
-                            reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
-                    );
+                .stream()
+                .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
+                .filter(report -> report.hasSeverity(severityLevels))
+                .forEach(report ->
+                        reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
+                );
         }
         treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
             .stream()
@@ -123,9 +113,17 @@ public class ReportService {
         return reportModel;
     }
 
-    ReporterModel getReport(UUID id, Set<String> severityLevels) {
-        Objects.requireNonNull(id);
-        return toDto(reportRepository.findById(id).orElseThrow(EntityNotFoundException::new), severityLevels);
+    ReporterModel getReport(UUID reporId, Set<String> severityLevels) {
+        Objects.requireNonNull(reporId);
+        return toDto(reportRepository.findById(reporId).orElseThrow(EntityNotFoundException::new), severityLevels);
+    }
+
+    public ReporterModel getReporter(UUID reporterId, Set<String> severityLevels) {
+        TreeReportEntity element = treeReportRepository.findByIdNode(reporterId);
+        element.getValues().add(new ReportValueEmbeddable("id", element.getIdNode(), "ID"));
+        var report = new ReporterModel(element.getName(), element.getName(), toDtoValueMap(element.getValues()));
+        report.addSubReporter(toDto(element, severityLevels, false));
+        return report;
     }
 
     public ReporterModel getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
@@ -143,9 +141,11 @@ public class ReportService {
     private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
-        var treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
+        var newTreeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
                 toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
-                System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
+                System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
+        newTreeReportEntity.getValues().add(new ReportValueEmbeddable("reporterSeverity", maxSeverity(reporterModel), "SEVERITY"));
+        var treeReportEntity = treeReportRepository.save(newTreeReportEntity);
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
         IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), treeReportEntity));
@@ -172,15 +172,50 @@ public class ReportService {
         return new ReportValueEmbeddable(entryValue.getKey(), entryValue.getValue().getValue(), entryValue.getValue().getType());
     }
 
+    private static int getReportSeverity(Report report) {
+        var severity = report.getValues().get("reportSeverity");
+        return severity == null ? 0 : SEVERITY_LEVELS.getOrDefault(severity.toString(), 0);
+    }
+
+    private String maxSeverity(ReporterModel reporter) {
+        int max = reporter.getReports().stream()
+            .mapToInt(ReportService::getReportSeverity)
+            .max().orElse(0);
+        return SEVERITY_LEVELS.entrySet().stream()
+                .filter(e -> e.getValue() == max)
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(UNKNOWN_SEVERITY);
+    }
+
+    private Integer computeMaxSeverity(ReporterModel reporter) {
+        int maximum = reporter.getReports().stream()
+                .mapToInt(ReportService::getReportSeverity)
+                .max().orElse(0);
+        if (reporter.getSubReporters().isEmpty()) {
+            //reporter.getTaskValues().put("treeSeverity", new TypedValue(maximum, "STRING"));  TODO read only
+            return maximum;
+        }
+        for (int i = 0; i < reporter.getSubReporters().size(); i++) {
+            ReporterModel subReporter = reporter.getSubReporters().get(i);
+            Integer subMaximun = computeMaxSeverity(subReporter);
+            //subReporter.getTaskValues().put("treeSeverity", new TypedValue(subMaximun, "STRING"));  TODO read only
+            if (subMaximun > maximum) {
+                maximum = subMaximun;
+            }
+        }
+        return maximum;
+    }
+
     @Transactional
-    public void createReports(UUID id, ReporterModel report) {
+    public void createReports(UUID id, ReporterModel reporter) {
         Optional<ReportEntity> reportEntity = reportRepository.findById(id);
         if (reportEntity.isPresent()) {
-            LOGGER.debug("Report {} present, append ", report.getDefaultName());
-            toEntity(reportEntity.get(), report, null);
+            LOGGER.debug("Report {} present, append ", reporter.getDefaultName());
+            toEntity(reportEntity.get(), reporter, null);
         } else {
-            LOGGER.debug("Report {} absent, create ", report.getDefaultName());
-            toEntity(id, report);
+            LOGGER.debug("Report {} absent, create ", reporter.getDefaultName());
+            toEntity(id, reporter);
         }
     }
 

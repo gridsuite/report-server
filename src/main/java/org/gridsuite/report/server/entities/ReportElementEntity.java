@@ -24,8 +24,10 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.gridsuite.report.server.ReportService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -67,9 +69,13 @@ public class ReportElementEntity {
     List<ReportValueEmbeddable> values;
 
     public boolean hasSeverity(Set<String> severityLevels) {
-        return severityLevels == null || values.stream().anyMatch(value -> value.getType().equalsIgnoreCase("SEVERITY") &&
-                value.getValueType() == ReportValueEmbeddable.ValueType.STRING &&
-                severityLevels.contains(value.getValue()));
+        Optional<ReportValueEmbeddable> severity = values.stream()
+            .filter(value -> value.getType().equalsIgnoreCase("SEVERITY") && value.getValueType() == ReportValueEmbeddable.ValueType.STRING)
+            .findFirst();
+        if (severity.isPresent()) {
+            return severityLevels.contains(severity.get().getValue());
+        }
+        // no severity found in values => unknown by default
+        return severityLevels.contains(ReportService.UNKNOWN_SEVERITY);
     }
-
 }
