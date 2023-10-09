@@ -21,7 +21,6 @@ import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -35,14 +34,6 @@ public class ReportController {
 
     public ReportController(ReportService service) {
         this.service = service;
-    }
-
-    @GetMapping(value = "reports", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get all reports")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "All reports")})
-    public ResponseEntity<List<ReporterModel>> getReports() {
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getReports()
-            .stream().flatMap(r -> r.getSubReporters().stream()).collect(Collectors.toList())); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
     }
 
     @GetMapping(value = "reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

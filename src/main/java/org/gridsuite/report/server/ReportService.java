@@ -56,14 +56,6 @@ public class ReportService {
         this.reportElementRepository = reportElementRepository;
     }
 
-    List<ReporterModel> getReports() {
-        return toDto(reportRepository.findAll());
-    }
-
-    List<ReporterModel> toDto(Collection<ReportEntity> reports) {
-        return reports.stream().map(this::toDto).collect(Collectors.toList());
-    }
-
     private ReporterModel toDto(ReportEntity element) {
         UUID elementId = Objects.requireNonNull(element.getId());
         var report = new ReporterModel(elementId.toString(), elementId.toString());
@@ -184,7 +176,7 @@ public class ReportService {
         }
     }
 
-    public void deleteAll() {
+    protected void deleteAll() {
         reportElementRepository.deleteAll();
         treeReportRepository.deleteAll();
         reportRepository.deleteAll();

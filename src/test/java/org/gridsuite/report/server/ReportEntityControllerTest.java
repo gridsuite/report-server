@@ -121,14 +121,9 @@ public class ReportEntityControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        String expectedReport = toString(EXPECTED_SINGLE_REPORT);
-        mvc.perform(get(URL_TEMPLATE))
-            .andExpect(status().isOk())
-            .andExpect(content().json(expectedReport));
-
         mvc.perform(get(URL_TEMPLATE + "/" + REPORT_UUID))
             .andExpect(status().isOk())
-            .andExpect(content().json(expectedReport));
+            .andExpect(content().json(toString(EXPECTED_SINGLE_REPORT)));
 
         insertReport(REPORT_UUID, toString(REPORT_TWO));
 
@@ -168,7 +163,7 @@ public class ReportEntityControllerTest {
             .andExpect(status().isOk())
             .andReturn();
 
-        mvc.perform(get(URL_TEMPLATE))
+        mvc.perform(get(URL_TEMPLATE + "/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andExpect(content().json("[]"));
     }
