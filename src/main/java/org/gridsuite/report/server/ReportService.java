@@ -113,19 +113,14 @@ public class ReportService {
         return reportModel;
     }
 
-    ReporterModel getReport(UUID reporId, Set<String> severityLevels) {
+    @Transactional(readOnly = true)
+    public ReporterModel getReport(UUID reporId, Set<String> severityLevels) {
         Objects.requireNonNull(reporId);
         return toDto(reportRepository.findById(reporId).orElseThrow(EntityNotFoundException::new), severityLevels);
     }
 
+    @Transactional(readOnly = true)
     public ReporterModel getReporter(UUID reporterId, Set<String> severityLevels) {
-        /* DBR version TreeReportEntity element = treeReportRepository.findByIdNode(reporterId);
-        element.getValues().add(new ReportValueEmbeddable("id", element.getIdNode(), "ID"));
-        var report = new ReporterModel(element.getName(), element.getName(), toDtoValueMap(element.getValues()));
-        report.addSubReporter(toDto(element, severityLevels, false));
-        return report;*/
-
-        // CBO version
         TreeReportEntity element = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
         Map<String, String> dict = element.getDictionary();
         var reportModelRoot = new ReporterModel(element.getIdNode().toString(), element.getIdNode().toString()); // TODO Maybe rename, or remove if not necessary
