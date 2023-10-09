@@ -32,6 +32,15 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
     /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
     void deleteAllByIdNodeIn(List<UUID> lst);
 
+    @Query(value = "WITH RECURSIVE fulltree AS ("
+        + "SELECT t.id_node, t.name, t.parent_report, t.report, t.nanos FROM tree_report t "
+        + "WHERE t.parent_report = ?1 "
+        + "UNION ALL( "
+        + "SELECT t.id_node, t.name, t.parent_report, t.report, t.nanos FROM tree_report t "
+        + "INNER JOIN fulltree ON t.parent_report = fulltree.id_node)) "
+        + "SELECT * FROM fulltree", nativeQuery = true)
+    List<TreeReportEntity> findAllReportRecursivelyByParentTreeReport(UUID parentId);
+
     /* get all treeReports id, from the given root to the last leaf sub report */
     @Query(value = "WITH RECURSIVE get_nodes(idNode) AS ("
         + "SELECT t.id_node FROM tree_report t where t.id_node = ?1 "

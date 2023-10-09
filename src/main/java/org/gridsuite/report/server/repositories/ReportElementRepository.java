@@ -23,6 +23,8 @@ public interface ReportElementRepository extends JpaRepository<ReportElementEnti
 
     List<ReportElementEntity> findAllByParentReportIdNode(UUID uuid);
 
+    List<ReportElementEntity> findAllByParentReportIdNodeIn(Collection<UUID> uuids);
+
     List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdNodeIn(Collection<UUID> reportId);
 
     /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */

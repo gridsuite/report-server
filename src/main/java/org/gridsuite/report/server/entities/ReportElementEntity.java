@@ -25,6 +25,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.gridsuite.report.server.ReportService;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -69,6 +70,9 @@ public class ReportElementEntity {
     List<ReportValueEmbeddable> values;
 
     public boolean hasSeverity(Set<String> severityLevels) {
+        if (CollectionUtils.isEmpty(severityLevels)) {
+            return true;
+        }
         Optional<ReportValueEmbeddable> severity = values.stream()
             .filter(value -> value.getType().equalsIgnoreCase("SEVERITY") && value.getValueType() == ReportValueEmbeddable.ValueType.STRING)
             .findFirst();

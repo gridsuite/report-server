@@ -119,11 +119,37 @@ public class ReportService {
     }
 
     public ReporterModel getReporter(UUID reporterId, Set<String> severityLevels) {
-        TreeReportEntity element = treeReportRepository.findByIdNode(reporterId);
+        /* DBR version TreeReportEntity element = treeReportRepository.findByIdNode(reporterId);
         element.getValues().add(new ReportValueEmbeddable("id", element.getIdNode(), "ID"));
         var report = new ReporterModel(element.getName(), element.getName(), toDtoValueMap(element.getValues()));
         report.addSubReporter(toDto(element, severityLevels, false));
-        return report;
+        return report;*/
+
+        // CBO version
+        TreeReportEntity element = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
+        Map<String, String> dict = element.getDictionary();
+        var reportModelRoot = new ReporterModel(element.getIdNode().toString(), element.getIdNode().toString()); // TODO Maybe rename, or remove if not necessary
+        var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
+
+        // Let's find all the treeReports that inherit from the parentTreeReport
+        List<TreeReportEntity> treeReporters = treeReportRepository.findAllReportRecursivelyByParentTreeReport(element.getIdNode());
+        Map<UUID, Map<String, String>> treeReporterMaps = treeReporters
+            .stream().collect(Collectors.toMap(TreeReportEntity::getIdNode, TreeReportEntity::getDictionary));
+        List<UUID> treeReporterIds = treeReporters
+            .stream()
+            .map(TreeReportEntity::getIdNode)
+            .collect(Collectors.toList());
+
+        // Let's find all the reportElements that are linked to the found treeReports
+        reportElementRepository.findAllByParentReportIdNodeIn(treeReporterIds)
+            .stream()
+            .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
+            .filter(report -> report.hasSeverity(severityLevels))
+            .forEach(report ->
+                    reportModel.report(report.getName(), treeReporterMaps.get(report.getParentReport().getIdNode()).get(report.getName()), toDtoValueMap(report.getValues()))
+            );
+        reportModelRoot.addSubReporter(reportModel);
+        return reportModelRoot;
     }
 
     public ReporterModel getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
