@@ -38,6 +38,9 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
         + "UNION ALL( "
         + "SELECT t.id_node, t.name, t.parent_report, t.report, t.nanos FROM tree_report t "
         + "INNER JOIN fulltree ON t.parent_report = fulltree.id_node)) "
+        + "SELECT id_node, name, parent_report, report, nanos FROM tree_report "
+        + "WHERE id_node = ?1 "
+        + "UNION ALL "
         + "SELECT * FROM fulltree", nativeQuery = true)
     List<TreeReportEntity> findAllReportRecursivelyByParentTreeReport(UUID parentId);
 
