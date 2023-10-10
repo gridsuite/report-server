@@ -137,7 +137,15 @@ public class ReportService {
     }
 
     public ReporterModel getElementsForReport(UUID reportId, Set<String> severityLevels) {
-        return getElementsForReporter(reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new).getId(), severityLevels);
+        Objects.requireNonNull(reportId);
+
+        var report = new ReporterModel(reportId.toString(), reportId.toString());
+        // using Long.signum (and not '<' ) to circumvent possible long overflow
+        treeReportRepository.findAllByReportId(reportId)
+            .stream()
+            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
+            .forEach(treeReport -> report.addSubReporter(getElementsForReporter(treeReport.getIdNode(), null)));
+        return report;
     }
 
     @Transactional(readOnly = true)
