@@ -59,6 +59,28 @@ public class ReportService {
         this.reportElementRepository = reportElementRepository;
     }
 
+    private Map<String, TypedValue> toDtoValueMap(List<ReportValueEmbeddable> values) {
+        Map<String, TypedValue> res = new HashMap<>();
+        values.forEach(value -> res.put(value.getName(), toTypedValue(value)));
+        return res;
+    }
+
+    private TypedValue toTypedValue(ReportValueEmbeddable value) {
+        switch (value.getValueType()) {
+            case DOUBLE: return new TypedValue(Double.valueOf(value.getValue()), value.getType());
+            case INTEGER: return new TypedValue(Integer.valueOf(value.getValue()), value.getType());
+            default: return new TypedValue(value.getValue(), value.getType());
+        }
+    }
+
+    // TODO Should be optimized
+    @Deprecated
+    @Transactional(readOnly = true)
+    public ReporterModel getReportStructureAndElements(UUID id) {
+        Objects.requireNonNull(id);
+        return toDto(reportRepository.findById(id).orElseThrow(EntityNotFoundException::new));
+    }
+
     private ReporterModel toDto(ReportEntity element) {
         UUID elementId = Objects.requireNonNull(element.getId());
         var report = new ReporterModel(elementId.toString(), elementId.toString());
@@ -68,20 +90,6 @@ public class ReportService {
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
             .forEach(treeReport -> report.addSubReporter(toDto(treeReport)));
         return report;
-    }
-
-    private Map<String, TypedValue> toDtoValueMap(List<ReportValueEmbeddable> values) {
-        Map<String, TypedValue> res = new HashMap<>();
-        values.forEach(value -> res.put(value.getName(), toDto(value)));
-        return res;
-    }
-
-    private TypedValue toDto(ReportValueEmbeddable value) {
-        switch (value.getValueType()) {
-            case DOUBLE: return new TypedValue(Double.valueOf(value.getValue()), value.getType());
-            case INTEGER: return new TypedValue(Integer.valueOf(value.getValue()), value.getType());
-            default: return new TypedValue(value.getValue(), value.getType());
-        }
     }
 
     private ReporterModel toDto(TreeReportEntity element) {
@@ -109,7 +117,7 @@ public class ReportService {
         var report = new ReporterModel(elementId.toString(), elementId.toString());
 
         // using Long.signum (and not '<' ) to circumvent possible long overflow
-        treeReportRepository.findAllByReportId(elementId)
+        treeReportRepository.findAllByReportId(elementId)// TODO Should use a native recursive SQL function instead of a recursive java implementation
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
             .forEach(treeReport -> report.addSubReporter(recursiveTreeReportBuilder(treeReport)));
@@ -131,12 +139,8 @@ public class ReportService {
         return reportModel;
     }
 
-    ReporterModel getReport(UUID id) {
-        Objects.requireNonNull(id);
-        return toDto(reportRepository.findById(id).orElseThrow(EntityNotFoundException::new));
-    }
-
-    public ReporterModel getElementsForReport(UUID reportId, Set<String> severityLevels) {
+    @Transactional(readOnly = true)
+    public ReporterModel getReportElements(UUID reportId, Set<String> severityLevels) {
         Objects.requireNonNull(reportId);
 
         var report = new ReporterModel(reportId.toString(), reportId.toString());
@@ -144,36 +148,50 @@ public class ReportService {
         treeReportRepository.findAllByReportId(reportId)
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> report.addSubReporter(getElementsForReporter(treeReport.getIdNode(), null)));
+            .forEach(treeReportEntity -> report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, severityLevels)));
         return report;
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getElementsForReporter(UUID reporterId, Set<String> severityLevels) {
-        TreeReportEntity element = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
-        Map<String, String> dict = element.getDictionary();
-        var reportModelRoot = new ReporterModel(element.getIdNode().toString(), element.getIdNode().toString()); // TODO Maybe rename, or remove if not necessary
-        var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
+    public ReporterModel getReporterElements(UUID reporterId, Set<String> severityLevels) {
+        Objects.requireNonNull(reporterId);
 
-        // Let's find all the treeReports that inherit from the parentTreeReport
-        List<TreeReportEntity> treeReporters = treeReportRepository.findAllReportRecursivelyByParentTreeReport(element.getIdNode());
-        Map<UUID, Map<String, String>> treeReporterMaps = treeReporters
+        TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
+
+        var report = new ReporterModel(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString());
+        report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, severityLevels));
+        return report;
+    }
+
+    private ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, Set<String> severityLevels) {
+        Map<String, String> dict = treeReportEntity.getDictionary();
+
+        var reportModel = new ReporterModel(treeReportEntity.getName(), dict.get(treeReportEntity.getName()), toDtoValueMap(treeReportEntity.getValues()));
+
+        // Let's find all the treeReportEntities that inherit from the parent treeReportEntity
+        List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllReportRecursivelyByParentTreeReport(treeReportEntity.getIdNode());
+
+        // TODO Maybe it's not ideal to build the dictionaries AND the treeReportEntities' UUID list.
+        //      Can those two things be merged ? Is there always at least one dictionary entry for each treeReportEntity ?
+
+        // Here, we are building the dictionaries related to the treeReportEntities
+        Map<UUID, Map<String, String>> treeReporterMaps = treeReportEntities
             .stream().collect(Collectors.toMap(TreeReportEntity::getIdNode, TreeReportEntity::getDictionary));
-        List<UUID> treeReporterIds = treeReporters
+
+        // Let's find all the reportElements that are linked to the found treeReportEntities
+        List<UUID> treeReportEntitiesIds = treeReportEntities
             .stream()
             .map(TreeReportEntity::getIdNode)
             .collect(Collectors.toList());
-
-        // Let's find all the reportElements that are linked to the found treeReports
-        reportElementRepository.findAllByParentReportIdNodeIn(treeReporterIds)
+        reportElementRepository.findAllByParentReportIdNodeIn(treeReportEntitiesIds)
             .stream()
             .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
-            .filter(report -> report.hasSeverity(severityLevels))
-            .forEach(report ->
-                    reportModel.report(report.getName(), treeReporterMaps.get(report.getParentReport().getIdNode()).get(report.getName()), toDtoValueMap(report.getValues()))
+            .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
+            .forEach(reportElementEntity ->
+                    reportModel.report(reportElementEntity.getName(), treeReporterMaps.get(reportElementEntity.getParentReport().getIdNode()).get(reportElementEntity.getName()), toDtoValueMap(reportElementEntity.getValues()))
             );
-        reportModelRoot.addSubReporter(reportModel);
-        return reportModelRoot;
+
+        return reportModel;
     }
 
     public ReporterModel getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
