@@ -176,7 +176,8 @@ public class ReportService {
         }
     }
 
-    protected void deleteAll() {
+    // package private for tests
+    void deleteAll() {
         reportElementRepository.deleteAll();
         treeReportRepository.deleteAll();
         reportRepository.deleteAll();
