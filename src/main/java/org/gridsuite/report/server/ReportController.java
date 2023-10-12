@@ -88,7 +88,7 @@ public class ReportController {
         }
     }
 
-    @GetMapping(value = "/reports/reporters/{id}/elements", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/reporters/{id}/elements", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the elements of a reporter and its subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})

@@ -182,15 +182,36 @@ public class ReportService {
         List<UUID> treeReportEntitiesIds = treeReportEntities
             .stream()
             .map(TreeReportEntity::getIdNode)
-            .collect(Collectors.toList());
-        reportElementRepository.findAllByParentReportIdNodeIn(treeReportEntitiesIds)
+            .toList();
+        Map<UUID, List<ReportElementEntity>> allReportElementsByParent = reportElementRepository.findAllByParentReportIdNodeIn(treeReportEntitiesIds)
+            .stream()
+            .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
+            .collect(Collectors.groupingBy(reportElementEntity -> reportElementEntity.getParentReport().getIdNode()));
+
+        // now we can rebuild the tree
+        return buildTreeFromReportersAndElements(treeReportEntity, treeReportEntities, allReportElementsByParent);
+    }
+
+    private ReporterModel buildTreeFromReportersAndElements(TreeReportEntity reporter, List<TreeReportEntity> allTreeReports, Map<UUID, List<ReportElementEntity>> allReportElementsByParent) {
+        // This ID is used by the front for direct access to the reporter
+        reporter.getValues().add(new ReportValueEmbeddable("id", reporter.getIdNode(), "ID"));
+
+        Map<String, String> dict = reporter.getDictionary();
+        var reportModel = new ReporterModel(reporter.getName(), dict.get(reporter.getName()), toDtoValueMap(reporter.getValues()));
+
+        // add treeReport elements
+        allReportElementsByParent.getOrDefault(reporter.getIdNode(), List.of())
             .stream()
             .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
-            .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
-            .forEach(reportElementEntity ->
-                    reportModel.report(reportElementEntity.getName(), treeReporterMaps.get(reportElementEntity.getParentReport().getIdNode()).get(reportElementEntity.getName()), toDtoValueMap(reportElementEntity.getValues()))
+            .forEach(report ->
+                reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
             );
-
+        // recursively add its sub-reporters
+        allTreeReports
+            .stream()
+            .filter(sub -> sub.getParentReport() != null && sub.getParentReport().getIdNode() == reporter.getIdNode())
+            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
+            .forEach(treeReport -> reportModel.addSubReporter(buildTreeFromReportersAndElements(treeReport, allTreeReports, allReportElementsByParent)));
         return reportModel;
     }
 
