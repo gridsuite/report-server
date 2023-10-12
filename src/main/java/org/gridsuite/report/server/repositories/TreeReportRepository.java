@@ -23,8 +23,6 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     List<TreeReportEntity> findAllByReportId(UUID uuid);
 
-    List<TreeReportEntity> findAllByParentReportIdNode(UUID uuid);
-
     List<TreeReportEntity.ProjectionIdNode> findIdNodeByReportId(UUID parentId);
 
     /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */

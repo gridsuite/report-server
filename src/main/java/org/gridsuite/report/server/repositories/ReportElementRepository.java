@@ -21,8 +21,6 @@ import java.util.UUID;
 @Repository
 public interface ReportElementRepository extends JpaRepository<ReportElementEntity, UUID> {
 
-    List<ReportElementEntity> findAllByParentReportIdNode(UUID uuid);
-
     List<ReportElementEntity> findAllByParentReportIdNodeIn(Collection<UUID> uuids);
 
     List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdNodeIn(Collection<UUID> reportId);

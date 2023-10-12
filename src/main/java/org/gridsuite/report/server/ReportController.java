@@ -37,25 +37,6 @@ public class ReportController {
         this.service = service;
     }
 
-    @GetMapping(value = "reports/{id}/old", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get report by id")
-    @Deprecated
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report"),
-        @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    // TODO remove
-    public ResponseEntity<List<ReporterModel>> getReport(@PathVariable("id") UUID id,
-                                                   @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
-                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
-        try {
-            return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getReportStructureAndElements(id)
-                    .getSubReporters()); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
-        } catch (EntityNotFoundException ignored) {
-            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
-        }
-    }
-
     @GetMapping(value = "reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the elements of a whole node report")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, its reporters and subreporters"),

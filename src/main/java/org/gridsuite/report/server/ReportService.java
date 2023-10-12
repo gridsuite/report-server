@@ -73,42 +73,6 @@ public class ReportService {
         }
     }
 
-    // TODO Should be optimized
-    @Deprecated
-    @Transactional(readOnly = true)
-    public ReporterModel getReportStructureAndElements(UUID id) {
-        Objects.requireNonNull(id);
-        return toDto(reportRepository.findById(id).orElseThrow(EntityNotFoundException::new));
-    }
-
-    private ReporterModel toDto(ReportEntity element) {
-        UUID elementId = Objects.requireNonNull(element.getId());
-        var report = new ReporterModel(elementId.toString(), elementId.toString());
-        // using Long.signum (and not '<' ) to circumvent possible long overflow
-        treeReportRepository.findAllByReportId(elementId)
-            .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> report.addSubReporter(toDto(treeReport)));
-        return report;
-    }
-
-    private ReporterModel toDto(TreeReportEntity element) {
-        Map<String, String> dict = element.getDictionary();
-        var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
-        // using Long.signum (and not '<' ) to circumvent possible long overflow
-        reportElementRepository.findAllByParentReportIdNode(element.getIdNode())
-            .stream()
-            .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
-            .forEach(report ->
-                reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
-            );
-        treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
-            .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> reportModel.addSubReporter(toDto(treeReport)));
-        return reportModel;
-    }
-
     @Transactional(readOnly = true)
     public ReporterModel getReportElements(UUID reportId, Set<String> severityLevels) {
         Objects.requireNonNull(reportId);
