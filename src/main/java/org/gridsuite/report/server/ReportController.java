@@ -37,11 +37,12 @@ public class ReportController {
         this.service = service;
     }
 
-    @GetMapping(value = "reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "reports/{id}/old", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get report by id")
     @Deprecated
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
+    // TODO remove
     public ResponseEntity<List<ReporterModel>> getReport(@PathVariable("id") UUID id,
                                                    @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
                                                    @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
@@ -55,45 +56,30 @@ public class ReportController {
         }
     }
 
-    @GetMapping(value = "reports/{id}/reporters", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get the tree structure of a report and its reporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The tree structure of a report and its reporters"),
+    @GetMapping(value = "reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the elements of a whole node report")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, its reporters and subreporters"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    public ResponseEntity<List<ReporterModel>> getReportStructure(@PathVariable("id") UUID id,
+    public ResponseEntity<List<ReporterModel>> getReportElements(@PathVariable("id") UUID id,
                                                    @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
-                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName,
+                                                   @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getReportStructure(id)
+                .body(service.getReportElements(id, severityLevels)
                     .getSubReporters()); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
         } catch (EntityNotFoundException ignored) {
             return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
         }
     }
 
-    @GetMapping(value = "/reports/{id}/elements", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
-        @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    public ResponseEntity<List<ReporterModel>> getReportElements(@PathVariable("id") UUID id,
-                                                         @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
-        try {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getReportElements(id, severityLevels)
-                            .getSubReporters());
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping(value = "/reports/reporters/{id}/elements", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get the elements of a reporter and its subreporters")
+    @GetMapping(value = "/reporters/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the elements only for a reporter and its subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
     public ResponseEntity<List<ReporterModel>> getReporterElements(@PathVariable("id") UUID id,
-                                                         @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
+                                                   @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
