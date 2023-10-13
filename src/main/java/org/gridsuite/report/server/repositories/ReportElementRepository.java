@@ -22,6 +22,7 @@ import java.util.UUID;
 @Repository
 public interface ReportElementRepository extends JpaRepository<ReportElementEntity, UUID> {
 
+    @EntityGraph(attributePaths = {"values"}, type = EntityGraph.EntityGraphType.LOAD)
     List<ReportElementEntity> findAllByParentReportIdNode(UUID uuid);
 
     @EntityGraph(attributePaths = {"values"}, type = EntityGraph.EntityGraphType.LOAD)

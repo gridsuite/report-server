@@ -6,9 +6,7 @@
  */
 package org.gridsuite.report.server;
 import static org.gridsuite.report.server.utils.TestUtils.assertRequestsCount;
-import static org.junit.Assert.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.gridsuite.report.server.repositories.TreeReportRepository;
@@ -46,11 +44,7 @@ public class TreeReportRepositoryTest {
         entity.setReport(null);
         entity.setIdNode(UUID.fromString("7928181c-7977-4592-ba19-88027e4254e4"));
 
-
-
         treeReportRepository.saveAndFlush(entity);
-        //assertRequestsCount(0, 1, 0, 0);
-        SQLStatementCountValidator.assertInsertCount(1);
+        assertRequestsCount(0, 1, 0, 0);
     }
-
 }
