@@ -187,7 +187,6 @@ public class ReportService {
             .stream()
             .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
             .collect(Collectors.groupingBy(reportElementEntity -> reportElementEntity.getParentReport().getIdNode()));
-
         // now we can rebuild the tree
         return buildTreeFromReportersAndElements(treeReportEntity, treeReportEntities, allReportElementsByParent);
     }

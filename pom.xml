@@ -43,6 +43,7 @@
 
     <properties>
         <gridsuite-dependencies.version>26</gridsuite-dependencies.version>
+        <db-util.version>1.0.5</db-util.version>
         <liquibase-hibernate-package>org.gridsuite.report.server</liquibase-hibernate-package>
     </properties>
 
@@ -157,6 +158,12 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vladmihalcea</groupId>
+            <artifactId>db-util</artifactId>
+            <version>${db-util.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -8,6 +8,7 @@
 package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.ReportElementEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -23,6 +24,7 @@ public interface ReportElementRepository extends JpaRepository<ReportElementEnti
 
     List<ReportElementEntity> findAllByParentReportIdNode(UUID uuid);
 
+    @EntityGraph(attributePaths = {"values"}, type = EntityGraph.EntityGraphType.LOAD)
     List<ReportElementEntity> findAllByParentReportIdNodeIn(Collection<UUID> uuids);
 
     List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdNodeIn(Collection<UUID> reportId);
