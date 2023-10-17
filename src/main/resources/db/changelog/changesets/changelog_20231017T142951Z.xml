@@ -1,0 +1,33 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="chuinetri (base generated)" id="1697553004217-1">
+        <!-- there is an index on the column because of a foreign key, so to be able to drop the PK (and delete the associated index), we need to firstly drop the forign key-->
+        <dropForeignKeyConstraint baseTableName="report_element_entity_values" constraintName="treeReportEmbeddable_subReports_fk"/>
+        <dropPrimaryKey tableName="report_element" dropIndex="true"/>
+
+        <dropForeignKeyConstraint baseTableName="tree_report_entity_dictionary" constraintName="treeReportEntity_dictionary_fk"/>
+        <dropForeignKeyConstraint baseTableName="tree_report_entity_values" constraintName="treeReportEmbeddable_name_fk"/>
+        <dropForeignKeyConstraint baseTableName="report_element" constraintName="treeReportElement_id_fk_constraint"/>
+        <dropForeignKeyConstraint baseTableName="tree_report" constraintName="treeReport_id_fk_constraint"/>
+        <dropPrimaryKey tableName="tree_report" dropIndex="true"/>
+
+        <dropForeignKeyConstraint baseTableName="tree_report" constraintName="report_id_fk_constraint"/>
+        <dropPrimaryKey tableName="report" dropIndex="true"/>
+    </changeSet>
+    <changeSet author="chuinetri (base generated)" id="1697553004217-2">
+        <addPrimaryKey columnNames="id" constraintName="reportPK" tableName="report"/>
+        <addPrimaryKey columnNames="id_report" constraintName="report_elementPK" tableName="report_element"/>
+        <addPrimaryKey columnNames="id_node" constraintName="tree_reportPK" tableName="tree_report"/>
+
+        <addForeignKeyConstraint baseColumnNames="report" baseTableName="tree_report" constraintName="report_id_fk_constraint" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="report" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="parent_report" baseTableName="report_element" constraintName="treeReportElement_id_fk_constraint" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_node" referencedTableName="tree_report" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="tree_report_entity_id_node" baseTableName="tree_report_entity_values" constraintName="treeReportEmbeddable_name_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_node" referencedTableName="tree_report" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="report_element_entity_id_report" baseTableName="report_element_entity_values" constraintName="treeReportEmbeddable_subReports_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_report" referencedTableName="report_element" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="tree_report_entity_id_node" baseTableName="tree_report_entity_dictionary" constraintName="treeReportEntity_dictionary_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_node" referencedTableName="tree_report" validate="true"/>
+        <addForeignKeyConstraint baseColumnNames="parent_report" baseTableName="tree_report" constraintName="treeReport_id_fk_constraint" deferrable="false" initiallyDeferred="false" referencedColumnNames="id_node" referencedTableName="tree_report" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
