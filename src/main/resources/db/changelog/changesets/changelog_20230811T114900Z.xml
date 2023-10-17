@@ -3,10 +3,10 @@
     <changeSet author="hedhiliabd" id="1689623201842-1">
         <validCheckSum>8:016d50ff3c894c57034f65489fcd2818</validCheckSum>
         <modifyDataType columnName="value_type"
-                        newDataType="tinyint"
+                        newDataType="smallint"
                         tableName="report_element_entity_values"/>
         <modifyDataType columnName="value_type"
-                        newDataType="tinyint"
+                        newDataType="smallint"
                         tableName="tree_report_entity_values"/>
     </changeSet>
 </databaseChangeLog>
