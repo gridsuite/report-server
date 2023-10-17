@@ -90,13 +90,14 @@ public class ReportController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
     public ResponseEntity<List<ReporterModel>> getReportElements(@PathVariable("id") UUID id,
+                                                         @Parameter(description = "Filter to fetch only with a given task key") @RequestParam(name = "taskKeyFilter", required = false, defaultValue = "") String taskKeyFilter,
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             System.out.println(_blue+" >START> reports/"+id+"/elements "+reset);
             long startTime = System.currentTimeMillis();
             ResponseEntity<List<ReporterModel>> result =  ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getReportElements(id, severityLevels)
+                    .body(service.getReportElements(id, severityLevels, taskKeyFilter)
                             .getSubReporters());
             long endTime = System.currentTimeMillis();
             System.out.println(_blue+" <END< "+(endTime - startTime)+"ms "+reset);

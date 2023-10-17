@@ -140,14 +140,14 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReportElements(UUID reportId, Set<String> severityLevels) {
+    public ReporterModel getReportElements(UUID reportId, Set<String> severityLevels, String taskKeyFilter) {
         Objects.requireNonNull(reportId);
 
         var report = new ReporterModel(reportId.toString(), reportId.toString());
-        // using Long.signum (and not '<' ) to circumvent possible long overflow
         treeReportRepository.findAllByReportId(reportId)
             .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
+            .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() ? true : tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
+            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, severityLevels)));
         return report;
     }
