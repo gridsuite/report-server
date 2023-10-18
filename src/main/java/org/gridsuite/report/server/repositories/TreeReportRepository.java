@@ -8,10 +8,12 @@
 package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.TreeReportEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,22 +27,27 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     List<TreeReportEntity> findAllByParentReportIdNode(UUID uuid);
 
+    @EntityGraph(attributePaths = {"values", "dictionary"}, type = EntityGraph.EntityGraphType.LOAD)
+    List<TreeReportEntity> findAllByIdNodeIn(Collection<UUID> uuids);
+
     List<TreeReportEntity.ProjectionIdNode> findIdNodeByReportId(UUID parentId);
 
     /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
     void deleteAllByIdNodeIn(List<UUID> lst);
 
-    @Query(value = "WITH RECURSIVE fulltree AS ("
-        + "SELECT t.id_node, t.name, t.parent_report, t.report, t.nanos FROM tree_report t "
-        + "WHERE t.parent_report = ?1 "
+    @Query(value = "WITH RECURSIVE fulltree(idNode) AS ("
+        + "SELECT t.id_node FROM tree_report t WHERE t.parent_report = ?1 "
         + "UNION ALL( "
-        + "SELECT t.id_node, t.name, t.parent_report, t.report, t.nanos FROM tree_report t "
-        + "INNER JOIN fulltree ON t.parent_report = fulltree.id_node)) "
-        + "SELECT id_node, name, parent_report, report, nanos FROM tree_report "
-        + "WHERE id_node = ?1 "
-        + "UNION ALL "
-        + "SELECT * FROM fulltree", nativeQuery = true)
-    List<TreeReportEntity> findAllReportRecursivelyByParentTreeReport(UUID parentId);
+        + "SELECT t.id_node "
+        + "FROM tree_report t, fulltree ft "
+        + "WHERE t.parent_report = ft.idNode)) "
+        + "SELECT cast(idNode as varchar) FROM fulltree", nativeQuery = true)
+    //TODO we should be able to get hibernate to do this projection..
+    //TODO we cast to varchar otherwise we get
+    //     org.hibernate.MappingException: No Dialect mapping for JDBC type: 1111
+    //     To be revisited when https://github.com/spring-projects/spring-data-jpa/issues/1796
+    //     is fixed.
+    List<String> findAllTreeReportIdsRecursivelyByParentTreeReport(UUID parentId);
 
     /* get all treeReports id, from the given root to the last leaf sub report */
     @Query(value = "WITH RECURSIVE get_nodes(idNode) AS ("

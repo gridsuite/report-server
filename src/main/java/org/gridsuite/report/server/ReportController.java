@@ -34,7 +34,7 @@ public class ReportController {
     private final ReportService service;
 
     String reset = "\u001B[0m";
-    String _blue = reset+"\u001B[44m";
+    String blue = reset + "\u001B[44m";
 
     public ReportController(ReportService service) {
         this.service = service;
@@ -49,14 +49,14 @@ public class ReportController {
                                                    @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
                                                    @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
-            System.out.println(_blue+" >START> reports/"+id+" "+reset);
+            System.out.println(blue + " >START> reports/" + id + " " + reset);
             long startTime = System.currentTimeMillis();
             ResponseEntity<List<ReporterModel>> result = ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.getReportStructureAndElements(id)
                     .getSubReporters()); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
             long endTime = System.currentTimeMillis();
-            System.out.println(_blue+" <END< "+(endTime - startTime)+"ms "+reset);
+            System.out.println(blue + " <END< " + (endTime - startTime) + "ms " + reset);
             return result;
         } catch (EntityNotFoundException ignored) {
             return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
@@ -71,14 +71,14 @@ public class ReportController {
                                                    @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
                                                    @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
-            System.out.println(_blue+" >START> reports/"+id+"/reporters "+reset);
+            System.out.println(blue + " >START> reports/" + id + "/reporters " + reset);
             long startTime = System.currentTimeMillis();
             ResponseEntity<List<ReporterModel>> result = ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.getReportStructure(id)
                     .getSubReporters()); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
             long endTime = System.currentTimeMillis();
-            System.out.println(_blue+" <END< "+(endTime - startTime)+"ms "+reset);
+            System.out.println(blue + " <END< " + (endTime - startTime) + "ms " + reset);
             return result;
         } catch (EntityNotFoundException ignored) {
             return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
@@ -92,14 +92,14 @@ public class ReportController {
     public ResponseEntity<List<ReporterModel>> getReportElements(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
-            System.out.println(_blue+" >START> reports/"+id+"/elements "+reset);
+            System.out.println(blue + " >START> reports/" + id + "/elements " + reset);
             long startTime = System.currentTimeMillis();
-            ResponseEntity<List<ReporterModel>> result =  ResponseEntity.ok()
+            ResponseEntity<List<ReporterModel>> result = ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(service.getReportElements(id, severityLevels)
                             .getSubReporters());
             long endTime = System.currentTimeMillis();
-            System.out.println(_blue+" <END< "+(endTime - startTime)+"ms "+reset);
+            System.out.println(blue + " <END< " + (endTime - startTime) + "ms " + reset);
             return result;
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
@@ -113,14 +113,14 @@ public class ReportController {
     public ResponseEntity<List<ReporterModel>> getReporterElements(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
-            System.out.println(_blue+" >START> reporters/"+id+"/elements "+reset);
+            System.out.println(blue + " >START> reporters/" + id + "/elements " + reset);
             long startTime = System.currentTimeMillis();
             ResponseEntity<List<ReporterModel>> result = ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(service.getReporterElements(id, severityLevels)
                             .getSubReporters());
             long endTime = System.currentTimeMillis();
-            System.out.println(_blue+" <END< "+(endTime - startTime)+"ms "+reset);
+            System.out.println(blue + " <END< " + (endTime - startTime) + "ms " + reset);
             return result;
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
