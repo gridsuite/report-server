@@ -172,28 +172,22 @@ public class ReportService {
     private ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, Set<String> severityLevels) {
         Map<String, String> dict = treeReportEntity.getDictionary();
 
-        var reportModel = new ReporterModel(treeReportEntity.getName(), dict.get(treeReportEntity.getName()), toDtoValueMap(treeReportEntity.getValues()));
+        // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
+        List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
+                .stream()
+                .map(UUID::fromString)
+                .toList();
 
-        // Let's find all the treeReportEntities that inherit from the parent treeReportEntity
-        List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllReportRecursivelyByParentTreeReport(treeReportEntity.getIdNode());
-
-        // TODO Maybe it's not ideal to build the dictionaries AND the treeReportEntities' UUID list.
-        //      Can those two things be merged ? Is there always at least one dictionary entry for each treeReportEntity ?
-
-        // Here, we are building the dictionaries related to the treeReportEntities
-        Map<UUID, Map<String, String>> treeReporterMaps = treeReportEntities
-            .stream().collect(Collectors.toMap(TreeReportEntity::getIdNode, TreeReportEntity::getDictionary));
-
-        // Let's find all the reportElements that are linked to the found treeReportEntities
-        List<UUID> treeReportEntitiesIds = treeReportEntities
-            .stream()
-            .map(TreeReportEntity::getIdNode)
-            .toList();
+        // Let's find all the reportElements that are linked to the found treeReports
         Map<UUID, List<ReportElementEntity>> allReportElementsByParent = reportElementRepository.findAllByParentReportIdNodeIn(treeReportEntitiesIds)
             .stream()
             .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
             .collect(Collectors.groupingBy(reportElementEntity -> reportElementEntity.getParentReport().getIdNode()));
-        // now we can rebuild the tree
+
+        // We need to get the entities to have access to the dictionaries
+        List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeIn(treeReportEntitiesIds);
+
+        // Now we can rebuild the tree
         return buildTreeFromReportersAndElements(treeReportEntity, treeReportEntities, allReportElementsByParent);
     }
 

@@ -12,7 +12,7 @@ import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertUpdateCount;
 
-public class TestUtils {
+public final class TestUtils {
 
     private TestUtils() {
     }
