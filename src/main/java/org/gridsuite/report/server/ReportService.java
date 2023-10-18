@@ -116,10 +116,16 @@ public class ReportService {
         UUID elementId = Objects.requireNonNull(reportEntity.getId());
         var report = new ReporterModel(elementId.toString(), elementId.toString());
 
-        // using Long.signum (and not '<' ) to circumvent possible long overflow
-        treeReportRepository.findAllByReportId(elementId)// TODO Should use a native recursive SQL function instead of a recursive java implementation
+        // We want to track to which reportId a TreeReport/taskkey is linked with (used by the Front)
+        List<TreeReportEntity> allTreeReportForReportId = treeReportRepository.findAllByReportId(elementId);
+        allTreeReportForReportId.forEach(tre -> {
+            tre.getValues().add(new ReportValueEmbeddable(tre.getName(), reportId.toString(), "REPORTID"));
+        });
+
+        // TODO Should use a native recursive SQL function instead of a recursive java implementation
+        allTreeReportForReportId
             .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
+            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
             .forEach(treeReport -> report.addSubReporter(recursiveTreeReportBuilder(treeReport)));
 
         return report;
@@ -146,7 +152,7 @@ public class ReportService {
         var report = new ReporterModel(reportId.toString(), reportId.toString());
         treeReportRepository.findAllByReportId(reportId)
             .stream()
-            .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() ? true : tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
+            .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() || tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, severityLevels)));
         return report;
