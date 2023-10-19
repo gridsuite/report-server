@@ -36,8 +36,6 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -94,6 +92,7 @@ public class ReportEntityControllerTest {
                 return EnumSet.noneOf(Option.class);
             }
         });
+        reportService.deleteAll();
         SQLStatementCountValidator.reset();
     }
 
@@ -130,7 +129,7 @@ public class ReportEntityControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/elements"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_SINGLE_REPORT)));
 
@@ -145,7 +144,7 @@ public class ReportEntityControllerTest {
 
         mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID)).andExpect(status().isNotFound());
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID)).andExpect(status().isNotFound());
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/elements")).andExpect(status().isNotFound());
     }
 
     @Test
@@ -168,11 +167,11 @@ public class ReportEntityControllerTest {
     @SneakyThrows
     @Test
     public void testDefaultEmptyReport() {
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?errorOnReportNotFound=false"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/reporters"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?errorOnReportNotFound=false&defaultName=test"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/reporters?defaultName=test"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT2)));
     }
@@ -190,13 +189,13 @@ public class ReportEntityControllerTest {
             .andExpect(status().isOk())
             .andReturn();
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/elements"))
             .andExpect(status().isOk())
             .andExpect(content().json("[]"));
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "/elements"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(reportConcat2)));
     }
