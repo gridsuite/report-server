@@ -41,7 +41,10 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
         + "SELECT t.id_node "
         + "FROM tree_report t, fulltree ft "
         + "WHERE t.parent_report = ft.idNode)) "
-        + "SELECT cast(idNode as varchar) FROM fulltree", nativeQuery = true)
+        + "SELECT cast(idNode as varchar) FROM fulltree "
+        + "UNION ALL( "
+        + "SELECT cast(id_node as varchar) FROM tree_report "
+        + "WHERE id_node = ?1)", nativeQuery = true)
     //TODO we should be able to get hibernate to do this projection..
     //TODO we cast to varchar otherwise we get
     //     org.hibernate.MappingException: No Dialect mapping for JDBC type: 1111
