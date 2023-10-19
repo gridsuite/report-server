@@ -116,16 +116,10 @@ public class ReportService {
         UUID elementId = Objects.requireNonNull(reportEntity.getId());
         var report = new ReporterModel(elementId.toString(), elementId.toString());
 
-        // We want to track to which reportId a TreeReport/taskkey is linked with (used by the Front)
-        List<TreeReportEntity> allTreeReportForReportId = treeReportRepository.findAllByReportId(elementId);
-        allTreeReportForReportId.forEach(tre -> {
-            tre.getValues().add(new ReportValueEmbeddable(tre.getName(), reportId.toString(), "REPORTID"));
-        });
-
-        // TODO Should use a native recursive SQL function instead of a recursive java implementation
-        allTreeReportForReportId
+        // using Long.signum (and not '<' ) to circumvent possible long overflow
+        treeReportRepository.findAllByReportId(elementId)// TODO Should use a native recursive SQL function instead of a recursive java implementation
             .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
+            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
             .forEach(treeReport -> report.addSubReporter(recursiveTreeReportBuilder(treeReport)));
 
         return report;
@@ -169,9 +163,7 @@ public class ReportService {
         return report;
     }
 
-    private ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, Set<String> severityLevels) {
-        Map<String, String> dict = treeReportEntity.getDictionary();
-
+    ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, Set<String> severityLevels) {
         // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
         List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
                 .stream()
