@@ -109,20 +109,45 @@ public class ReportService {
         return reportModel;
     }
 
+//    @Transactional(readOnly = true)
+//    public ReporterModel getReportStructure_ORIGINALE(UUID reportId) {
+//        Objects.requireNonNull(reportId);
+//        System.out.println("CHARLY reportRepository findById " + reportId);
+//        ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
+//        UUID elementId = Objects.requireNonNull(reportEntity.getId());
+//        var report = new ReporterModel(elementId.toString(), elementId.toString());
+//
+//        // using Long.signum (and not '<' ) to circumvent possible long overflow
+//        System.out.println("CHARLY treeReportRepository findAllByReportId " + elementId);
+//        treeReportRepository.findAllByReportId(elementId)// TODO Should use a native recursive SQL function instead of a recursive java implementation
+//            .stream()
+//            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
+//            .forEach(treeReport -> report.addSubReporter(recursiveTreeReportBuilder(treeReport)));
+//
+//        return report;
+//    }
+
     @Transactional(readOnly = true)
     public ReporterModel getReportStructure(UUID reportId) {
-        Objects.requireNonNull(reportId);
+        /*Objects.requireNonNull(reportId);
+        System.out.println("CHARLY reportRepository findById " + reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
         UUID elementId = Objects.requireNonNull(reportEntity.getId());
         var report = new ReporterModel(elementId.toString(), elementId.toString());
 
         // using Long.signum (and not '<' ) to circumvent possible long overflow
+        System.out.println("CHARLY treeReportRepository findAllByReportId " + elementId);
         treeReportRepository.findAllByReportId(elementId)// TODO Should use a native recursive SQL function instead of a recursive java implementation
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
             .forEach(treeReport -> report.addSubReporter(recursiveTreeReportBuilder(treeReport)));
 
-        return report;
+        return report;*/
+
+        Set<String> bidon = new HashSet<>();
+        bidon.add("CHARLY");
+
+        return getReportElements(reportId, bidon, null);
     }
 
     private ReporterModel recursiveTreeReportBuilder(TreeReportEntity element) {
@@ -131,6 +156,7 @@ public class ReportService {
         var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
 
         // using Long.signum (and not '<' ) to circumvent possible long overflow
+        System.out.println("CHARLY treeReportRepository findAllByParentReportIdNode " + element.getIdNode());
         treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
             .stream()
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
