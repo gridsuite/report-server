@@ -17,6 +17,7 @@ import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import lombok.SneakyThrows;
+import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.gridsuite.report.server.repositories.TreeReportRepository;
 import org.junit.After;
 import org.junit.Before;
@@ -40,6 +41,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.Assert.*;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -102,18 +104,16 @@ public class ReportEntityControllerTest {
     }
 
     private static final String REPORT_UUID = "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13";
-
     private static final String REPORT_ONE = "/reportOne.json";
     private static final String REPORT_TWO = "/reportTwo.json";
     private static final String REPORT_CONCAT = "/reportConcat.json";
     private static final String REPORT_CONCAT2 = "/reportConcat2.json";
     private static final String EXPECTED_SINGLE_REPORT = "/expectedSingleReport.json";
     private static final String EXPECTED_STRUCTURE_ONLY_REPORT1 = "/expectedStructureOnlyReportOne.json";
-
+    private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1 = "/expectedStructureAndElementsReportOne.json";
+    private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1 = "/expectedReporterAndElements.json";
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
-
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
-
     private static final String REPORT_LOADFLOW = "/reportLoadflow.json";
 
     public String toString(String resourceName) {
@@ -161,8 +161,37 @@ public class ReportEntityControllerTest {
         assertRequestsCount(3, 0, 0, 0);
     }
 
+    @Test
+    public void testGetReportStructureAndElements() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
 
-    //when(treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(any()).thenReturn())
+        SQLStatementCountValidator.reset();
+
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/elements"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1)));
+
+        assertRequestsCount(4, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetReporterStructureAndElements() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        List<TreeReportEntity> reporters = treeReportRepository.findByName("UcteReading");
+        assertEquals(1, reporters.size());
+        String uuidReporter = reporters.get(0).getIdNode().toString();
+
+        SQLStatementCountValidator.reset();
+
+        mvc.perform(get(URL_TEMPLATE + "/reporters/" + uuidReporter + "/elements"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1)));
+
+        assertRequestsCount(3, 0, 0, 0);
+    }
 
     @SneakyThrows
     @Test
@@ -178,12 +207,12 @@ public class ReportEntityControllerTest {
 
     @Test
     public void testDeleteSubreports() throws Exception {
-        String testReport1 = toString(REPORT_LOADFLOW);
-        insertReport(REPORT_UUID, testReport1);
+        String testReportLoadflow = toString(REPORT_LOADFLOW);
+        insertReport(REPORT_UUID, testReportLoadflow);
         Map reportsKeys = new HashMap<>();
         reportsKeys.put(REPORT_UUID, "LoadFlow");
 
-        mvc.perform(delete("/" + ReportApi.API_VERSION + "/" + "treereports")
+        mvc.perform(delete("/" + ReportApi.API_VERSION + "/treereports")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reportsKeys)))
             .andExpect(status().isOk())

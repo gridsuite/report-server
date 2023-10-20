@@ -56,7 +56,7 @@ public class ReportController {
     @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    public ResponseEntity<List<ReporterModel>> getReportElements(@PathVariable("id") UUID id,
+    public ResponseEntity<List<ReporterModel>> getReportStructureAndElements(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Filter to fetch only elements with a given task key") @RequestParam(name = "taskKeyFilter", required = false, defaultValue = "") String taskKeyFilter,
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
@@ -73,7 +73,7 @@ public class ReportController {
     @Operation(summary = "Get the elements of a reporter and its subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
-    public ResponseEntity<List<ReporterModel>> getReporterElements(@PathVariable("id") UUID id,
+    public ResponseEntity<List<ReporterModel>> getReporterStructureAndElements(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
