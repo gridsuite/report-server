@@ -1,0 +1,160 @@
+[
+    {
+        "version": "1.0",
+        "reportTree":
+        {
+            "taskKey": "roundTripReporterJsonTest",
+            "taskValues":
+            {
+                "reporterSeverity":
+                {
+                    "value": "UNKNOWN",
+                    "type": "SEVERITY"
+                }
+            },
+            "subReporters":
+            [
+                {
+                    "taskKey": "UcteReading",
+                    "taskValues":
+                    {
+                        "reporterSeverity":
+                        {
+                            "value": "UNKNOWN",
+                            "type": "SEVERITY"
+                        }
+                    },
+                    "subReporters":
+                    [
+                        {
+                            "taskKey": "fixUcteNodes",
+                            "taskValues":
+                            {
+                                "reporterSeverity":
+                                {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                }
+                            }
+                        },
+                        {
+                            "taskKey": "fixUcteLines",
+                            "taskValues":
+                            {
+                                "reporterSeverity":
+                                {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                }
+                            }
+                        },
+                        {
+                            "taskKey": "fixUcteTransformer",
+                            "taskValues":
+                            {
+                                "reporterSeverity":
+                                {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                }
+                            }
+                        },
+                        {
+                            "taskKey": "fixUcteRegulations",
+                            "taskValues":
+                            {
+                                "reporterSeverity":
+                                {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "taskKey": "createBuses",
+                    "taskValues":
+                    {
+                        "reporterSeverity":
+                        {
+                            "value": "UNKNOWN",
+                            "type": "SEVERITY"
+                        }
+                    },
+                    "subReporters":
+                    [
+                        {
+                            "taskKey": "createBusesSubstation",
+                            "taskValues":
+                            {
+                                "substation":
+                                {
+                                    "value": "FFFFFF"
+                                },
+                                "reporterSeverity":
+                                {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                }
+                            }
+                        },
+                        {
+                            "taskKey": "createBusesSubstation",
+                            "taskValues":
+                            {
+                                "substation":
+                                {
+                                    "value": "XXXXXX"
+                                },
+                                "reporterSeverity":
+                                {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "taskKey": "createLines",
+                    "taskValues":
+                    {
+                        "reporterSeverity":
+                        {
+                            "value": "UNKNOWN",
+                            "type": "SEVERITY"
+                        }
+                    }
+                },
+                {
+                    "taskKey": "createTransformers",
+                    "taskValues":
+                    {
+                        "reporterSeverity":
+                        {
+                            "value": "UNKNOWN",
+                            "type": "SEVERITY"
+                        }
+                    }
+                }
+            ]
+        },
+        "dics":
+        {
+            "default":
+            {
+                "UcteReading": "Reading UCTE network file",
+                "createLines": "Create lines",
+                "createTransformers": "Create transformers",
+                "fixUcteNodes": "Fix UCTE nodes",
+                "fixUcteLines": "Fix UCTE lines",
+                "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+                "createBusesSubstation": "Create buses for substation ${substation}",
+                "fixUcteRegulations": "Fix UCTE regulations",
+                "fixUcteTransformer": "Fix UCTE transformers",
+                "createBuses": "Create buses"
+            }
+        }
+    }
+]

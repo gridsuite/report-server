@@ -25,6 +25,7 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     List<TreeReportEntity> findAllByReportId(UUID uuid);
 
+    @EntityGraph(attributePaths = {"values", "dictionary"}, type = EntityGraph.EntityGraphType.LOAD)
     List<TreeReportEntity> findAllByParentReportIdNode(UUID uuid);
 
     @EntityGraph(attributePaths = {"values", "dictionary"}, type = EntityGraph.EntityGraphType.LOAD)
@@ -68,4 +69,6 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
     List<String> getSubReportsNodes(UUID reportId);
 
     List<TreeReportEntity> findAllByReportIdAndName(UUID uuid, String name);
+
+    List<TreeReportEntity> findByName(String name);
 }
