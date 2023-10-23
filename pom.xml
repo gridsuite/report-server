@@ -42,7 +42,7 @@
     </developers>
 
     <properties>
-        <gridsuite-dependencies.version>26</gridsuite-dependencies.version>
+        <gridsuite-dependencies.version>27</gridsuite-dependencies.version>
         <liquibase-hibernate-package>org.gridsuite.report.server</liquibase-hibernate-package>
     </properties>
 
