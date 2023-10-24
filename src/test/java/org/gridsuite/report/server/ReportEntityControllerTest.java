@@ -6,7 +6,6 @@
  */
 package org.gridsuite.report.server;
 
-import static org.gridsuite.report.server.utils.TestUtils.assertRequestsCount;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
@@ -16,37 +15,37 @@ import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import com.vladmihalcea.sql.SQLStatementCountValidator;
 import lombok.SneakyThrows;
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.gridsuite.report.server.repositories.TreeReportRepository;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import com.vladmihalcea.sql.SQLStatementCountValidator;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static org.gridsuite.report.server.utils.TestUtils.assertRequestsCount;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.junit.Assert.*;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(MockitoExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {ReportApplication.class})
@@ -65,15 +64,13 @@ public class ReportEntityControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         Configuration.defaultConfiguration();
-        MockitoAnnotations.initMocks(this);
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(DeserializationFeature.USE_LONG_FOR_INTS);
         objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
         objectMapper.disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE);
-
         Configuration.setDefaults(new Configuration.Defaults() {
 
             private final JsonProvider jsonProvider = new JacksonJsonProvider(objectMapper);
@@ -94,11 +91,15 @@ public class ReportEntityControllerTest {
                 return EnumSet.noneOf(Option.class);
             }
         });
+    }
+
+    @BeforeEach
+    public void init() {
         reportService.deleteAll();
         SQLStatementCountValidator.reset();
     }
 
-    @After
+    @AfterAll
     public void tearDown() {
         reportService.deleteAll();
     }
