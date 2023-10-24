@@ -142,7 +142,12 @@ public class ReportService {
         for (final TreeReportEntity entity : allTreeReports) {
             final Map<String, String> dict = entity.getDictionary();
             treeReportEntityDictionaries.put(entity.getIdNode(), dict);
-            reporters.put(entity.getIdNode(), new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues())));
+
+            // This ID is used by the front for direct access to the reporter
+            entity.getValues().add(new ReportValueEmbeddable("id", entity.getIdNode(), "ID"));
+
+            ReporterModel reporter = new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
+            reporters.put(entity.getIdNode(), reporter);
         }
         //TODO .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
         // We rebuild parent-child links between reporters
