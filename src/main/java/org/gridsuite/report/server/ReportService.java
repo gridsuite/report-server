@@ -111,7 +111,7 @@ public class ReportService {
         return report;
     }
 
-    ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, boolean getElements, Set<String> severityLevels) {
+    private ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, boolean getElements, Set<String> severityLevels) {
         // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
         final List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
                 .stream()
@@ -154,7 +154,7 @@ public class ReportService {
         final UUID rootUuid = rootTreeReportEntity.getIdNode();
         for (final TreeReportEntity entity : allTreeReports) {
             // we exclude root node to not get reporters outside scope
-            if(entity.getParentReport() != null && !rootUuid.equals(entity.getIdNode())) {
+            if (entity.getParentReport() != null && !rootUuid.equals(entity.getIdNode())) {
                 reporters.get(entity.getParentReport().getIdNode()).addSubReporter(reporters.get(entity.getIdNode()));
             }
         }
