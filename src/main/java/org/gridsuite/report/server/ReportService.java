@@ -9,6 +9,7 @@ package org.gridsuite.report.server;
 import com.powsybl.commons.reporter.Report;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.reporter.TypedValue;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
@@ -23,7 +24,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -112,52 +113,52 @@ public class ReportService {
 
     ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, boolean getElements, Set<String> severityLevels) {
         // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
-        List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
+        final List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
                 .stream()
                 .map(UUID::fromString)
                 .toList();
 
-        Map<UUID, List<ReportElementEntity>> allReportElementsByParent;
+        List<ReportElementEntity> allReportElements = null;
         if (getElements) {
             // Let's find all the reportElements that are linked to the found treeReports
-            allReportElementsByParent = reportElementRepository.findAllByParentReportIdNodeIn(treeReportEntitiesIds)
+            allReportElements = reportElementRepository.findAllByParentReportIdNodeIn(treeReportEntitiesIds)
                     .stream()
                     .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
-                    .collect(Collectors.groupingBy(reportElementEntity -> reportElementEntity.getParentReport().getIdNode()));
-        } else {
-            allReportElementsByParent = null;
+                    .toList();
         }
 
         // We need to get the entities to have access to the dictionaries
         List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeIn(treeReportEntitiesIds);
 
         // Now we can rebuild the tree
-        return buildTreeFromReportersAndElements(treeReportEntity, treeReportEntities, allReportElementsByParent);
+        return buildTreeFromReportersAndElements(treeReportEntity, treeReportEntities, allReportElements);
     }
 
-    private ReporterModel buildTreeFromReportersAndElements(TreeReportEntity reporter, List<TreeReportEntity> allTreeReports, Map<UUID, List<ReportElementEntity>> allReportElementsByParent) {
-        // This ID is used by the front for direct access to the reporter
-        reporter.getValues().add(new ReportValueEmbeddable("id", reporter.getIdNode(), "ID"));
-
-        Map<String, String> dict = reporter.getDictionary();
-        var reportModel = new ReporterModel(reporter.getName(), dict.get(reporter.getName()), toDtoValueMap(reporter.getValues()));
-
-        // add treeReport elements
-        if (allReportElementsByParent != null) {
-            allReportElementsByParent.getOrDefault(reporter.getIdNode(), List.of())
-                .stream()
-                .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
-                .forEach(report ->
-                    reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
-                );
+    private ReporterModel buildTreeFromReportersAndElements(final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
+                                                            @Nullable final List<ReportElementEntity> allReportElements) {
+        final Map<String, String> dict = rootTreeReportEntity.getDictionary();
+        // We convert our entities to PowSyBl Reporter
+        Map<UUID, ReporterModel> reporters = new HashMap<>(allTreeReports.size());
+        for (final TreeReportEntity entity : allTreeReports) {
+            reporters.put(entity.getIdNode(), new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues())));
         }
-        // recursively add its sub-reporters
-        allTreeReports
-            .stream()
-            .filter(sub -> sub.getParentReport() != null && sub.getParentReport().getIdNode() == reporter.getIdNode())
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> reportModel.addSubReporter(buildTreeFromReportersAndElements(treeReport, allTreeReports, allReportElementsByParent)));
-        return reportModel;
+        //TODO .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
+        // We rebuild parent-child links between reporters
+        final UUID rootUuid = rootTreeReportEntity.getIdNode();
+        for (final TreeReportEntity entity : allTreeReports) {
+            // we exclude root node to not get reporters outside scope
+            if(entity.getParentReport() != null && rootUuid.equals(entity.getIdNode())) {
+                reporters.get(entity.getParentReport().getIdNode()).addSubReporter(reporters.get(entity.getIdNode()));
+            }
+        }
+        if (allReportElements != null) {
+            // We convert ReportElementEntities to dto and add it to the corresponding ReporterModel
+            for (final ReportElementEntity entity : allReportElements) {
+                reporters.get(entity.getParentReport().getIdNode()).report(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
+            }
+            //TODO .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
+        }
+        return reporters.get(rootUuid);
     }
 
     public ReporterModel getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
