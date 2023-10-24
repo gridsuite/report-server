@@ -16,17 +16,14 @@ import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
 import com.vladmihalcea.sql.SQLStatementCountValidator;
-import lombok.SneakyThrows;
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.gridsuite.report.server.repositories.TreeReportRepository;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
@@ -44,14 +41,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
-@ExtendWith(MockitoExtension.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
 @AutoConfigureMockMvc
-@ContextConfiguration(classes = {ReportApplication.class})
-public class ReportEntityControllerTest {
-
+class ReportEntityControllerTest {
     public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION;
+
     @Autowired
     private MockMvc mvc;
 
@@ -62,17 +56,16 @@ public class ReportEntityControllerTest {
     private ReportService reportService;
 
     @Autowired
-    ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @BeforeAll
-    public void setUp() {
+    static void setUp() {
         Configuration.defaultConfiguration();
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(DeserializationFeature.USE_LONG_FOR_INTS);
         objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
         objectMapper.disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE);
         Configuration.setDefaults(new Configuration.Defaults() {
-
             private final JsonProvider jsonProvider = new JacksonJsonProvider(objectMapper);
             private final MappingProvider mappingProvider = new JacksonMappingProvider(objectMapper);
 
@@ -93,14 +86,8 @@ public class ReportEntityControllerTest {
         });
     }
 
-    @BeforeEach
-    public void init() {
-        reportService.deleteAll();
-        SQLStatementCountValidator.reset();
-    }
-
-    @AfterAll
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         reportService.deleteAll();
     }
 
@@ -117,7 +104,7 @@ public class ReportEntityControllerTest {
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
     private static final String REPORT_LOADFLOW = "/reportLoadflow.json";
 
-    public String toString(String resourceName) {
+    private String toString(String resourceName) {
         try {
             return new String(ByteStreams.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream(resourceName))), StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -126,7 +113,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -149,7 +136,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testGetReportStructure() throws Exception {
+    void testGetReportStructure() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -163,7 +150,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testGetReportStructureAndElements() throws Exception {
+    void testGetReportStructureAndElements() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -177,7 +164,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testGetReporterStructureAndElements() throws Exception {
+    void testGetReporterStructureAndElements() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -194,9 +181,8 @@ public class ReportEntityControllerTest {
         assertRequestsCount(3, 0, 0, 0);
     }
 
-    @SneakyThrows
     @Test
-    public void testDefaultEmptyReport() {
+    void testDefaultEmptyReport() throws Exception {
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/reporters"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
@@ -207,15 +193,13 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testDeleteSubreports() throws Exception {
+    void testDeleteSubreports() throws Exception {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
-        Map reportsKeys = new HashMap<>();
-        reportsKeys.put(REPORT_UUID, "LoadFlow");
 
         mvc.perform(delete("/" + ReportApi.API_VERSION + "/treereports")
                 .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(reportsKeys)))
+                .content(objectMapper.writeValueAsString(Map.of(REPORT_UUID, "LoadFlow"))))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -236,5 +220,4 @@ public class ReportEntityControllerTest {
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
     }
-
 }

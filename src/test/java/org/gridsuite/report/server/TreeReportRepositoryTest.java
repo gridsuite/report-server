@@ -6,21 +6,22 @@
  */
 package org.gridsuite.report.server;
 
-import static org.gridsuite.report.server.utils.TestUtils.assertRequestsCount;
-import java.util.*;
-
+import com.vladmihalcea.sql.SQLStatementCountValidator;
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.gridsuite.report.server.repositories.TreeReportRepository;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import com.vladmihalcea.sql.SQLStatementCountValidator;
-import static org.junit.Assert.*;
+
+import java.util.List;
+import java.util.UUID;
+
+import static org.gridsuite.report.server.utils.TestUtils.assertRequestsCount;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -34,7 +35,7 @@ public class TreeReportRepositoryTest {
     @Autowired
     private TreeReportRepository treeReportRepository;
 
-    private TreeReportEntity buildTreeReport(UUID uuid) {
+    private static TreeReportEntity buildTreeReport(UUID uuid) {
         TreeReportEntity entity = new TreeReportEntity();
         entity.setName(uuid.toString());
         entity.setNanos(10L);
@@ -42,14 +43,6 @@ public class TreeReportRepositoryTest {
         entity.setReport(null);
         entity.setIdNode(uuid);
         return entity;
-    }
-
-    @Before
-    public void setUp() {
-        // clean DB
-        treeReportRepository.deleteAll();
-
-        SQLStatementCountValidator.reset();
     }
 
     @After
@@ -60,6 +53,8 @@ public class TreeReportRepositoryTest {
 
     @Test
     public void testCreateTreeReport() {
+        SQLStatementCountValidator.reset();
+
         TreeReportEntity parent = buildTreeReport(TEST_ID_1);
         parent = treeReportRepository.save(parent);
 
