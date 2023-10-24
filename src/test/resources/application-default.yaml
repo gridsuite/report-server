@@ -7,10 +7,16 @@ spring:
 
 logging:
   level:
-    org.springframework.orm.jpa: DEBUG
-    org.springframework.transaction: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.gridsuite.report.server: DEBUG
+    org.springframework:
+      # suppress unreadable huge logs...
+      #test: WARN
+      #boot.test: WARN
+      orm.jpa: DEBUG
+      transaction: DEBUG
+    org.hibernate:
+      SQL: DEBUG
+      type.descriptor.sql.BasicBinder: TRACE
 
 powsybl-ws:
   database:
