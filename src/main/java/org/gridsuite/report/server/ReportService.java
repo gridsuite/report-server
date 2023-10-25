@@ -226,7 +226,7 @@ public class ReportService {
         return new ReportValueEmbeddable(entryValue.getKey(), entryValue.getValue().getValue(), entryValue.getValue().getType());
     }
 
-    private String maxSeverity(ReporterModel reporter) {
+    private static String maxSeverity(ReporterModel reporter) {
         return reporter.getReports()
                 .stream()
                 .map(report -> report.getValues().get("reportSeverity"))
