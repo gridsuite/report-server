@@ -244,11 +244,11 @@ public class ReportService {
     }
 
     private void deleteRoot(UUID id) {
-        List<UUID> treeReport = treeReportRepository.getSubReportsNodes(id).stream().map(UUID::fromString).collect(Collectors.toList());
+        List<UUID> treeReports = treeReportRepository.getSubReportsNodes(id).stream().map(UUID::fromString).collect(Collectors.toList());
         List<UUID> elements = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReport)
             .stream().map(ReportElementEntity.ProjectionIdReport::getIdReport).collect(Collectors.toList());
-        reportElementRepository.deleteAllByIdReportIn(elements);
-        treeReportRepository.deleteAllByIdNodeIn(treeReport);
+        reportElementRepository.deleteAllByIdInBatch(elements);
+        treeReportRepository.deleteAllByIdInBatch(treeReports);
     }
 
     @Transactional
@@ -262,9 +262,9 @@ public class ReportService {
 
     // package private for tests
     void deleteAll() {
-        reportElementRepository.deleteAll();
-        treeReportRepository.deleteAll();
-        reportRepository.deleteAll();
+        reportElementRepository.deleteAllInBatch();
+        treeReportRepository.deleteAllInBatch();
+        reportRepository.deleteAllInBatch();
     }
 
     @Transactional

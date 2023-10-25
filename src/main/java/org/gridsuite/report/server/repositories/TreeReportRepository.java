@@ -33,9 +33,6 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     List<TreeReportEntity.ProjectionIdNode> findIdNodeByReportId(UUID parentId);
 
-    /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
-    void deleteAllByIdNodeIn(List<UUID> lst);
-
     @Query(value = "WITH RECURSIVE cte AS ("
         + "SELECT t.id_node FROM tree_report t WHERE t.id_node = ?1 "
         + "UNION "

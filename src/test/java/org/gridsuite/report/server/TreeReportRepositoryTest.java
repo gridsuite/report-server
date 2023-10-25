@@ -59,7 +59,7 @@ class TreeReportRepositoryTest {
     @AfterEach
     void tearOff() {
         // clean DB
-        treeReportRepository.deleteAll();
+        treeReportRepository.deleteAllInBatch();
     }
 
     @Test
