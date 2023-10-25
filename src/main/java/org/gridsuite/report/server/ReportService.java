@@ -41,8 +41,20 @@ public class ReportService {
 
     private static final long NANOS_FROM_EPOCH_TO_START;
 
-    public static final String UNKNOWN_SEVERITY = "UNKNOWN";
-    static final Map<String, Integer> SEVERITY_LEVELS = Map.of(UNKNOWN_SEVERITY, 0, "TRACE", 1, "INFO", 2, "WARN", 3, "ERROR", 4, "FATAL", 5);
+    /**
+     * @see TypedValue
+     */
+    public enum SeverityLevel {
+        UNKNOWN, TRACE, DEBUG, INFO, WARN, ERROR, FATAL;
+
+        public static SeverityLevel fromValue(String value) {
+            try {
+                return valueOf(value);
+            } catch (final IllegalArgumentException | NullPointerException e) {
+                return UNKNOWN;
+            }
+        }
+    }
 
     static {
         long nanoNow = System.nanoTime();
@@ -192,7 +204,7 @@ public class ReportService {
         var newTreeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
                 toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
                 System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
-        newTreeReportEntity.getValues().add(new ReportValueEmbeddable("reporterSeverity", maxSeverity(reporterModel), "SEVERITY"));
+        newTreeReportEntity.getValues().add(new ReportValueEmbeddable("reporterSeverity", maxSeverity(reporterModel), TypedValue.SEVERITY));
         var treeReportEntity = treeReportRepository.save(newTreeReportEntity);
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
@@ -220,20 +232,15 @@ public class ReportService {
         return new ReportValueEmbeddable(entryValue.getKey(), entryValue.getValue().getValue(), entryValue.getValue().getType());
     }
 
-    private static int getReportSeverity(Report report) {
-        var severity = report.getValues().get("reportSeverity");
-        return severity == null ? 0 : SEVERITY_LEVELS.getOrDefault(severity.toString(), 0);
-    }
-
     private String maxSeverity(ReporterModel reporter) {
-        int max = reporter.getReports().stream()
-            .mapToInt(ReportService::getReportSeverity)
-            .max().orElse(0);
-        return SEVERITY_LEVELS.entrySet().stream()
-                .filter(e -> e.getValue() == max)
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(UNKNOWN_SEVERITY);
+        return reporter.getReports()
+                .stream()
+                .map(report -> report.getValues().get("reportSeverity"))
+                .filter(Objects::nonNull)
+                .map(severity -> SeverityLevel.fromValue(Objects.toString(severity.getValue())))
+                .max(SeverityLevel::compareTo)
+                .orElse(SeverityLevel.UNKNOWN)
+                .name();
     }
 
     @Transactional
