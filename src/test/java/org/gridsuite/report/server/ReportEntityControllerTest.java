@@ -24,7 +24,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.unit.DataSize;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -41,10 +47,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
+@Testcontainers
 @SpringBootTest
 @AutoConfigureMockMvc
 class ReportEntityControllerTest {
     public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION;
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgreSqlContainer = new PostgreSQLContainer<>(DockerImageName.parse("postgres:13.4-alpine"))
+            .withCreateContainerCmdModifier(cmd -> cmd.getHostConfig()
+                    .withMemory(DataSize.ofMegabytes(200L).toBytes())
+                    .withMemorySwap(DataSize.ofMegabytes(200L).toBytes()));
 
     @Autowired
     private MockMvc mvc;

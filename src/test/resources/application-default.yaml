@@ -1,9 +1,7 @@
 spring:
   jpa:
-    database: H2
-    properties:
-      dialect: org.hibernate.dialect.H2Dialect
-      hibernate.format_sql: true
+    hibernate.format_sql: true
+    show-sql: true
 
 logging:
   level:
@@ -17,9 +15,8 @@ logging:
     org.hibernate:
       SQL: DEBUG
       type.descriptor.sql.BasicBinder: TRACE
-
-powsybl-ws:
-  database:
-    vendor: h2:mem
-    query: ;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    hostPort: ":"
+    # TestContainers logs
+    org.testcontainers: INFO
+    tc: INFO
+    com.github.dockerjava: WARN
+    com.github.dockerjava.zerodep.shaded.org.apache.hc.client5.http.wire: OFF
