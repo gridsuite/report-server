@@ -143,7 +143,7 @@ public class ReportService {
             final Map<String, String> dict = entity.getDictionary();
             treeReportEntityDictionaries.put(entity.getIdNode(), dict);
 
-            // This ID is used by the front for direct access to the reporter
+            // The front uses this ID for direct access to the reporter
             entity.getValues().add(new ReportValueEmbeddable("id", entity.getIdNode(), "ID"));
 
             ReporterModel reporter = new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
