@@ -125,7 +125,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -150,7 +150,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testGetReportNoElements() throws Exception {
+    void testGetReportNoElements() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -164,7 +164,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testGetReportWithElements() throws Exception {
+    void testGetReportWithElements() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -178,7 +178,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testGetSubReport() throws Exception {
+    void testGetSubReport() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -197,7 +197,7 @@ public class ReportEntityControllerTest {
 
     @SneakyThrows
     @Test
-    public void testDefaultEmptyReport() {
+    void testDefaultEmptyReport() {
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
@@ -208,7 +208,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testDeleteSubreports() throws Exception {
+    void testDeleteSubreports() throws Exception {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
         Map reportsKeys = new HashMap<>();

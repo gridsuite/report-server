@@ -87,7 +87,7 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReport(UUID reportId, boolean getElements, Set<String> severityLevels, String taskKeyFilter) {
+    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
@@ -96,7 +96,7 @@ public class ReportService {
             .stream()
             .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() || tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
-            .forEach(treeReportEntity -> report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, getElements, severityLevels)));
+            .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
         return report;
     }
 
@@ -106,11 +106,11 @@ public class ReportService {
         TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
 
         var report = new ReporterModel(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString());
-        report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, true, severityLevels));
+        report.addSubReporter(getTreeReport(treeReportEntity, true, severityLevels));
         return report;
     }
 
-    ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, boolean getElements, Set<String> severityLevels) {
+    private ReporterModel getTreeReport(TreeReportEntity treeReportEntity, boolean withElements, Set<String> severityLevels) {
         // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
         final List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
                 .stream()
@@ -118,7 +118,7 @@ public class ReportService {
                 .toList();
 
         List<ReportElementEntity> allReportElements = null;
-        if (getElements) {
+        if (withElements) {
             // Let's find all the reportElements that are linked to the found treeReports
             allReportElements = reportElementRepository.findAllByParentReportIdNodeInOrderByNanos(treeReportEntitiesIds)
                     .stream()
@@ -130,11 +130,11 @@ public class ReportService {
         List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeInOrderByNanos(treeReportEntitiesIds);
 
         // Now we can rebuild the tree
-        return buildTreeFromReportersAndElements(treeReportEntity, treeReportEntities, allReportElements);
+        return toDto(treeReportEntity, treeReportEntities, allReportElements);
     }
 
-    private ReporterModel buildTreeFromReportersAndElements(final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
-                                                            @Nullable final List<ReportElementEntity> allReportElements) {
+    private ReporterModel toDto(final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
+                                @Nullable final List<ReportElementEntity> allReportElements) {
         // We convert our entities to PowSyBl Reporter
         Map<UUID, ReporterModel> reporters = new HashMap<>(allTreeReports.size());
         Map<UUID, Map<String, String>> treeReportEntityDictionaries = new HashMap<>(allTreeReports.size());
