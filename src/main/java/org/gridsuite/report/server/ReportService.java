@@ -133,14 +133,14 @@ public class ReportService {
         List<ReportElementEntity> allReportElements = null;
         if (getElements) {
             // Let's find all the reportElements that are linked to the found treeReports
-            allReportElements = reportElementRepository.findAllByParentReportIdNodeIn(treeReportEntitiesIds)
+            allReportElements = reportElementRepository.findAllByParentReportIdNodeInOrderByNanos(treeReportEntitiesIds)
                     .stream()
                     .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
                     .toList();
         }
 
         // We need to get the entities to have access to the dictionaries
-        List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeIn(treeReportEntitiesIds);
+        List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeInOrderByNanos(treeReportEntitiesIds);
 
         // Now we can rebuild the tree
         return buildTreeFromReportersAndElements(treeReportEntity, treeReportEntities, allReportElements);
@@ -148,22 +148,19 @@ public class ReportService {
 
     private ReporterModel buildTreeFromReportersAndElements(final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
                                                             @Nullable final List<ReportElementEntity> allReportElements) {
-        Map<UUID, Map<String, String>> treeReportEntityDictionaries = new HashMap<>(allTreeReports.size());
-
         // We convert our entities to PowSyBl Reporter
         Map<UUID, ReporterModel> reporters = new HashMap<>(allTreeReports.size());
-        allTreeReports.stream()
-                .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-                .forEachOrdered(entity -> {
-                    final Map<String, String> dict = entity.getDictionary();
-                    treeReportEntityDictionaries.put(entity.getIdNode(), dict);
+        Map<UUID, Map<String, String>> treeReportEntityDictionaries = new HashMap<>(allTreeReports.size());
+        for (final TreeReportEntity entity : allTreeReports) {
+            final Map<String, String> dict = entity.getDictionary();
+            treeReportEntityDictionaries.put(entity.getIdNode(), dict);
 
-                    // This ID is used by the front for direct access to the reporter
-                    entity.getValues().add(new ReportValueEmbeddable("id", entity.getIdNode(), "ID"));
+            // This ID is used by the front for direct access to the reporter
+            entity.getValues().add(new ReportValueEmbeddable("id", entity.getIdNode(), "ID"));
 
-                    ReporterModel reporter = new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
-                    reporters.put(entity.getIdNode(), reporter);
-                });
+            ReporterModel reporter = new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
+            reporters.put(entity.getIdNode(), reporter);
+        }
 
         // We rebuild parent-child links between reporters
         final UUID rootUuid = rootTreeReportEntity.getIdNode();
@@ -173,15 +170,12 @@ public class ReportService {
                 reporters.get(entity.getParentReport().getIdNode()).addSubReporter(reporters.get(entity.getIdNode()));
             }
         }
-
-        // We convert ReportElementEntities to dto and add it to the corresponding ReporterModel
         if (allReportElements != null) {
-            allReportElements.stream()
-                    .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
-                    .forEachOrdered(entity -> {
-                        final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReport().getIdNode());
-                        reporters.get(entity.getParentReport().getIdNode()).report(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
-                    });
+            // We convert ReportElementEntities to dto and add it to the corresponding ReporterModel
+            for (final ReportElementEntity entity : allReportElements) {
+                final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReport().getIdNode());
+                reporters.get(entity.getParentReport().getIdNode()).report(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
+            }
         }
         return reporters.get(rootUuid);
     }
