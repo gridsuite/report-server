@@ -129,7 +129,7 @@ public class ReportEntityControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/elements"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_SINGLE_REPORT)));
 
@@ -144,17 +144,19 @@ public class ReportEntityControllerTest {
 
         mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID)).andExpect(status().isNotFound());
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/elements")).andExpect(status().isNotFound());
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
+                .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)))
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void testGetReportStructure() throws Exception {
+    public void testGetReportNoElements() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
         SQLStatementCountValidator.reset();
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/reporters"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_STRUCTURE_ONLY_REPORT1)));
 
@@ -162,13 +164,13 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testGetReportStructureAndElements() throws Exception {
+    public void testGetReportWithElements() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
         SQLStatementCountValidator.reset();
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/elements"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1)));
 
@@ -176,7 +178,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    public void testGetReporterStructureAndElements() throws Exception {
+    public void testGetSubReport() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -186,7 +188,7 @@ public class ReportEntityControllerTest {
 
         SQLStatementCountValidator.reset();
 
-        mvc.perform(get(URL_TEMPLATE + "/reporters/" + uuidReporter + "/elements"))
+        mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1)));
 
@@ -196,11 +198,11 @@ public class ReportEntityControllerTest {
     @SneakyThrows
     @Test
     public void testDefaultEmptyReport() {
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/reporters"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/reporters?defaultName=test"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?defaultName=test"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT2)));
     }
@@ -212,19 +214,19 @@ public class ReportEntityControllerTest {
         Map reportsKeys = new HashMap<>();
         reportsKeys.put(REPORT_UUID, "LoadFlow");
 
-        mvc.perform(delete("/" + ReportApi.API_VERSION + "/treereports")
+        mvc.perform(delete(URL_TEMPLATE + "/treereports")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reportsKeys)))
             .andExpect(status().isOk())
             .andReturn();
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/elements"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
             .andExpect(status().isOk())
             .andExpect(content().json("[]"));
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "/elements"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?withElements=true"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(reportConcat2)));
     }

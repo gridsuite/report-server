@@ -37,48 +37,35 @@ public class ReportController {
         this.service = service;
     }
 
-    @GetMapping(value = "reports/{id}/reporters", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get the tree structure of a report and its reporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The tree structure of a report and its reporters")})
-    public ResponseEntity<List<ReporterModel>> getReportStructure(@PathVariable("id") UUID id,
-                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+    @GetMapping(value = "/reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
+        @ApiResponse(responseCode = "404", description = "The report does not exists")})
+    public ResponseEntity<List<ReporterModel>> getReport(@PathVariable("id") UUID id,
+                                                         @Parameter(description = "Fetch the report's elements") @RequestParam(name = "withElements", required = false, defaultValue = "false") boolean withElements,
+                                                         @Parameter(description = "Filter on a given task key. If provided, will only return elements with the given task key.") @RequestParam(name = "taskKeyFilter", required = false, defaultValue = "") String taskKeyFilter,
+                                                         @Parameter(description = "Filter on severity levels. If provided, will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
+                                                         @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
             return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getReportStructure(id)
-                    .getSubReporters()); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(service.getReport(id, withElements, withElements ? severityLevels : null, withElements ? taskKeyFilter : null)
+                            .getSubReporters());
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
         }
     }
 
-    @GetMapping(value = "/reports/{id}/elements", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
-        @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    public ResponseEntity<List<ReporterModel>> getReportStructureAndElements(@PathVariable("id") UUID id,
-                                                         @Parameter(description = "Filter to fetch only elements with a given task key") @RequestParam(name = "taskKeyFilter", required = false, defaultValue = "") String taskKeyFilter,
-                                                         @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
-        try {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getReportStructureAndElements(id, severityLevels, taskKeyFilter)
-                            .getSubReporters());
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping(value = "/reporters/{id}/elements", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/subreports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the elements of a reporter and its subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
-    public ResponseEntity<List<ReporterModel>> getReporterStructureAndElements(@PathVariable("id") UUID id,
+    public ResponseEntity<List<ReporterModel>> getSubReport(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getReporterStructureAndElements(id, severityLevels)
+                    .body(service.getSubReport(id, severityLevels)
                             .getSubReporters());
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();

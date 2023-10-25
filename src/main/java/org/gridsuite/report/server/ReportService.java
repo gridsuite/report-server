@@ -87,20 +87,7 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReportStructure(UUID reportId) {
-        Objects.requireNonNull(reportId);
-        ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
-
-        var report = new ReporterModel(reportId.toString(), reportId.toString());
-        treeReportRepository.findAllByReportId(reportEntity.getId())
-            .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
-            .forEach(treeReportEntity -> report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, false, null)));
-        return report;
-    }
-
-    @Transactional(readOnly = true)
-    public ReporterModel getReportStructureAndElements(UUID reportId, Set<String> severityLevels, String taskKeyFilter) {
+    public ReporterModel getReport(UUID reportId, boolean getElements, Set<String> severityLevels, String taskKeyFilter) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
@@ -109,12 +96,12 @@ public class ReportService {
             .stream()
             .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() || tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
-            .forEach(treeReportEntity -> report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, true, severityLevels)));
+            .forEach(treeReportEntity -> report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, getElements, severityLevels)));
         return report;
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReporterStructureAndElements(UUID reporterId, Set<String> severityLevels) {
+    public ReporterModel getSubReport(UUID reporterId, Set<String> severityLevels) {
         Objects.requireNonNull(reporterId);
         TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
 
