@@ -6,24 +6,11 @@
  */
 package org.gridsuite.report.server.entities;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import org.gridsuite.report.server.ReportService;
 import org.springframework.util.CollectionUtils;
 
@@ -54,9 +41,13 @@ public class ReportElementEntity {
     @Column(name = "idReport", columnDefinition = "uuid")
     UUID idReport;
 
+    @Column(name = "parentReport")
+    private UUID parentReportId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parentReport", foreignKey = @ForeignKey(name = "treeReportElement_id_fk_constraint"))
-    TreeReportEntity parentReport;
+    @JoinColumn(name = "parentReport", columnDefinition = "uuid", foreignKey = @ForeignKey(name = "treeReportElement_id_fk_constraint"),
+        insertable = false, updatable = false)
+    private TreeReportEntity parentReport;
 
     @Column
     long nanos;

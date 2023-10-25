@@ -121,7 +121,7 @@ public class ReportService {
         List<ReportElementEntity> allReportElements = null;
         if (getElements) {
             // Let's find all the reportElements that are linked to the found treeReports
-            allReportElements = reportElementRepository.findAllByParentReportIdNodeIn(treeReportEntitiesIds)
+            allReportElements = reportElementRepository.findDistinctByParentReportIdIn(treeReportEntitiesIds)
                     .stream()
                     .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
                     .toList();
@@ -154,15 +154,15 @@ public class ReportService {
         final UUID rootUuid = rootTreeReportEntity.getIdNode();
         for (final TreeReportEntity entity : allTreeReports) {
             // we exclude root node to not get reporters outside scope
-            if (entity.getParentReport() != null && !rootUuid.equals(entity.getIdNode())) {
-                reporters.get(entity.getParentReport().getIdNode()).addSubReporter(reporters.get(entity.getIdNode()));
+            if (entity.getParentReportId() != null && !rootUuid.equals(entity.getIdNode())) {
+                reporters.get(entity.getParentReportId()).addSubReporter(reporters.get(entity.getIdNode()));
             }
         }
         if (allReportElements != null) {
             // We convert ReportElementEntities to dto and add it to the corresponding ReporterModel
             for (final ReportElementEntity entity : allReportElements) {
-                final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReport().getIdNode());
-                reporters.get(entity.getParentReport().getIdNode()).report(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
+                final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReportId());
+                reporters.get(entity.getParentReportId()).report(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
             }
             //TODO .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
         }
@@ -181,11 +181,11 @@ public class ReportService {
         return persistedReport;
     }
 
-    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
+    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, @Nullable TreeReportEntity parentNode) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         var newTreeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-                toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
+                toValueEntityList(reporterModel.getTaskValues()), parentNode == null ? null : parentNode.getIdNode(), parentNode, dict,
                 System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
         newTreeReportEntity.getValues().add(new ReportValueEmbeddable("reporterSeverity", maxSeverity(reporterModel), "SEVERITY"));
         var treeReportEntity = treeReportRepository.save(newTreeReportEntity);
@@ -202,7 +202,7 @@ public class ReportService {
 
     private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
         dict.put(report.getReportKey(), report.getDefaultMessage());
-        return reportElementRepository.save(new ReportElementEntity(null, parentReport,
+        return reportElementRepository.save(new ReportElementEntity(null, parentReport == null ? null : parentReport.getIdNode(), parentReport,
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
             report.getReportKey(), toValueEntityList(report.getValues())));
     }
@@ -245,7 +245,7 @@ public class ReportService {
 
     private void deleteRoot(UUID id) {
         List<UUID> treeReports = treeReportRepository.getSubReportsNodes(id).stream().map(UUID::fromString).collect(Collectors.toList());
-        List<UUID> elements = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReport)
+        List<UUID> elements = reportElementRepository.findIdReportByParentReportIdIn(treeReports)
             .stream().map(ReportElementEntity.ProjectionIdReport::getIdReport).collect(Collectors.toList());
         reportElementRepository.deleteAllByIdInBatch(elements);
         treeReportRepository.deleteAllByIdInBatch(treeReports);

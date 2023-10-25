@@ -7,24 +7,12 @@
 
 package org.gridsuite.report.server.entities;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -58,7 +46,7 @@ public class TreeReportEntity {
     String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "report", foreignKey = @ForeignKey(name = "report_id_fk_constraint"))
+    @JoinColumn(name = "report", columnDefinition = "uuid", foreignKey = @ForeignKey(name = "report_id_fk_constraint"))
     private ReportEntity report;
 
     @ElementCollection
@@ -66,9 +54,13 @@ public class TreeReportEntity {
         indexes = @Index(name = "treeReportEntity_value_ixd", columnList = "tree_report_entity_id_node"))
     List<ReportValueEmbeddable> values;
 
+    @Column(name = "parentReport")
+    private UUID parentReportId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parentReport", foreignKey = @ForeignKey(name = "treeReport_id_fk_constraint"))
-    TreeReportEntity parentReport;
+    @JoinColumn(name = "parentReport", columnDefinition = "uuid", foreignKey = @ForeignKey(name = "treeReport_id_fk_constraint"),
+        insertable = false, updatable = false)
+    private TreeReportEntity parentReport;
 
     @Column(name = "dictionary", length = 500)
     @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEntity_dictionary_fk"),

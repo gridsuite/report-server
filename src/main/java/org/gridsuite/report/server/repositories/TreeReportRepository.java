@@ -26,9 +26,6 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
     List<TreeReportEntity> findAllByReportId(UUID uuid);
 
     @EntityGraph(attributePaths = {"values", "dictionary"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<TreeReportEntity> findAllByParentReportIdNode(UUID uuid);
-
-    @EntityGraph(attributePaths = {"values", "dictionary"}, type = EntityGraph.EntityGraphType.LOAD)
     List<TreeReportEntity> findAllByIdNodeIn(Collection<UUID> uuids);
 
     List<TreeReportEntity.ProjectionIdNode> findIdNodeByReportId(UUID parentId);

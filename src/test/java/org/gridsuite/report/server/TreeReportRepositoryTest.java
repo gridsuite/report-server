@@ -50,7 +50,7 @@ class TreeReportRepositoryTest {
         TreeReportEntity entity = new TreeReportEntity();
         entity.setName(uuid.toString());
         entity.setNanos(10L);
-        entity.setParentReport(null);
+        entity.setParentReportId(null);
         entity.setReport(null);
         entity.setIdNode(uuid);
         return entity;
@@ -70,15 +70,15 @@ class TreeReportRepositoryTest {
         parent = treeReportRepository.save(parent);
 
         TreeReportEntity childrenA = buildTreeReport(TEST_ID_2);
-        childrenA.setParentReport(parent);
+        childrenA.setParentReportId(parent.getIdNode());
         childrenA = treeReportRepository.save(childrenA);
 
         TreeReportEntity childrenB = buildTreeReport(TEST_ID_3);
-        childrenB.setParentReport(parent);
+        childrenB.setParentReportId(parent.getIdNode());
         treeReportRepository.save(childrenB);
 
         TreeReportEntity grandChildrenAA = buildTreeReport(TEST_ID_4);
-        grandChildrenAA.setParentReport(childrenA);
+        grandChildrenAA.setParentReportId(childrenA.getIdNode());
         treeReportRepository.saveAndFlush(grandChildrenAA);
 
         List<TreeReportEntity> listFindAll = treeReportRepository.findAll();
