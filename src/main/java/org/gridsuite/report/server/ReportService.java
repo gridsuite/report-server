@@ -35,7 +35,7 @@ import java.util.stream.IntStream;
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
-@RequiredArgsConstructor(onConstructor_={@Autowired})
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Service
 public class ReportService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
@@ -115,17 +115,25 @@ public class ReportService {
             for (final String str : treeReportProjections) {
                 treeReportEntities.add(objectMapper.readValue(str, TreeReportProjection.class));
             }
-        } catch (JsonProcessingException e) {
+        } catch (final JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
-        List<ReportElementEntity> allReportElements = null;
+        List<ReportElementProjection> allReportElements = null;
         if (getElements) {
             // Let's find all the reportElements that are linked to the found treeReports
-            allReportElements = reportElementRepository.findAllReportElementsRecursivelyByParentReportId(rootTreeReportEntity.getIdNode())
-                    .stream()
-                    .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
-                    .toList();
+            final List<String> reportElementProjections = reportElementRepository.findAllReportElementsRecursivelyByParentReportId(rootTreeReportEntity.getIdNode());
+            allReportElements = new ArrayList<>(reportElementProjections.size());
+            try {
+                for (final String str : reportElementProjections) {
+                    final ReportElementProjection reportElement = objectMapper.readValue(str, ReportElementProjection.class);
+                    if (reportElement.hasSeverity(severityLevels)) {
+                        allReportElements.add(reportElement);
+                    }
+                }
+            } catch (final JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         // Now we can rebuild the tree
@@ -133,35 +141,33 @@ public class ReportService {
     }
 
     private ReporterModel buildTreeFromReportersAndElements(final UUID rootUuid, final List<TreeReportProjection> allTreeReports,
-                                                            @Nullable final List<ReportElementEntity> allReportElements) {
+                                                            @Nullable final List<ReportElementProjection> allReportElements) {
         // We convert our entities to PowSyBl Reporter
         Map<UUID, ReporterModel> reporters = new HashMap<>(allTreeReports.size());
         Map<UUID, Map<String, String>> treeReportEntityDictionaries = new HashMap<>(allTreeReports.size());
         for (final TreeReportProjection entity : allTreeReports) {
-            final Map<String, String> dict = entity.getDictionary();
-            treeReportEntityDictionaries.put(entity.getIdNode(), dict);
+            final Map<String, String> dict = entity.dictionary();
+            treeReportEntityDictionaries.put(entity.idNode(), dict);
 
             // The front uses this ID for direct access to the reporter
-            entity.getValues().add(new ReportValueEmbeddable("id", entity.getIdNode(), "ID"));
+            entity.values().add(new ReportValueEmbeddable("id", entity.idNode(), "ID"));
 
-            ReporterModel reporter = new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
-            reporters.put(entity.getIdNode(), reporter);
+            ReporterModel reporter = new ReporterModel(entity.name(), dict.get(entity.name()), toDtoValueMap(entity.values()));
+            reporters.put(entity.idNode(), reporter);
         }
-        //TODO .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
         // We rebuild parent-child links between reporters
         for (final TreeReportProjection entity : allTreeReports) {
             // we exclude root node to not get reporters outside scope
-            if (entity.getParentIdNode() != null && !rootUuid.equals(entity.getIdNode())) {
-                reporters.get(entity.getParentIdNode()).addSubReporter(reporters.get(entity.getIdNode()));
+            if (entity.parentIdNode() != null && !rootUuid.equals(entity.idNode())) {
+                reporters.get(entity.parentIdNode()).addSubReporter(reporters.get(entity.idNode()));
             }
         }
         if (allReportElements != null) {
             // We convert ReportElementEntities to dto and add it to the corresponding ReporterModel
-            for (final ReportElementEntity entity : allReportElements) {
-                final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReportId());
-                reporters.get(entity.getParentReportId()).report(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
+            for (final ReportElementProjection entity : allReportElements) {
+                final Map<String, String> dict = treeReportEntityDictionaries.get(entity.parentReportId());
+                reporters.get(entity.parentReportId()).report(entity.name(), dict.get(entity.name()), toDtoValueMap(entity.values()));
             }
-            //TODO .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
         }
         return reporters.get(rootUuid);
     }

@@ -34,8 +34,7 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
             "treeReports as (" +
             "select tr.*," +
             "(select jsonb_object_agg(d.dictionary_key, d.dictionary) from tree_report_entity_dictionary d where tr.id_node=d.tree_report_entity_id_node group by tree_report_entity_id_node) as dictionary," +
-            //"(select jsonb_object_agg(v.name, jsonb_build_object('type',v.type, 'value',v.value_, 'value_type',v.value_type)) from tree_report_entity_values v where tr.id_node=v.tree_report_entity_id_node group by tree_report_entity_id_node) as values" +
-            "(select jsonb_agg(jsonb_build_object('name',v.name, 'type',v.type, 'value',v.value_, 'valueType',v.value_type)) from tree_report_entity_values v where tr.id_node=v.tree_report_entity_id_node group by tree_report_entity_id_node) as values" +
+            "coalesce((select jsonb_agg(jsonb_build_object('name',v.name, 'type',v.type, 'value',v.value_, 'valueType',v.value_type)) from tree_report_entity_values v where tr.id_node=v.tree_report_entity_id_node group by tree_report_entity_id_node), cast('[]' as jsonb)) as values" +
             " from ids left join tree_report tr using(id_node) order by nanos asc" +
             ") " +
             "SELECT row_to_json(treeReports) FROM treeReports", nativeQuery = true)

@@ -26,8 +26,14 @@ public interface ReportElementRepository extends JpaRepository<ReportElementEnti
             + "SELECT t.id_node FROM tree_report t WHERE t.id_node = ?1 "
             + "UNION "
             + "SELECT t.id_node FROM tree_report t, cte ft WHERE t.parent_report = ft.id_node"
-            + ") SELECT re.* FROM cte left join report_element re on cte.id_node=re.parent_report where re.id_report is not null order by nanos asc", nativeQuery = true)
-    List<ReportElementEntity> findAllReportElementsRecursivelyByParentReportId(UUID parentUuid);
+            + "), "
+            + "reportElements as ("
+            + "SELECT re.*,"
+            + "coalesce((select jsonb_agg(jsonb_build_object('name',v.name, 'type',v.type, 'value',v.value_, 'valueType',v.value_type)) from report_element_entity_values v where re.id_report=v.report_element_entity_id_report group by report_element_entity_id_report), cast('[]' as jsonb)) as values"
+            + " FROM cte left join report_element re on cte.id_node=re.parent_report where id_report is not null order by nanos asc"
+            + ") "
+            + "select row_to_json(reportElements) from reportElements", nativeQuery = true)
+    List<String> findAllReportElementsRecursivelyByParentReportId(UUID parentUuid);
 
     List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdIn(Collection<UUID> reportId);
 }
