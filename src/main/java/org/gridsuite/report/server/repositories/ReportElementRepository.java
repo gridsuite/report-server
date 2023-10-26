@@ -22,12 +22,11 @@ import java.util.UUID;
 @Repository
 public interface ReportElementRepository extends JpaRepository<ReportElementEntity, UUID> {
 
-    @Query(value = "select * from report_element re where re.parent_report in ("
-            + "WITH RECURSIVE cte AS ("
+    @Query(value = "WITH RECURSIVE cte AS ("
             + "SELECT t.id_node FROM tree_report t WHERE t.id_node = ?1 "
             + "UNION "
             + "SELECT t.id_node FROM tree_report t, cte ft WHERE t.parent_report = ft.id_node"
-            + ") SELECT DISTINCT id_node FROM cte)", nativeQuery = true)
+            + ") SELECT re.* FROM cte left join report_element re on cte.id_node=re.parent_report where re.id_report is not null order by nanos asc", nativeQuery = true)
     List<ReportElementEntity> findAllReportElementsRecursivelyByParentReportId(UUID parentUuid);
 
     List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdIn(Collection<UUID> reportId);
