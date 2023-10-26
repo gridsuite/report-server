@@ -19,13 +19,16 @@ import com.vladmihalcea.sql.SQLStatementCountValidator;
 import lombok.SneakyThrows;
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.gridsuite.report.server.repositories.TreeReportRepository;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
@@ -34,17 +37,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.gridsuite.report.server.utils.TestUtils.assertRequestsCount;
-import static org.junit.Assert.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.Assert.*;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
-@ExtendWith(MockitoExtension.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {ReportApplication.class})
@@ -63,13 +65,15 @@ public class ReportEntityControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @BeforeAll
+    @Before
     public void setUp() {
         Configuration.defaultConfiguration();
+        MockitoAnnotations.initMocks(this);
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(DeserializationFeature.USE_LONG_FOR_INTS);
         objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
         objectMapper.disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE);
+
         Configuration.setDefaults(new Configuration.Defaults() {
 
             private final JsonProvider jsonProvider = new JacksonJsonProvider(objectMapper);
@@ -90,20 +94,17 @@ public class ReportEntityControllerTest {
                 return EnumSet.noneOf(Option.class);
             }
         });
-    }
-
-    @BeforeEach
-    public void init() {
         reportService.deleteAll();
         SQLStatementCountValidator.reset();
     }
 
-    @AfterAll
+    @After
     public void tearDown() {
         reportService.deleteAll();
     }
 
     private static final String REPORT_UUID = "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13";
+
     private static final String REPORT_ONE = "/reportOne.json";
     private static final String REPORT_TWO = "/reportTwo.json";
     private static final String REPORT_CONCAT = "/reportConcat.json";
@@ -125,7 +126,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    void test() throws Exception {
+    public void test() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -150,7 +151,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    void testGetReportNoElements() throws Exception {
+    public void testGetReportNoElements() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -164,7 +165,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    void testGetReportWithElements() throws Exception {
+    public void testGetReportWithElements() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -178,7 +179,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    void testGetSubReport() throws Exception {
+    public void testGetSubReport() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -197,7 +198,7 @@ public class ReportEntityControllerTest {
 
     @SneakyThrows
     @Test
-    void testDefaultEmptyReport() {
+    public void testDefaultEmptyReport() {
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
@@ -208,7 +209,7 @@ public class ReportEntityControllerTest {
     }
 
     @Test
-    void testDeleteSubreports() throws Exception {
+    public void testDeleteSubreports() throws Exception {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
         Map reportsKeys = new HashMap<>();
