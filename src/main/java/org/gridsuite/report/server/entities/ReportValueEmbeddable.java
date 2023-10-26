@@ -6,22 +6,22 @@
  */
 package org.gridsuite.report.server.entities;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
+@AllArgsConstructor
 @Getter
 @NoArgsConstructor
 @Embeddable
 public class ReportValueEmbeddable {
 
     public ReportValueEmbeddable(String key, Object value, String type) {
-
         this.name = key;
         this.value = value.toString();
         this.type = type;
@@ -40,9 +40,9 @@ public class ReportValueEmbeddable {
         STRING
     }
 
-    String name;
+    private String name;
     @Column(name = "value_", columnDefinition = "TEXT")
-    String value;
-    String type;
-    ValueType valueType;
+    private String value;
+    private String type;
+    private ValueType valueType;
 }

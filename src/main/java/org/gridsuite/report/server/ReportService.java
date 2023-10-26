@@ -6,20 +6,21 @@
  */
 package org.gridsuite.report.server;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.powsybl.commons.reporter.Report;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.reporter.TypedValue;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
-import org.gridsuite.report.server.entities.ReportElementEntity;
-import org.gridsuite.report.server.entities.ReportEntity;
-import org.gridsuite.report.server.entities.ReportValueEmbeddable;
-import org.gridsuite.report.server.entities.TreeReportEntity;
+import lombok.RequiredArgsConstructor;
+import org.gridsuite.report.server.entities.*;
 import org.gridsuite.report.server.repositories.ReportElementRepository;
 import org.gridsuite.report.server.repositories.ReportRepository;
 import org.gridsuite.report.server.repositories.TreeReportRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,9 +35,9 @@ import java.util.stream.IntStream;
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
+@RequiredArgsConstructor(onConstructor_={@Autowired})
 @Service
 public class ReportService {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
 
     private static final long NANOS_FROM_EPOCH_TO_START;
@@ -53,12 +54,7 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final TreeReportRepository treeReportRepository;
     private final ReportElementRepository reportElementRepository;
-
-    public ReportService(final ReportRepository reportRepository, TreeReportRepository treeReportRepository, ReportElementRepository reportElementRepository) {
-        this.reportRepository = reportRepository;
-        this.treeReportRepository = treeReportRepository;
-        this.reportElementRepository = reportElementRepository;
-    }
+    private final ObjectMapper objectMapper;
 
     private Map<String, TypedValue> toDtoValueMap(List<ReportValueEmbeddable> values) {
         Map<String, TypedValue> res = new HashMap<>();
@@ -111,35 +107,37 @@ public class ReportService {
         return report;
     }
 
-    private ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, boolean getElements, Set<String> severityLevels) {
-        // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
-        final List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
-                .stream()
-                .map(UUID::fromString)
-                .toList();
+    private ReporterModel getTreeReportAndDescendantElements(TreeReportEntity rootTreeReportEntity, boolean getElements, Set<String> severityLevels) {
+        // Let's find all the treeReportEntities from the parent treeReportEntity
+        final List<String> treeReportProjections = treeReportRepository.findAllTreeReportRecursivelyByParentTreeReport(rootTreeReportEntity.getIdNode());
+        List<TreeReportProjection> treeReportEntities = new ArrayList<>(treeReportProjections.size());
+        try {
+            for (final String str : treeReportProjections) {
+                treeReportEntities.add(objectMapper.readValue(str, TreeReportProjection.class));
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
 
         List<ReportElementEntity> allReportElements = null;
         if (getElements) {
             // Let's find all the reportElements that are linked to the found treeReports
-            allReportElements = reportElementRepository.findDistinctByParentReportIdIn(treeReportEntitiesIds)
+            allReportElements = reportElementRepository.findAllReportElementsRecursivelyByParentReportId(rootTreeReportEntity.getIdNode())
                     .stream()
                     .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
                     .toList();
         }
 
-        // We need to get the entities to have access to the dictionaries
-        List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeIn(treeReportEntitiesIds);
-
         // Now we can rebuild the tree
-        return buildTreeFromReportersAndElements(treeReportEntity, treeReportEntities, allReportElements);
+        return buildTreeFromReportersAndElements(rootTreeReportEntity.getIdNode(), treeReportEntities, allReportElements);
     }
 
-    private ReporterModel buildTreeFromReportersAndElements(final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
+    private ReporterModel buildTreeFromReportersAndElements(final UUID rootUuid, final List<TreeReportProjection> allTreeReports,
                                                             @Nullable final List<ReportElementEntity> allReportElements) {
         // We convert our entities to PowSyBl Reporter
         Map<UUID, ReporterModel> reporters = new HashMap<>(allTreeReports.size());
         Map<UUID, Map<String, String>> treeReportEntityDictionaries = new HashMap<>(allTreeReports.size());
-        for (final TreeReportEntity entity : allTreeReports) {
+        for (final TreeReportProjection entity : allTreeReports) {
             final Map<String, String> dict = entity.getDictionary();
             treeReportEntityDictionaries.put(entity.getIdNode(), dict);
 
@@ -151,11 +149,10 @@ public class ReportService {
         }
         //TODO .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
         // We rebuild parent-child links between reporters
-        final UUID rootUuid = rootTreeReportEntity.getIdNode();
-        for (final TreeReportEntity entity : allTreeReports) {
+        for (final TreeReportProjection entity : allTreeReports) {
             // we exclude root node to not get reporters outside scope
-            if (entity.getParentReportId() != null && !rootUuid.equals(entity.getIdNode())) {
-                reporters.get(entity.getParentReportId()).addSubReporter(reporters.get(entity.getIdNode()));
+            if (entity.getParentIdNode() != null && !rootUuid.equals(entity.getIdNode())) {
+                reporters.get(entity.getParentIdNode()).addSubReporter(reporters.get(entity.getIdNode()));
             }
         }
         if (allReportElements != null) {

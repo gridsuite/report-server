@@ -8,9 +8,8 @@
 package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.ReportElementEntity;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.lang.NonNull;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -23,8 +22,13 @@ import java.util.UUID;
 @Repository
 public interface ReportElementRepository extends JpaRepository<ReportElementEntity, UUID> {
 
-    @EntityGraph(attributePaths = {"values"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<ReportElementEntity> findDistinctByParentReportIdIn(@NonNull Collection<UUID> parentUuid);
+    @Query(value = "select * from report_element re where re.parent_report in ("
+            + "WITH RECURSIVE cte AS ("
+            + "SELECT t.id_node FROM tree_report t WHERE t.id_node = ?1 "
+            + "UNION "
+            + "SELECT t.id_node FROM tree_report t, cte ft WHERE t.parent_report = ft.id_node"
+            + ") SELECT DISTINCT id_node FROM cte)", nativeQuery = true)
+    List<ReportElementEntity> findAllReportElementsRecursivelyByParentReportId(UUID parentUuid);
 
     List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdIn(Collection<UUID> reportId);
 }

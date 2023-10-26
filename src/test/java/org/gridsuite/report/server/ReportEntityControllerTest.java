@@ -160,7 +160,7 @@ class ReportEntityControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_STRUCTURE_ONLY_REPORT1)));
 
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -192,7 +192,7 @@ class ReportEntityControllerTest {
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1)));
 
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
