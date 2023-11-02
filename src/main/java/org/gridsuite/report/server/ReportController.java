@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -36,29 +37,47 @@ public class ReportController {
         this.service = service;
     }
 
-    @GetMapping(value = "reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get report by id")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report"),
+    @GetMapping(value = "/reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
     public ResponseEntity<List<ReporterModel>> getReport(@PathVariable("id") UUID id,
-                                                   @Parameter(description = "Return 404 if report is not found or empty report") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound,
-                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+                                                         @Parameter(description = "Fetch the report's elements") @RequestParam(name = "withElements", required = false, defaultValue = "false") boolean withElements,
+                                                         @Parameter(description = "Filter on a given task key. If provided, will only return elements with the given task key.") @RequestParam(name = "taskKeyFilter", required = false, defaultValue = "") String taskKeyFilter,
+                                                         @Parameter(description = "Filter on severity levels. If provided, will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
+                                                         @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
             return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getReport(id)
-                    .getSubReporters()); // TODO Remove the hack when fix to avoid key collision in hades2 will be done
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(service.getReport(id, withElements, withElements ? severityLevels : null, withElements ? taskKeyFilter : null)
+                            .getSubReporters());
         } catch (EntityNotFoundException ignored) {
-            return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
+            return ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
+        }
+    }
+
+    @GetMapping(value = "/subreports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the elements of a reporter and its subreporters")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
+        @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
+    public ResponseEntity<List<ReporterModel>> getSubReport(@PathVariable("id") UUID id,
+                                                         @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
+        try {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(service.getSubReport(id, severityLevels)
+                            .getSubReporters());
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.notFound().build();
         }
     }
 
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
-    public void createReport(@PathVariable("id") UUID id, @RequestBody ReporterModel report) {
+    public void createReport(@PathVariable("id") UUID id, @RequestBody ReporterModel reporter) {
 
-        service.createReports(id, report);
+        service.createReports(id, reporter);
     }
 
     @DeleteMapping(value = "reports/{id}")

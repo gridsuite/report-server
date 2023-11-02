@@ -71,7 +71,8 @@ public class TreeReportEntity {
     TreeReportEntity parentReport;
 
     @Column(name = "dictionary", length = 500)
-    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEntity_dictionary_fk"), indexes = @Index(name = "treeReportEntity_dictionary_idNode_index", columnList = "tree_report_entity_id_node"))
+    @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEntity_dictionary_fk"),
+        indexes = @Index(name = "treeReportEntity_dictionary_idNode_index", columnList = "tree_report_entity_id_node"))
     @ElementCollection
     Map<String, String> dictionary;
 
