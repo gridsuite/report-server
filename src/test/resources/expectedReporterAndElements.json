@@ -4,37 +4,13 @@
         "reportTree":
         {
             "taskKey": "UcteReading",
-            "taskValues":
-            {
-                "reporterSeverity":
-                {
-                    "value": "UNKNOWN",
-                    "type": "SEVERITY"
-                }
-            },
             "subReporters":
             [
                 {
-                    "taskKey": "fixUcteNodes",
-                    "taskValues":
-                    {
-                        "reporterSeverity":
-                        {
-                            "value": "UNKNOWN",
-                            "type": "SEVERITY"
-                        }
-                    }
+                    "taskKey": "fixUcteNodes"
                 },
                 {
                     "taskKey": "fixUcteLines",
-                    "taskValues":
-                    {
-                        "reporterSeverity":
-                        {
-                            "value": "UNKNOWN",
-                            "type": "SEVERITY"
-                        }
-                    },
                     "reports":
                     [
                         {
@@ -120,26 +96,10 @@
                     ]
                 },
                 {
-                    "taskKey": "fixUcteTransformer",
-                    "taskValues":
-                    {
-                        "reporterSeverity":
-                        {
-                            "value": "UNKNOWN",
-                            "type": "SEVERITY"
-                        }
-                    }
+                    "taskKey": "fixUcteTransformer"
                 },
                 {
-                    "taskKey": "fixUcteRegulations",
-                    "taskValues":
-                    {
-                        "reporterSeverity":
-                        {
-                            "value": "UNKNOWN",
-                            "type": "SEVERITY"
-                        }
-                    }
+                    "taskKey": "fixUcteRegulations"
                 }
             ]
         },

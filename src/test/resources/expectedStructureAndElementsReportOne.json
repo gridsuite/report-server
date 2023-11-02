@@ -4,14 +4,6 @@
         "reportTree":
         {
             "taskKey": "roundTripReporterJsonTest",
-            "taskValues":
-            {
-                "reporterSeverity":
-                {
-                    "value": "UNKNOWN",
-                    "type": "SEVERITY"
-                }
-            },
             "reports":
             [
                 {
@@ -22,37 +14,13 @@
             [
                 {
                     "taskKey": "UcteReading",
-                    "taskValues":
-                    {
-                        "reporterSeverity":
-                        {
-                            "value": "UNKNOWN",
-                            "type": "SEVERITY"
-                        }
-                    },
                     "subReporters":
                     [
                         {
-                            "taskKey": "fixUcteNodes",
-                            "taskValues":
-                            {
-                                "reporterSeverity":
-                                {
-                                    "value": "UNKNOWN",
-                                    "type": "SEVERITY"
-                                }
-                            }
+                            "taskKey": "fixUcteNodes"
                         },
                         {
                             "taskKey": "fixUcteLines",
-                            "taskValues":
-                            {
-                                "reporterSeverity":
-                                {
-                                    "value": "UNKNOWN",
-                                    "type": "SEVERITY"
-                                }
-                            },
                             "reports":
                             [
                                 {
@@ -138,39 +106,15 @@
                             ]
                         },
                         {
-                            "taskKey": "fixUcteTransformer",
-                            "taskValues":
-                            {
-                                "reporterSeverity":
-                                {
-                                    "value": "UNKNOWN",
-                                    "type": "SEVERITY"
-                                }
-                            }
+                            "taskKey": "fixUcteTransformer"
                         },
                         {
-                            "taskKey": "fixUcteRegulations",
-                            "taskValues":
-                            {
-                                "reporterSeverity":
-                                {
-                                    "value": "UNKNOWN",
-                                    "type": "SEVERITY"
-                                }
-                            }
+                            "taskKey": "fixUcteRegulations"
                         }
                     ]
                 },
                 {
                     "taskKey": "createBuses",
-                    "taskValues":
-                    {
-                        "reporterSeverity":
-                        {
-                            "value": "UNKNOWN",
-                            "type": "SEVERITY"
-                        }
-                    },
                     "subReporters":
                     [
                         {
@@ -180,11 +124,6 @@
                                 "substation":
                                 {
                                     "value": "FFFFFF"
-                                },
-                                "reporterSeverity":
-                                {
-                                    "value": "UNKNOWN",
-                                    "type": "SEVERITY"
                                 }
                             },
                             "reports":
@@ -260,11 +199,6 @@
                                 "substation":
                                 {
                                     "value": "XXXXXX"
-                                },
-                                "reporterSeverity":
-                                {
-                                    "value": "UNKNOWN",
-                                    "type": "SEVERITY"
                                 }
                             }
                         }
@@ -272,14 +206,6 @@
                 },
                 {
                     "taskKey": "createLines",
-                    "taskValues":
-                    {
-                        "reporterSeverity":
-                        {
-                            "value": "UNKNOWN",
-                            "type": "SEVERITY"
-                        }
-                    },
                     "reports":
                     [
                         {
@@ -361,15 +287,7 @@
                     ]
                 },
                 {
-                    "taskKey": "createTransformers",
-                    "taskValues":
-                    {
-                        "reporterSeverity":
-                        {
-                            "value": "UNKNOWN",
-                            "type": "SEVERITY"
-                        }
-                    }
+                    "taskKey": "createTransformers"
                 }
             ]
         },
