@@ -185,7 +185,6 @@ public class ReportService {
         var newTreeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
                 toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
                 System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
-        newTreeReportEntity.getValues().add(new ReportValueEmbeddable("reporterSeverity", maxSeverity(reporterModel), TypedValue.SEVERITY));
         var treeReportEntity = treeReportRepository.save(newTreeReportEntity);
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
@@ -211,17 +210,6 @@ public class ReportService {
 
     private ReportValueEmbeddable toValueEmbeddable(Map.Entry<String, TypedValue> entryValue) {
         return new ReportValueEmbeddable(entryValue.getKey(), entryValue.getValue().getValue(), entryValue.getValue().getType());
-    }
-
-    private static String maxSeverity(ReporterModel reporter) {
-        return reporter.getReports()
-                .stream()
-                .map(report -> report.getValues().get("reportSeverity"))
-                .filter(Objects::nonNull)
-                .map(severity -> SeverityLevel.fromValue(Objects.toString(severity.getValue())))
-                .max(SeverityLevel::compareTo)
-                .orElse(SeverityLevel.UNKNOWN)
-                .name();
     }
 
     @Transactional
