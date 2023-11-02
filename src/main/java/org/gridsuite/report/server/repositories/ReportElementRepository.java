@@ -23,10 +23,7 @@ import java.util.UUID;
 public interface ReportElementRepository extends JpaRepository<ReportElementEntity, UUID> {
 
     @EntityGraph(attributePaths = {"values"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<ReportElementEntity> findAllByParentReportIdNode(UUID uuid);
-
-    @EntityGraph(attributePaths = {"values"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<ReportElementEntity> findAllByParentReportIdNodeIn(Collection<UUID> uuids);
+    List<ReportElementEntity> findAllByParentReportIdNodeInOrderByNanos(Collection<UUID> uuids);
 
     List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdNodeIn(Collection<UUID> reportId);
 

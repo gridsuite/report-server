@@ -25,10 +25,8 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     List<TreeReportEntity> findAllByReportId(UUID uuid);
 
-    List<TreeReportEntity> findAllByParentReportIdNode(UUID uuid);
-
     @EntityGraph(attributePaths = {"values", "dictionary"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<TreeReportEntity> findAllByIdNodeIn(Collection<UUID> uuids);
+    List<TreeReportEntity> findAllByIdNodeInOrderByNanos(Collection<UUID> uuids);
 
     List<TreeReportEntity.ProjectionIdNode> findIdNodeByReportId(UUID parentId);
 
@@ -41,7 +39,10 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
         + "SELECT t.id_node "
         + "FROM tree_report t, fulltree ft "
         + "WHERE t.parent_report = ft.idNode)) "
-        + "SELECT cast(idNode as varchar) FROM fulltree", nativeQuery = true)
+        + "SELECT cast(idNode as varchar) FROM fulltree "
+        + "UNION ALL( "
+        + "SELECT cast(id_node as varchar) FROM tree_report "
+        + "WHERE id_node = ?1)", nativeQuery = true)
     //TODO we should be able to get hibernate to do this projection..
     //TODO we cast to varchar otherwise we get
     //     org.hibernate.MappingException: No Dialect mapping for JDBC type: 1111
@@ -65,4 +66,6 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
     List<String> getSubReportsNodes(UUID reportId);
 
     List<TreeReportEntity> findAllByReportIdAndName(UUID uuid, String name);
+
+    List<TreeReportEntity> findByName(String name);
 }

@@ -6,29 +6,17 @@
  */
 package org.gridsuite.report.server.entities;
 
+import com.powsybl.commons.reporter.TypedValue;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import org.gridsuite.report.server.ReportService;
+import org.gridsuite.report.server.entities.ReportValueEmbeddable.ValueType;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -72,14 +60,12 @@ public class ReportElementEntity {
     public boolean hasSeverity(Set<String> severityLevels) {
         if (CollectionUtils.isEmpty(severityLevels)) {
             return true;
+        } else {
+            return severityLevels.contains(values.stream()
+                    .filter(value -> value.getValueType() == ValueType.STRING && TypedValue.SEVERITY.equalsIgnoreCase(value.getType()))
+                    .findAny()
+                    .map(ReportValueEmbeddable::getValue)
+                    .orElse(ReportService.SeverityLevel.UNKNOWN.name()));
         }
-        Optional<ReportValueEmbeddable> severity = values.stream()
-            .filter(value -> value.getType().equalsIgnoreCase("SEVERITY") && value.getValueType() == ReportValueEmbeddable.ValueType.STRING)
-            .findFirst();
-        if (severity.isPresent()) {
-            return severityLevels.contains(severity.get().getValue());
-        }
-        // no severity found in values => unknown by default
-        return severityLevels.contains(ReportService.UNKNOWN_SEVERITY);
     }
 }

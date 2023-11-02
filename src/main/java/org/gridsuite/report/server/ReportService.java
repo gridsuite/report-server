@@ -9,6 +9,7 @@ package org.gridsuite.report.server;
 import com.powsybl.commons.reporter.Report;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.reporter.TypedValue;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
@@ -23,7 +24,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,8 +41,20 @@ public class ReportService {
 
     private static final long NANOS_FROM_EPOCH_TO_START;
 
-    public static final String UNKNOWN_SEVERITY = "UNKNOWN";
-    static final Map<String, Integer> SEVERITY_LEVELS = Map.of(UNKNOWN_SEVERITY, 0, "TRACE", 1, "INFO", 2, "WARN", 3, "ERROR", 4, "FATAL", 5);
+    /**
+     * @see TypedValue
+     */
+    public enum SeverityLevel {
+        UNKNOWN, TRACE, DEBUG, INFO, WARN, ERROR, FATAL;
+
+        public static SeverityLevel fromValue(String value) {
+            try {
+                return valueOf(value);
+            } catch (final IllegalArgumentException | NullPointerException e) {
+                return UNKNOWN;
+            }
+        }
+    }
 
     static {
         long nanoNow = System.nanoTime();
@@ -73,145 +86,85 @@ public class ReportService {
         }
     }
 
-    // TODO Should be optimized
-    @Deprecated
     @Transactional(readOnly = true)
-    public ReporterModel getReportStructureAndElements(UUID id) {
-        Objects.requireNonNull(id);
-        return toDto(reportRepository.findById(id).orElseThrow(EntityNotFoundException::new));
-    }
-
-    private ReporterModel toDto(ReportEntity element) {
-        UUID elementId = Objects.requireNonNull(element.getId());
-        var report = new ReporterModel(elementId.toString(), elementId.toString());
-        // using Long.signum (and not '<' ) to circumvent possible long overflow
-        treeReportRepository.findAllByReportId(elementId)
-            .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> report.addSubReporter(toDto(treeReport)));
-        return report;
-    }
-
-    private ReporterModel toDto(TreeReportEntity element) {
-        Map<String, String> dict = element.getDictionary();
-        var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
-        // using Long.signum (and not '<' ) to circumvent possible long overflow
-        reportElementRepository.findAllByParentReportIdNode(element.getIdNode())
-            .stream()
-            .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
-            .forEach(report ->
-                reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
-            );
-        treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
-            .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> reportModel.addSubReporter(toDto(treeReport)));
-        return reportModel;
-    }
-
-    @Transactional(readOnly = true)
-    public ReporterModel getReportStructure(UUID reportId) {
+    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
-        UUID elementId = Objects.requireNonNull(reportEntity.getId());
-        var report = new ReporterModel(elementId.toString(), elementId.toString());
-
-        // We want to track to which reportId a TreeReport/taskkey is linked with (used by the Front)
-        List<TreeReportEntity> allTreeReportForReportId = treeReportRepository.findAllByReportId(elementId);
-        allTreeReportForReportId.forEach(tre -> {
-            tre.getValues().add(new ReportValueEmbeddable(tre.getName(), reportId.toString(), "REPORTID"));
-        });
-
-        // TODO Should use a native recursive SQL function instead of a recursive java implementation
-        allTreeReportForReportId
-            .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
-            .forEach(treeReport -> report.addSubReporter(recursiveTreeReportBuilder(treeReport)));
-
-        return report;
-    }
-
-    private ReporterModel recursiveTreeReportBuilder(TreeReportEntity element) {
-        Map<String, String> dict = element.getDictionary();
-        element.getValues().add(new ReportValueEmbeddable("id", element.getIdNode(), "ID"));
-        var reportModel = new ReporterModel(element.getName(), dict.get(element.getName()), toDtoValueMap(element.getValues()));
-
-        // using Long.signum (and not '<' ) to circumvent possible long overflow
-        treeReportRepository.findAllByParentReportIdNode(element.getIdNode())
-            .stream()
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> reportModel.addSubReporter(recursiveTreeReportBuilder(treeReport)));
-
-        return reportModel;
-    }
-
-    @Transactional(readOnly = true)
-    public ReporterModel getReportElements(UUID reportId, Set<String> severityLevels, String taskKeyFilter) {
-        Objects.requireNonNull(reportId);
 
         var report = new ReporterModel(reportId.toString(), reportId.toString());
-        treeReportRepository.findAllByReportId(reportId)
+        treeReportRepository.findAllByReportId(reportEntity.getId())
             .stream()
             .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() || tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
-            .forEach(treeReportEntity -> report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, severityLevels)));
+            .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
         return report;
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReporterElements(UUID reporterId, Set<String> severityLevels) {
+    public ReporterModel getSubReport(UUID reporterId, Set<String> severityLevels) {
         Objects.requireNonNull(reporterId);
-
         TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
 
         var report = new ReporterModel(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString());
-        report.addSubReporter(getTreeReportAndDescendantElements(treeReportEntity, severityLevels));
+        report.addSubReporter(getTreeReport(treeReportEntity, true, severityLevels));
         return report;
     }
 
-    private ReporterModel getTreeReportAndDescendantElements(TreeReportEntity treeReportEntity, Set<String> severityLevels) {
-        Map<String, String> dict = treeReportEntity.getDictionary();
-
+    private ReporterModel getTreeReport(TreeReportEntity treeReportEntity, boolean withElements, Set<String> severityLevels) {
         // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
-        List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
+        final List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
                 .stream()
                 .map(UUID::fromString)
                 .toList();
 
-        // Let's find all the reportElements that are linked to the found treeReports
-        Map<UUID, List<ReportElementEntity>> allReportElementsByParent = reportElementRepository.findAllByParentReportIdNodeIn(treeReportEntitiesIds)
-            .stream()
-            .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
-            .collect(Collectors.groupingBy(reportElementEntity -> reportElementEntity.getParentReport().getIdNode()));
+        List<ReportElementEntity> allReportElements = null;
+        if (withElements) {
+            // Let's find all the reportElements that are linked to the found treeReports
+            allReportElements = reportElementRepository.findAllByParentReportIdNodeInOrderByNanos(treeReportEntitiesIds)
+                    .stream()
+                    .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
+                    .toList();
+        }
 
         // We need to get the entities to have access to the dictionaries
-        List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeIn(treeReportEntitiesIds);
+        List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeInOrderByNanos(treeReportEntitiesIds);
 
         // Now we can rebuild the tree
-        return buildTreeFromReportersAndElements(treeReportEntity, treeReportEntities, allReportElementsByParent);
+        return toDto(treeReportEntity, treeReportEntities, allReportElements);
     }
 
-    private ReporterModel buildTreeFromReportersAndElements(TreeReportEntity reporter, List<TreeReportEntity> allTreeReports, Map<UUID, List<ReportElementEntity>> allReportElementsByParent) {
-        // This ID is used by the front for direct access to the reporter
-        reporter.getValues().add(new ReportValueEmbeddable("id", reporter.getIdNode(), "ID"));
+    private ReporterModel toDto(final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
+                                @Nullable final List<ReportElementEntity> allReportElements) {
+        // We convert our entities to PowSyBl Reporter
+        Map<UUID, ReporterModel> reporters = new HashMap<>(allTreeReports.size());
+        Map<UUID, Map<String, String>> treeReportEntityDictionaries = new HashMap<>(allTreeReports.size());
+        for (final TreeReportEntity entity : allTreeReports) {
+            final Map<String, String> dict = entity.getDictionary();
+            treeReportEntityDictionaries.put(entity.getIdNode(), dict);
 
-        Map<String, String> dict = reporter.getDictionary();
-        var reportModel = new ReporterModel(reporter.getName(), dict.get(reporter.getName()), toDtoValueMap(reporter.getValues()));
+            // This ID is used by the front for direct access to the reporter
+            entity.getValues().add(new ReportValueEmbeddable("id", entity.getIdNode(), "ID"));
 
-        // add treeReport elements
-        allReportElementsByParent.getOrDefault(reporter.getIdNode(), List.of())
-            .stream()
-            .sorted((re1, re2) -> Long.signum(re1.getNanos() - re2.getNanos()))
-            .forEach(report ->
-                reportModel.report(report.getName(), dict.get(report.getName()), toDtoValueMap(report.getValues()))
-            );
-        // recursively add its sub-reporters
-        allTreeReports
-            .stream()
-            .filter(sub -> sub.getParentReport() != null && sub.getParentReport().getIdNode() == reporter.getIdNode())
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos()))
-            .forEach(treeReport -> reportModel.addSubReporter(buildTreeFromReportersAndElements(treeReport, allTreeReports, allReportElementsByParent)));
-        return reportModel;
+            ReporterModel reporter = new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
+            reporters.put(entity.getIdNode(), reporter);
+        }
+
+        // We rebuild parent-child links between reporters
+        final UUID rootUuid = rootTreeReportEntity.getIdNode();
+        for (final TreeReportEntity entity : allTreeReports) {
+            // we exclude root node to not get reporters outside scope
+            if (entity.getParentReport() != null && !rootUuid.equals(entity.getIdNode())) {
+                reporters.get(entity.getParentReport().getIdNode()).addSubReporter(reporters.get(entity.getIdNode()));
+            }
+        }
+        if (allReportElements != null) {
+            // We convert ReportElementEntities to dto and add it to the corresponding ReporterModel
+            for (final ReportElementEntity entity : allReportElements) {
+                final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReport().getIdNode());
+                reporters.get(entity.getParentReport().getIdNode()).report(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
+            }
+        }
+        return reporters.get(rootUuid);
     }
 
     public ReporterModel getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
@@ -232,7 +185,6 @@ public class ReportService {
         var newTreeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
                 toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
                 System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
-        newTreeReportEntity.getValues().add(new ReportValueEmbeddable("reporterSeverity", maxSeverity(reporterModel), "SEVERITY"));
         var treeReportEntity = treeReportRepository.save(newTreeReportEntity);
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
@@ -258,22 +210,6 @@ public class ReportService {
 
     private ReportValueEmbeddable toValueEmbeddable(Map.Entry<String, TypedValue> entryValue) {
         return new ReportValueEmbeddable(entryValue.getKey(), entryValue.getValue().getValue(), entryValue.getValue().getType());
-    }
-
-    private static int getReportSeverity(Report report) {
-        var severity = report.getValues().get("reportSeverity");
-        return severity == null ? 0 : SEVERITY_LEVELS.getOrDefault(severity.toString(), 0);
-    }
-
-    private String maxSeverity(ReporterModel reporter) {
-        int max = reporter.getReports().stream()
-            .mapToInt(ReportService::getReportSeverity)
-            .max().orElse(0);
-        return SEVERITY_LEVELS.entrySet().stream()
-                .filter(e -> e.getValue() == max)
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(UNKNOWN_SEVERITY);
     }
 
     @Transactional
