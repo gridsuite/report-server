@@ -44,12 +44,13 @@ public class ReportController {
     public ResponseEntity<List<ReporterModel>> getReport(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Fetch the report's elements") @RequestParam(name = "withElements", required = false, defaultValue = "false") boolean withElements,
                                                          @Parameter(description = "Filter on a given task key. If provided, will only return elements with the given task key.") @RequestParam(name = "taskKeyFilter", required = false, defaultValue = "") String taskKeyFilter,
+                                                         @Parameter(description = "Filter on a given task key type. If provided, will only return elements with the given task key type.") @RequestParam(name = "taskKeyTypeFilter", required = false, defaultValue = "") String taskKeyTypeFilter,
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
                                                          @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getReport(id, withElements, withElements ? severityLevels : null, withElements ? taskKeyFilter : null)
+                    .body(service.getReport(id, withElements, withElements ? severityLevels : null, taskKeyFilter, taskKeyTypeFilter)
                             .getSubReporters());
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
@@ -84,9 +85,10 @@ public class ReportController {
     @Operation(summary = "delete the report")
     @ApiResponse(responseCode = "200", description = "The report has been deleted")
         public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID id,
+                                                 @Parameter(description = "Filter on a given task key type. If provided, will only delete elements with the given task key type.") @RequestParam(name = "taskKeyTypeFilter", required = false) String taskKeyTypeFilter,
                                                  @Parameter(description = "Return 404 if report is not found") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound) {
         try {
-            service.deleteReport(id);
+            service.deleteReport(id, taskKeyTypeFilter);
         } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {
             return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().build();
         }

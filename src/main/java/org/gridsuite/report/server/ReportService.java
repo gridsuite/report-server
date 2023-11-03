@@ -87,14 +87,22 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter) {
+    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter, String taskKeyTypeFilter) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
         var report = new ReporterModel(reportId.toString(), reportId.toString());
         treeReportRepository.findAllByReportId(reportEntity.getId())
             .stream()
-            .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() || tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
+                .filter(tre -> {
+                    if ((taskKeyFilter == null || taskKeyFilter.isEmpty()) && (taskKeyTypeFilter == null || taskKeyTypeFilter.isEmpty())) {
+                        return true;
+                    }
+                    if (taskKeyFilter != null && !taskKeyFilter.isEmpty() && tre.getName().equals(taskKeyFilter)) {
+                        return true;
+                    }
+                    return taskKeyTypeFilter != null && !taskKeyTypeFilter.isEmpty() && tre.getName().endsWith(taskKeyTypeFilter);
+                })
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
         return report;
@@ -233,10 +241,17 @@ public class ReportService {
     }
 
     @Transactional
-    public void deleteReport(UUID id) {
+    public void deleteReport(UUID id, String taskKeyTypeFilter) {
         Objects.requireNonNull(id);
-        treeReportRepository.findIdNodeByReportId(id).forEach(r -> deleteRoot(r.getIdNode()));
-        if (reportRepository.deleteReportById(id) == 0) {
+        List<TreeReportEntity> allTreeReportsInReport = treeReportRepository.findAllByReportId(id);
+        List<TreeReportEntity> filteredTreeReportsInReport = allTreeReportsInReport
+                .stream()
+                .filter(tre -> taskKeyTypeFilter == null || taskKeyTypeFilter.isEmpty() || tre.getName().endsWith(taskKeyTypeFilter))
+                .toList();
+        filteredTreeReportsInReport.forEach(tre -> deleteRoot(tre.getIdNode()));
+
+        // remove the whole Report only if we have removed all its treeReport
+        if (filteredTreeReportsInReport.size() == allTreeReportsInReport.size() && reportRepository.deleteReportById(id) == 0) {
             throw new EmptyResultDataAccessException("No element found", 1);
         }
     }
