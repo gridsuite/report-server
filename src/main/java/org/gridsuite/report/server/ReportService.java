@@ -11,6 +11,7 @@ import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.reporter.TypedValue;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.ReportValueEmbeddable;
@@ -56,6 +57,10 @@ public class ReportService {
         }
     }
 
+    public enum TaskKeyFilterMatchingType {
+        EXACT_MATCHING, ENDS_WITH
+    }
+
     static {
         long nanoNow = System.nanoTime();
         long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
@@ -87,22 +92,16 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter, String taskKeyTypeFilter) {
+    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter, TaskKeyFilterMatchingType taskKeyFilterMatchingType) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
         var report = new ReporterModel(reportId.toString(), reportId.toString());
         treeReportRepository.findAllByReportId(reportEntity.getId())
             .stream()
-                .filter(tre -> {
-                    if ((taskKeyFilter == null || taskKeyFilter.isEmpty()) && (taskKeyTypeFilter == null || taskKeyTypeFilter.isEmpty())) {
-                        return true;
-                    }
-                    if (taskKeyFilter != null && !taskKeyFilter.isEmpty() && tre.getName().equals(taskKeyFilter)) {
-                        return true;
-                    }
-                    return taskKeyTypeFilter != null && !taskKeyTypeFilter.isEmpty() && tre.getName().endsWith(taskKeyTypeFilter);
-                })
+                .filter(tre -> StringUtils.isBlank(taskKeyFilter)
+                        || taskKeyFilterMatchingType == TaskKeyFilterMatchingType.EXACT_MATCHING && tre.getName().equals(taskKeyFilter)
+                        || taskKeyFilterMatchingType == TaskKeyFilterMatchingType.ENDS_WITH && (tre.getName().endsWith(taskKeyFilter) || tre.getName().startsWith("Root")))
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
         return report;
@@ -246,7 +245,7 @@ public class ReportService {
         List<TreeReportEntity> allTreeReportsInReport = treeReportRepository.findAllByReportId(id);
         List<TreeReportEntity> filteredTreeReportsInReport = allTreeReportsInReport
                 .stream()
-                .filter(tre -> taskKeyTypeFilter == null || taskKeyTypeFilter.isEmpty() || tre.getName().endsWith(taskKeyTypeFilter))
+                .filter(tre -> StringUtils.isBlank(taskKeyTypeFilter) || tre.getName().endsWith(taskKeyTypeFilter))
                 .toList();
         filteredTreeReportsInReport.forEach(tre -> deleteRoot(tre.getIdNode()));
 
