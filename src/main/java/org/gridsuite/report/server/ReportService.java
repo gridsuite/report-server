@@ -100,8 +100,9 @@ public class ReportService {
         treeReportRepository.findAllByReportId(reportEntity.getId())
             .stream()
                 .filter(tre -> StringUtils.isBlank(taskKeyFilter)
+                        || tre.getName().startsWith("Root") // Dont know how to better manage this special Root case
                         || taskKeyFilterMatchingType == TaskKeyFilterMatchingType.EXACT_MATCHING && tre.getName().equals(taskKeyFilter)
-                        || taskKeyFilterMatchingType == TaskKeyFilterMatchingType.ENDS_WITH && (tre.getName().endsWith(taskKeyFilter) || tre.getName().startsWith("Root")))
+                        || taskKeyFilterMatchingType == TaskKeyFilterMatchingType.ENDS_WITH && tre.getName().endsWith(taskKeyFilter))
             .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
         return report;
