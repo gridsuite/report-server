@@ -92,10 +92,9 @@ public class ReportService {
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
         var report = new ReporterModel(reportId.toString(), reportId.toString());
-        treeReportRepository.findAllByReportId(reportEntity.getId())
+        treeReportRepository.findAllByReportIdOrderByNanos(reportEntity.getId())
             .stream()
             .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() || tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
         return report;
     }
@@ -213,7 +212,7 @@ public class ReportService {
     }
 
     @Transactional
-    public void createReports(UUID id, ReporterModel reporter) {
+    public void createReport(UUID id, ReporterModel reporter) {
         Optional<ReportEntity> reportEntity = reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Reporter {} present, append ", reporter.getDefaultName());
