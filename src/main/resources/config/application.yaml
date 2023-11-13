@@ -9,6 +9,8 @@ spring:
         order_updates: true
         jdbc:
           batch_size: 100
+        query:
+          fail_on_pagination_over_collection_fetch=true:
 
 powsybl-ws:
   database:

@@ -7,26 +7,35 @@
 
 package org.gridsuite.report.server.repositories;
 
+import jakarta.persistence.criteria.Predicate;
 import org.gridsuite.report.server.entities.ReportElementEntity;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
 @Repository
-public interface ReportElementRepository extends JpaRepository<ReportElementEntity, UUID> {
-
+public interface ReportElementRepository extends JpaRepository<ReportElementEntity, UUID>, JpaSpecificationExecutor<ReportElementEntity> {
     @EntityGraph(attributePaths = {"values"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<ReportElementEntity> findAllByParentReportIdNodeInOrderByNanos(Collection<UUID> uuids);
+    List<ReportElementEntity> findAllWithValuesByIdReportIn(List<UUID> uuids);
 
     List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdNodeIn(Collection<UUID> reportId);
 
     /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
     void deleteAllByIdReportIn(List<UUID> lst);
+
+    default Specification<ReportElementEntity> getReportElementsSpecification(List<UUID> uuids) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(root.get("parentReport").get("idNode").in(uuids));
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
+        };
+    }
+
 }

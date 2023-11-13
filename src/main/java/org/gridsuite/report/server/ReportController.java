@@ -61,12 +61,11 @@ public class ReportController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
     public ResponseEntity<List<ReporterModel>> getSubReport(@PathVariable("id") UUID id,
-                                                         @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
+                                                            @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getSubReport(id, severityLevels)
-                            .getSubReporters());
+                    .body(service.getSubReport(id, severityLevels).getSubReporters());
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }

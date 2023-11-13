@@ -21,6 +21,10 @@ import org.gridsuite.report.server.repositories.TreeReportRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -118,11 +122,8 @@ public class ReportService {
 
         List<ReportElementEntity> allReportElements = null;
         if (withElements) {
-            // Let's find all the reportElements that are linked to the found treeReports
-            allReportElements = reportElementRepository.findAllByParentReportIdNodeInOrderByNanos(treeReportEntitiesIds)
-                    .stream()
-                    .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
-                    .toList();
+            PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.ASC, "nanos"));
+            allReportElements = getReportElements(treeReportEntitiesIds, pageRequest, severityLevels);
         }
 
         // We need to get the entities to have access to the dictionaries
@@ -130,6 +131,22 @@ public class ReportService {
 
         // Now we can rebuild the tree
         return toDto(treeReportEntity, treeReportEntities, allReportElements);
+    }
+
+    private List<ReportElementEntity> getReportElements(List<UUID> treeReportEntitiesIds, Pageable pageRequest, Set<String> severityLevels) {
+        // WARN org.hibernate.hql.internal.ast.QueryTranslatorImpl -
+        // HHH000104: firstResult/maxResults specified with collection fetch; applying in memory!
+        // cf. https://vladmihalcea.com/fix-hibernate-hhh000104-entity-fetch-pagination-warning-message/
+        Page<ReportElementEntity> reportElementsPage = reportElementRepository.findAll(reportElementRepository.getReportElementsSpecification(treeReportEntitiesIds), pageRequest);
+
+        // We must separate in two requests, one with pagination the other one with Join Fetch
+        // Using the the Hibernate First-Level Cache or Persistence Context
+        // cf.https://vladmihalcea.com/spring-data-jpa-multiplebagfetchexception/
+        reportElementRepository.findAllWithValuesByIdReportIn(reportElementsPage.stream().map(ReportElementEntity::getIdReport).toList());
+        return reportElementsPage
+            .stream()
+            .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
+            .toList();
     }
 
     private ReporterModel toDto(final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
