@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -48,12 +49,12 @@ public class ReportController {
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
                                                          @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getReport(id, withElements, withElements ? severityLevels : null, taskKeyFilter, taskKeyFilterMatchingType)
-                            .getSubReporters());
+            List<ReporterModel> subReporters = service.getReport(id, withElements, withElements ? severityLevels : null, taskKeyFilter, taskKeyFilterMatchingType).getSubReporters();
+            return CollectionUtils.isEmpty(subReporters) ?
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getSubReporters()) :
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(subReporters);
         } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.ok().body(service.getEmptyReport(id, defaultName).getSubReporters());
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getSubReporters());
         }
     }
 
