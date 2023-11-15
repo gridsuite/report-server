@@ -23,7 +23,7 @@ import java.util.UUID;
 @Repository
 public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UUID> {
 
-    List<TreeReportEntity> findAllByReportId(UUID uuid);
+    List<TreeReportEntity> findAllByReportIdOrderByNanos(UUID uuid);
 
     @EntityGraph(attributePaths = {"values", "dictionary"}, type = EntityGraph.EntityGraphType.LOAD)
     List<TreeReportEntity> findAllByIdNodeInOrderByNanos(Collection<UUID> uuids);

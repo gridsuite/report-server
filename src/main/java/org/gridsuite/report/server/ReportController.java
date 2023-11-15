@@ -77,7 +77,7 @@ public class ReportController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
     public void createReport(@PathVariable("id") UUID id, @RequestBody ReporterModel reporter) {
 
-        service.createReports(id, reporter);
+        service.createReport(id, reporter);
     }
 
     @DeleteMapping(value = "reports/{id}")
