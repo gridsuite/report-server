@@ -97,13 +97,12 @@ public class ReportService {
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
         var report = new ReporterModel(reportId.toString(), reportId.toString());
-        treeReportRepository.findAllByReportId(reportEntity.getId())
+        treeReportRepository.findAllByReportIdOrderByNanos(reportEntity.getId())
             .stream()
                 .filter(tre -> StringUtils.isBlank(taskKeyFilter)
                         || tre.getName().startsWith("Root") // Dont know how to better manage this special Root case
                         || taskKeyFilterMatchingType == TaskKeyFilterMatchingType.EXACT_MATCHING && tre.getName().equals(taskKeyFilter)
                         || taskKeyFilterMatchingType == TaskKeyFilterMatchingType.ENDS_WITH && tre.getName().endsWith(taskKeyFilter))
-            .sorted((tre1, tre2) -> Long.signum(tre1.getNanos() - tre2.getNanos())) // using Long.signum (and not '<' ) to circumvent possible long overflow
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
         return report;
     }
@@ -221,7 +220,7 @@ public class ReportService {
     }
 
     @Transactional
-    public void createReports(UUID id, ReporterModel reporter) {
+    public void createReport(UUID id, ReporterModel reporter) {
         Optional<ReportEntity> reportEntity = reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Reporter {} present, append ", reporter.getDefaultName());
