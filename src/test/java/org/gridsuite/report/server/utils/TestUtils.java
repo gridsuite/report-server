@@ -7,10 +7,16 @@
 
 package org.gridsuite.report.server.utils;
 
-import static com.vladmihalcea.sql.SQLStatementCountValidator.assertDeleteCount;
-import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
-import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
-import static com.vladmihalcea.sql.SQLStatementCountValidator.assertUpdateCount;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.powsybl.commons.reporter.ReporterModel;
+import lombok.SneakyThrows;
+
+import java.util.List;
+import java.util.UUID;
+
+import static com.vladmihalcea.sql.SQLStatementCountValidator.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public final class TestUtils {
 
@@ -22,5 +28,19 @@ public final class TestUtils {
         assertInsertCount(insert);
         assertUpdateCount(update);
         assertDeleteCount(delete);
+    }
+
+    @SneakyThrows
+    public static void assertReportEquals(String reportExpectedJsonString, String reportResultJsonString, ObjectMapper mapper) {
+        List<ReporterModel> expectedReport = mapper.readValue(reportExpectedJsonString, new TypeReference<>() {
+        });
+        List<ReporterModel> resultReport = mapper.readValue(reportResultJsonString, new TypeReference<>() {
+        });
+        assertThat(resultReport)
+            .usingRecursiveComparison()
+            .ignoringAllOverriddenEquals()
+            .ignoringFieldsOfTypes(UUID.class)
+            .ignoringFieldsMatchingRegexes(".*taskValues.id.value$")
+            .isEqualTo(expectedReport);
     }
 }

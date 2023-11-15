@@ -3,6 +3,15 @@
     "version": "1.0",
     "reportTree": {
       "taskKey": "roundTripReporterJsonTest",
+      "taskValues": {
+        "reporterSeverity": {
+          "value": "UNKNOWN",
+          "type": "SEVERITY"
+        },
+        "id": {
+          "value": "983e7a0f-60f3-451b-9ce8-98bdad2d55e9"
+        }
+      },
       "reports": [
         {
           "reportKey": "novalueReport"
@@ -11,12 +20,39 @@
       "subReporters": [
         {
           "taskKey": "UcteReading",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "1e4adef0-6ca3-4be3-b4c6-ac36302d8feb"
+            }
+          },
           "subReporters": [
             {
-              "taskKey": "fixUcteNodes"
+              "taskKey": "fixUcteNodes",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "a7e77c7d-5e81-427c-8bca-c0abc864a641"
+                }
+              }
             },
             {
               "taskKey": "fixUcteLines",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "413be21c-7633-46e7-8ee7-ae27b16a6b5c"
+                }
+              },
               "reports": [
                 {
                   "reportKey": "negativeLineResistance",
@@ -85,21 +121,55 @@
               ]
             },
             {
-              "taskKey": "fixUcteTransformer"
+              "taskKey": "fixUcteTransformer",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "a752d5ed-c274-4b57-a456-9e02e1aa3ebb"
+                }
+              }
             },
             {
-              "taskKey": "fixUcteRegulations"
+              "taskKey": "fixUcteRegulations",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "712e9e7d-564b-4bc4-93b0-c32c8a07df26"
+                }
+              }
             }
           ]
         },
         {
           "taskKey": "createBuses",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "d57227b4-92f8-4483-8a34-66eddb54b654"
+            }
+          },
           "subReporters": [
             {
               "taskKey": "createBusesSubstation",
               "taskValues": {
                 "substation": {
                   "value": "FFFFFF"
+                },
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "1235bbf8-5793-44c8-8cdf-d134fd537962"
                 }
               },
               "reports": [
@@ -160,6 +230,13 @@
               "taskValues": {
                 "substation": {
                   "value": "XXXXXX"
+                },
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "15d03c7b-a6a9-44d0-9811-a0cafd674b72"
                 }
               }
             }
@@ -167,6 +244,15 @@
         },
         {
           "taskKey": "createLines",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "599a0bf6-6782-492c-b213-61a3b3f9e658"
+            }
+          },
           "reports": [
             {
               "reportKey": "danglingLineCreation",
@@ -231,7 +317,16 @@
           ]
         },
         {
-          "taskKey": "createTransformers"
+          "taskKey": "createTransformers",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "274b3dc4-f24d-4576-8ed2-07bbc9a9807b"
+            }
+          }
         }
       ]
     },
@@ -260,6 +355,15 @@
     "version": "1.0",
     "reportTree": {
       "taskKey": "testImport",
+      "taskValues": {
+        "reporterSeverity": {
+          "value": "UNKNOWN",
+          "type": "SEVERITY"
+        },
+        "id": {
+          "value": "47d62489-3495-4e55-b6e6-4e0626565579"
+        }
+      },
       "reports": [
         {
           "reportKey": "novalueReport"
@@ -268,9 +372,27 @@
       "subReporters": [
         {
           "taskKey": "testNewValue",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "e6371a5f-3980-4839-995d-c6baa4e4550c"
+            }
+          },
           "subReporters": [
             {
-              "taskKey": "fixUcteNodes"
+              "taskKey": "fixUcteNodes",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "7b90ce88-920f-4f03-b423-de95af13839b"
+                }
+              }
             }
           ]
         }
@@ -289,6 +411,15 @@
     "version": "1.0",
     "reportTree": {
       "taskKey": "roundTripReporterJsonTest",
+      "taskValues": {
+        "reporterSeverity": {
+          "value": "UNKNOWN",
+          "type": "SEVERITY"
+        },
+        "id": {
+          "value": "60b02e1d-f598-45cd-8dd3-f2349a2b404b"
+        }
+      },
       "reports": [
         {
           "reportKey": "novalueReport"
@@ -297,12 +428,39 @@
       "subReporters": [
         {
           "taskKey": "UcteReading",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "da4545a6-5cfd-4c2a-a0d8-20432252b5fb"
+            }
+          },
           "subReporters": [
             {
-              "taskKey": "fixUcteNodes"
+              "taskKey": "fixUcteNodes",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "c919ece3-5f9f-4129-8d5a-38b285ec0f97"
+                }
+              }
             },
             {
               "taskKey": "fixUcteLines",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "d1f0e8d0-2eb0-4a38-a801-5ca31779cbfd"
+                }
+              },
               "reports": [
                 {
                   "reportKey": "negativeLineResistance",
@@ -371,21 +529,55 @@
               ]
             },
             {
-              "taskKey": "fixUcteTransformer"
+              "taskKey": "fixUcteTransformer",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "ebad1772-1030-449a-993a-4e4472f50a3a"
+                }
+              }
             },
             {
-              "taskKey": "fixUcteRegulations"
+              "taskKey": "fixUcteRegulations",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "637f89fc-8ede-4415-9aa7-fda39283db39"
+                }
+              }
             }
           ]
         },
         {
           "taskKey": "createBuses",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "872f7b7b-b846-4837-a8ff-6edbe0598f3c"
+            }
+          },
           "subReporters": [
             {
               "taskKey": "createBusesSubstation",
               "taskValues": {
                 "substation": {
                   "value": "FFFFFF"
+                },
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "d8231c81-9a55-433f-ba15-63700f672b34"
                 }
               },
               "reports": [
@@ -446,6 +638,13 @@
               "taskValues": {
                 "substation": {
                   "value": "XXXXXX"
+                },
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "ea42ff9c-4898-4377-89cf-20aa832d2999"
                 }
               }
             }
@@ -453,6 +652,15 @@
         },
         {
           "taskKey": "createLines",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "0395fe30-d661-448c-ab33-6b5806cc54e3"
+            }
+          },
           "reports": [
             {
               "reportKey": "danglingLineCreation",
@@ -517,7 +725,16 @@
           ]
         },
         {
-          "taskKey": "createTransformers"
+          "taskKey": "createTransformers",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "7ece415e-196d-41bd-a111-a9e746e4947b"
+            }
+          }
         }
       ]
     },

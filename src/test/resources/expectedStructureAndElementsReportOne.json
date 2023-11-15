@@ -1,43 +1,70 @@
 [
     {
         "version": "1.0",
-        "reportTree":
-        {
+        "reportTree": {
             "taskKey": "roundTripReporterJsonTest",
-            "reports":
-            [
+            "taskValues": {
+                "reporterSeverity": {
+                    "value": "UNKNOWN",
+                    "type": "SEVERITY"
+                },
+                "id": {
+                    "value": "7495cb8c-04ce-4e71-b441-d48e593c5ff5"
+                }
+            },
+            "reports": [
                 {
                     "reportKey": "novalueReport"
                 }
             ],
-            "subReporters":
-            [
+            "subReporters": [
                 {
                     "taskKey": "UcteReading",
-                    "subReporters":
-                    [
+                    "taskValues": {
+                        "reporterSeverity": {
+                            "value": "UNKNOWN",
+                            "type": "SEVERITY"
+                        },
+                        "id": {
+                            "value": "2fde1d8c-4496-43bf-aae5-21b250393651"
+                        }
+                    },
+                    "subReporters": [
                         {
-                            "taskKey": "fixUcteNodes"
+                            "taskKey": "fixUcteNodes",
+                            "taskValues": {
+                                "reporterSeverity": {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                },
+                                "id": {
+                                    "value": "ca1c1e6d-636b-4de7-9f65-75ebe21bb8b5"
+                                }
+                            }
                         },
                         {
                             "taskKey": "fixUcteLines",
-                            "reports":
-                            [
+                            "taskValues": {
+                                "reporterSeverity": {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                },
+                                "id": {
+                                    "value": "52a358a9-c0f3-4dc9-bc44-744ce9999620"
+                                }
+                            },
+                            "reports": [
                                 {
                                     "reportKey": "negativeLineResistance",
-                                    "values":
-                                    {
-                                        "reportSeverity":
-                                        {
+                                    "values": {
+                                        "reportSeverity": {
                                             "value": "UCTE_ERROR",
                                             "type": "ERROR_LOGLEVEL"
                                         },
-                                        "lineId":
-                                        {
+                                        "lineId": {
                                             "value": "FFFFFF11 XXXXXX11 1"
                                         },
-                                        "resistance":
-                                        {
+                                        "resistance": {
                                             "value": 0,
                                             "type": "RESISTANCE"
                                         }
@@ -45,19 +72,15 @@
                                 },
                                 {
                                     "reportKey": "negativeLineResistance",
-                                    "values":
-                                    {
-                                        "reportSeverity":
-                                        {
+                                    "values": {
+                                        "reportSeverity": {
                                             "value": "UCTE_ERROR",
                                             "type": "ERROR_LOGLEVEL"
                                         },
-                                        "lineId":
-                                        {
+                                        "lineId": {
                                             "value": "FFFFFF11 XXXXXX12 1"
                                         },
-                                        "resistance":
-                                        {
+                                        "resistance": {
                                             "value": 0.0,
                                             "type": "RESISTANCE"
                                         }
@@ -65,19 +88,15 @@
                                 },
                                 {
                                     "reportKey": "negativeLineResistance",
-                                    "values":
-                                    {
-                                        "reportSeverity":
-                                        {
+                                    "values": {
+                                        "reportSeverity": {
                                             "value": "UCTE_ERROR",
                                             "type": "ERROR_LOGLEVEL"
                                         },
-                                        "lineId":
-                                        {
+                                        "lineId": {
                                             "value": "FFFFFF13 XXXXXX13 1"
                                         },
-                                        "resistance":
-                                        {
+                                        "resistance": {
                                             "value": 0.0,
                                             "type": "RESISTANCE"
                                         }
@@ -85,19 +104,15 @@
                                 },
                                 {
                                     "reportKey": "negativeLineResistance",
-                                    "values":
-                                    {
-                                        "reportSeverity":
-                                        {
+                                    "values": {
+                                        "reportSeverity": {
                                             "value": "UCTE_ERROR",
                                             "type": "ERROR_LOGLEVEL"
                                         },
-                                        "lineId":
-                                        {
+                                        "lineId": {
                                             "value": "FFFFFF13 XXXXXX14 1"
                                         },
-                                        "resistance":
-                                        {
+                                        "resistance": {
                                             "value": 0.0,
                                             "type": "RESISTANCE"
                                         }
@@ -106,39 +121,66 @@
                             ]
                         },
                         {
-                            "taskKey": "fixUcteTransformer"
+                            "taskKey": "fixUcteTransformer",
+                            "taskValues": {
+                                "reporterSeverity": {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                },
+                                "id": {
+                                    "value": "18931886-a0fa-432c-9514-3e92c55a6d10"
+                                }
+                            }
                         },
                         {
-                            "taskKey": "fixUcteRegulations"
+                            "taskKey": "fixUcteRegulations",
+                            "taskValues": {
+                                "reporterSeverity": {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                },
+                                "id": {
+                                    "value": "edf10148-589c-4c0a-856b-46930886a5bc"
+                                }
+                            }
                         }
                     ]
                 },
                 {
                     "taskKey": "createBuses",
-                    "subReporters":
-                    [
+                    "taskValues": {
+                        "reporterSeverity": {
+                            "value": "UNKNOWN",
+                            "type": "SEVERITY"
+                        },
+                        "id": {
+                            "value": "30856100-6787-427d-ad5d-f06652845c63"
+                        }
+                    },
+                    "subReporters": [
                         {
                             "taskKey": "createBusesSubstation",
-                            "taskValues":
-                            {
-                                "substation":
-                                {
+                            "taskValues": {
+                                "substation": {
                                     "value": "FFFFFF"
+                                },
+                                "reporterSeverity": {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                },
+                                "id": {
+                                    "value": "9561e788-3a0a-4321-a7fd-01aaf7f4ec8a"
                                 }
                             },
-                            "reports":
-                            [
+                            "reports": [
                                 {
                                     "reportKey": "createSubstation",
-                                    "values":
-                                    {
-                                        "reportSeverity":
-                                        {
+                                    "values": {
+                                        "reportSeverity": {
                                             "value": "UCTE_TRACE",
                                             "type": "TRACE_LOGLEVEL"
                                         },
-                                        "substationName":
-                                        {
+                                        "substationName": {
                                             "value": "FFFFFF",
                                             "type": "SUBSTATION"
                                         }
@@ -146,15 +188,12 @@
                                 },
                                 {
                                     "reportKey": "createVoltageLevel",
-                                    "values":
-                                    {
-                                        "voltageLevelName":
-                                        {
+                                    "values": {
+                                        "voltageLevelName": {
                                             "value": "FFFFFF1",
                                             "type": "VOLTAGE_LEVEL"
                                         },
-                                        "reportSeverity":
-                                        {
+                                        "reportSeverity": {
                                             "value": "UCTE_TRACE",
                                             "type": "TRACE_LOGLEVEL"
                                         }
@@ -162,14 +201,11 @@
                                 },
                                 {
                                     "reportKey": "createBus",
-                                    "values":
-                                    {
-                                        "bus":
-                                        {
+                                    "values": {
+                                        "bus": {
                                             "value": "FFFFFF11"
                                         },
-                                        "reportSeverity":
-                                        {
+                                        "reportSeverity": {
                                             "value": "UCTE_TRACE",
                                             "type": "TRACE_LOGLEVEL"
                                         }
@@ -177,14 +213,11 @@
                                 },
                                 {
                                     "reportKey": "createBus",
-                                    "values":
-                                    {
-                                        "bus":
-                                        {
+                                    "values": {
+                                        "bus": {
                                             "value": "FFFFFF13"
                                         },
-                                        "reportSeverity":
-                                        {
+                                        "reportSeverity": {
                                             "value": "UCTE_TRACE",
                                             "type": "TRACE_LOGLEVEL"
                                         }
@@ -194,11 +227,16 @@
                         },
                         {
                             "taskKey": "createBusesSubstation",
-                            "taskValues":
-                            {
-                                "substation":
-                                {
+                            "taskValues": {
+                                "substation": {
                                     "value": "XXXXXX"
+                                },
+                                "reporterSeverity": {
+                                    "value": "UNKNOWN",
+                                    "type": "SEVERITY"
+                                },
+                                "id": {
+                                    "value": "cc768577-ea68-4f47-bb0b-7bdb9972b5e9"
                                 }
                             }
                         }
@@ -206,80 +244,72 @@
                 },
                 {
                     "taskKey": "createLines",
-                    "reports":
-                    [
+                    "taskValues": {
+                        "reporterSeverity": {
+                            "value": "UNKNOWN",
+                            "type": "SEVERITY"
+                        },
+                        "id": {
+                            "value": "b849730d-0808-4360-93f3-9161aaf7a57e"
+                        }
+                    },
+                    "reports": [
                         {
                             "reportKey": "danglingLineCreation",
-                            "values":
-                            {
-                                "ucteLine":
-                                {
+                            "values": {
+                                "ucteLine": {
                                     "value": "FFFFFF11 XXXXXX11 1"
                                 },
-                                "reportSeverity":
-                                {
+                                "reportSeverity": {
                                     "value": "UCTE_TRACE",
                                     "type": "TRACE_LOGLEVEL"
                                 },
-                                "xnodeCode":
-                                {
+                                "xnodeCode": {
                                     "value": "XXXXXX11"
                                 }
                             }
                         },
                         {
                             "reportKey": "danglingLineCreation",
-                            "values":
-                            {
-                                "ucteLine":
-                                {
+                            "values": {
+                                "ucteLine": {
                                     "value": "FFFFFF11 XXXXXX12 1"
                                 },
-                                "reportSeverity":
-                                {
+                                "reportSeverity": {
                                     "value": "UCTE_TRACE",
                                     "type": "TRACE_LOGLEVEL"
                                 },
-                                "xnodeCode":
-                                {
+                                "xnodeCode": {
                                     "value": "XXXXXX12"
                                 }
                             }
                         },
                         {
                             "reportKey": "danglingLineCreation",
-                            "values":
-                            {
-                                "ucteLine":
-                                {
+                            "values": {
+                                "ucteLine": {
                                     "value": "FFFFFF13 XXXXXX13 1"
                                 },
-                                "reportSeverity":
-                                {
+                                "reportSeverity": {
                                     "value": "UCTE_TRACE",
                                     "type": "TRACE_LOGLEVEL"
                                 },
-                                "xnodeCode":
-                                {
+                                "xnodeCode": {
                                     "value": "XXXXXX13"
                                 }
                             }
                         },
                         {
                             "reportKey": "danglingLineCreation",
-                            "values":
-                            {
-                                "ucteLine":
-                                {
+                            "values": {
+                                "ucteLine": {
                                     "value": "FFFFFF13 XXXXXX14 1"
                                 },
-                                "reportSeverity":
-                                {
+                                "reportSeverity": {
                                     "value": "UCTE_TRACE",
                                     "type": "TRACE_LOGLEVEL"
                                 },
-                                "xnodeCode":
-                                {
+                                "xnodeCode": {
                                     "value": "XXXXXX14"
                                 }
                             }
@@ -287,14 +317,21 @@
                     ]
                 },
                 {
-                    "taskKey": "createTransformers"
+                    "taskKey": "createTransformers",
+                    "taskValues": {
+                        "reporterSeverity": {
+                            "value": "UNKNOWN",
+                            "type": "SEVERITY"
+                        },
+                        "id": {
+                            "value": "f9f8ee4b-bb13-4168-a2ea-a61c42c6a964"
+                        }
+                    }
                 }
             ]
         },
-        "dics":
-        {
-            "default":
-            {
+        "dics": {
+            "default": {
                 "UcteReading": "Reading UCTE network file",
                 "createLines": "Create lines",
                 "createSubstation": "Create substation ${substationName}",

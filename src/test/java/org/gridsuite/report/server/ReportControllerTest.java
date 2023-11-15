@@ -23,26 +23,25 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static org.gridsuite.report.server.utils.TestUtils.assertReportEquals;
 import static org.gridsuite.report.server.utils.TestUtils.assertRequestsCount;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.junit.Assert.*;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -58,6 +57,9 @@ public class ReportControllerTest {
     private MockMvc mvc;
 
     @Autowired
+    private ObjectMapper mapper;
+
+    @Autowired
     private TreeReportRepository treeReportRepository;
 
     @Autowired
@@ -69,7 +71,6 @@ public class ReportControllerTest {
     @Before
     public void setUp() {
         Configuration.defaultConfiguration();
-        MockitoAnnotations.initMocks(this);
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(DeserializationFeature.USE_LONG_FOR_INTS);
         objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
@@ -131,9 +132,12 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
+        String result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
             .andExpect(status().isOk())
-            .andExpect(content().json(toString(EXPECTED_SINGLE_REPORT)));
+            .andReturn()
+            .getResponse().getContentAsString();
+
+        assertReportEquals(toString(EXPECTED_SINGLE_REPORT), result, mapper);
 
         insertReport(REPORT_UUID, toString(REPORT_TWO));
 
@@ -147,8 +151,8 @@ public class ReportControllerTest {
         mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID)).andExpect(status().isNotFound());
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
-                .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)))
-                .andExpect(status().isOk());
+            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1), true))
+            .andExpect(status().isOk());
     }
 
     @Test
@@ -158,9 +162,12 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+        String result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
-            .andExpect(content().json(toString(EXPECTED_STRUCTURE_ONLY_REPORT1)));
+            .andReturn()
+            .getResponse().getContentAsString();
+
+        assertReportEquals(toString(EXPECTED_STRUCTURE_ONLY_REPORT1), result, mapper);
 
         assertRequestsCount(3, 0, 0, 0);
     }
@@ -172,10 +179,12 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
 
-        MvcResult mvcResult = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
+        String result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
             .andExpect(status().isOk())
-            .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1)))
-            .andReturn();
+            .andReturn()
+            .getResponse().getContentAsString();
+
+        assertReportEquals(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1), result, mapper);
 
         assertRequestsCount(5, 0, 0, 0);
     }
@@ -191,9 +200,12 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
 
-        mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter))
+        String result = mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter))
             .andExpect(status().isOk())
-            .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1)));
+            .andReturn()
+            .getResponse().getContentAsString();
+
+        assertReportEquals(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1), result, mapper);
 
         assertRequestsCount(4, 0, 0, 0);
     }
@@ -203,23 +215,21 @@ public class ReportControllerTest {
     public void testDefaultEmptyReport() {
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
-            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
+            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1), true));
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?defaultName=test"))
             .andExpect(status().isOk())
-            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT2)));
+            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT2), true));
     }
 
     @Test
     public void testDeleteSubreports() throws Exception {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
-        Map reportsKeys = new HashMap<>();
-        reportsKeys.put(REPORT_UUID, "LoadFlow");
 
         mvc.perform(delete(URL_TEMPLATE + "/treereports")
                 .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(reportsKeys)))
+                .content(objectMapper.writeValueAsString(Map.of(REPORT_UUID, "LoadFlow"))))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -229,15 +239,18 @@ public class ReportControllerTest {
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?withElements=true"))
+        String result = mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?withElements=true"))
             .andExpect(status().isOk())
-            .andExpect(content().json(toString(reportConcat2)));
+            .andReturn()
+            .getResponse().getContentAsString();
+
+        assertReportEquals(toString(reportConcat2), result, mapper);
     }
 
     private void insertReport(String reportsId, String content) throws Exception {
         mvc.perform(put(URL_TEMPLATE + "/reports/" + reportsId)
-            .content(content)
-            .contentType(APPLICATION_JSON))
+                .content(content)
+                .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
     }
 

@@ -32,7 +32,6 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 
 /**
@@ -44,6 +43,9 @@ public class ReportService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
 
     private static final long NANOS_FROM_EPOCH_TO_START;
+
+    public static final String SEVERITY_VALUE_KEY = "reporterSeverity";
+    public static final String ID_VALUE_KEY = "id";
 
     /**
      * @see TypedValue
@@ -137,7 +139,7 @@ public class ReportService {
         // WARN org.hibernate.hql.internal.ast.QueryTranslatorImpl -
         // HHH000104: firstResult/maxResults specified with collection fetch; applying in memory!
         // cf. https://vladmihalcea.com/fix-hibernate-hhh000104-entity-fetch-pagination-warning-message/
-        Page<ReportElementEntity> reportElementsPage = reportElementRepository.findAll(reportElementRepository.getReportElementsSpecification(treeReportEntitiesIds), pageRequest);
+        Page<ReportElementEntity> reportElementsPage = reportElementRepository.findAll(reportElementRepository.getReportElementsSpecification(treeReportEntitiesIds, severityLevels), pageRequest);
 
         // We must separate in two requests, one with pagination the other one with Join Fetch
         // Using the the Hibernate First-Level Cache or Persistence Context
@@ -159,7 +161,7 @@ public class ReportService {
             treeReportEntityDictionaries.put(entity.getIdNode(), dict);
 
             // This ID is used by the front for direct access to the reporter
-            entity.getValues().add(new ReportValueEmbeddable("id", entity.getIdNode(), "ID"));
+            entity.getValues().add(new ReportValueEmbeddable(ID_VALUE_KEY, entity.getIdNode(), TypedValue.UNTYPED));
 
             ReporterModel reporter = new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
             reporters.put(entity.getIdNode(), reporter);
@@ -198,19 +200,27 @@ public class ReportService {
     private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
-        var newTreeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-                toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
-                System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
-        var treeReportEntity = treeReportRepository.save(newTreeReportEntity);
+        TreeReportEntity newTreeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
+            toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
+            System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
+        newTreeReportEntity.getValues().add(new ReportValueEmbeddable(SEVERITY_VALUE_KEY, maxSeverity(reporterModel), TypedValue.SEVERITY));
+        TreeReportEntity treeReportEntity = treeReportRepository.save(newTreeReportEntity);
 
-        List<ReporterModel> subReporters = reporterModel.getSubReporters();
-        IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), treeReportEntity));
-
-        Collection<Report> reports = reporterModel.getReports();
-        List<Report> reportsAsList = new ArrayList<>(reports);
-        IntStream.range(0, reportsAsList.size()).forEach(idx -> toEntity(treeReportEntity, reportsAsList.get(idx), dict));
+        reporterModel.getSubReporters().forEach(r -> toEntity(null, r, treeReportEntity));
+        reporterModel.getReports().forEach(r -> toEntity(treeReportEntity, r, dict));
 
         return treeReportEntity;
+    }
+
+    private static String maxSeverity(ReporterModel reporter) {
+        return reporter.getReports()
+            .stream()
+            .map(report -> report.getValues().get("reportSeverity"))
+            .filter(Objects::nonNull)
+            .map(severity -> SeverityLevel.fromValue(Objects.toString(severity.getValue())))
+            .max(SeverityLevel::compareTo)
+            .orElse(SeverityLevel.UNKNOWN)
+            .name();
     }
 
     private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {

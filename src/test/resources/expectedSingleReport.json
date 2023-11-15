@@ -3,6 +3,15 @@
     "version": "1.0",
     "reportTree": {
       "taskKey": "roundTripReporterJsonTest",
+      "taskValues": {
+        "reporterSeverity": {
+          "value": "UNKNOWN",
+          "type": "SEVERITY"
+        },
+        "id": {
+          "value": "45add7ef-7270-460a-8dcd-92201ce9f156"
+        }
+      },
       "reports": [
         {
           "reportKey": "novalueReport"
@@ -11,12 +20,39 @@
       "subReporters": [
         {
           "taskKey": "UcteReading",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "7461e973-419d-4486-8114-fa25227e0594"
+            }
+          },
           "subReporters": [
             {
-              "taskKey": "fixUcteNodes"
+              "taskKey": "fixUcteNodes",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "1fe43b25-bb52-479a-8d63-6ecd5eb5b614"
+                }
+              }
             },
             {
               "taskKey": "fixUcteLines",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "3ed40040-a8d2-4019-8727-f56f7ef3e626"
+                }
+              },
               "reports": [
                 {
                   "reportKey": "negativeLineResistance",
@@ -85,21 +121,55 @@
               ]
             },
             {
-              "taskKey": "fixUcteTransformer"
+              "taskKey": "fixUcteTransformer",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "c5de6d6c-7b13-43f8-9567-ba013f065d5a"
+                }
+              }
             },
             {
-              "taskKey": "fixUcteRegulations"
+              "taskKey": "fixUcteRegulations",
+              "taskValues": {
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "f7465217-c358-43a3-bbf6-307fbc10fa6d"
+                }
+              }
             }
           ]
         },
         {
           "taskKey": "createBuses",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "be1e7d91-74b7-49a1-9694-8738d48210d4"
+            }
+          },
           "subReporters": [
             {
               "taskKey": "createBusesSubstation",
               "taskValues": {
                 "substation": {
                   "value": "FFFFFF"
+                },
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "bc4ca6c2-5480-422b-9302-459b58c8caab"
                 }
               },
               "reports": [
@@ -160,6 +230,13 @@
               "taskValues": {
                 "substation": {
                   "value": "XXXXXX"
+                },
+                "reporterSeverity": {
+                  "value": "UNKNOWN",
+                  "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "659a5898-d18c-499f-afd0-c118c8df77bb"
                 }
               }
             }
@@ -167,6 +244,15 @@
         },
         {
           "taskKey": "createLines",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "e0a2f388-543e-4ef3-8700-fb39f9cdec38"
+            }
+          },
           "reports": [
             {
               "reportKey": "danglingLineCreation",
@@ -231,7 +317,16 @@
           ]
         },
         {
-          "taskKey": "createTransformers"
+          "taskKey": "createTransformers",
+          "taskValues": {
+            "reporterSeverity": {
+              "value": "UNKNOWN",
+              "type": "SEVERITY"
+            },
+            "id": {
+              "value": "d9fda4b6-fb75-47e5-afe6-6a4c830f2c0c"
+            }
+          }
         }
       ]
     },
