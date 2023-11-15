@@ -242,7 +242,7 @@ public class ReportService {
     @Transactional
     public void deleteReport(UUID id, String taskKeyTypeFilter) {
         Objects.requireNonNull(id);
-        List<TreeReportEntity> allTreeReportsInReport = treeReportRepository.findAllByReportId(id);
+        List<TreeReportEntity> allTreeReportsInReport = treeReportRepository.findAllByReportIdOrderByNanos(id);
         List<TreeReportEntity> filteredTreeReportsInReport = allTreeReportsInReport
                 .stream()
                 .filter(tre -> StringUtils.isBlank(taskKeyTypeFilter) || tre.getName().endsWith(taskKeyTypeFilter))

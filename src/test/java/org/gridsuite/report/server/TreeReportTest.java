@@ -6,6 +6,7 @@
  */
 package org.gridsuite.report.server;
 
+import com.powsybl.commons.reporter.Report;
 import com.powsybl.commons.reporter.ReporterModel;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
@@ -80,8 +81,8 @@ class TreeReportTest {
         TreeReportEntity treeReportEntity3 = createTreeReport("root3", reportEntity, null, 1000);
         treeReportRepository.saveAll(List.of(treeReportEntity1, treeReportEntity2, treeReportEntity3));
 
-        ReporterModel report = reportService.getReport(idReport, false, null, "");
-        assertEquals(List.of("root3", "root1", "root2"), report.getSubReporters().stream().map(r -> r.getTaskKey()).toList());
+        ReporterModel report = reportService.getReport(idReport, false, null, "", ReportService.TaskKeyFilterMatchingType.EXACT_MATCHING);
+        assertEquals(List.of("root3", "root1", "root2"), report.getSubReporters().stream().map(ReporterModel::getTaskKey).toList());
     }
 
     @Test
@@ -96,9 +97,9 @@ class TreeReportTest {
         TreeReportEntity treeReportEntity3 = createTreeReport("child3", null, treeReportEntity, 1000);
         treeReportRepository.saveAll(List.of(treeReportEntity1, treeReportEntity2, treeReportEntity3));
 
-        ReporterModel report = reportService.getReport(idReport, false, null, "");
+        ReporterModel report = reportService.getReport(idReport, false, null, "", ReportService.TaskKeyFilterMatchingType.EXACT_MATCHING);
         ReporterModel reporter = report.getSubReporters().get(0);
-        assertEquals(List.of("child3", "child1", "child2"), reporter.getSubReporters().stream().map(r -> r.getTaskKey()).toList());
+        assertEquals(List.of("child3", "child1", "child2"), reporter.getSubReporters().stream().map(ReporterModel::getTaskKey).toList());
     }
 
     @Test
@@ -113,9 +114,9 @@ class TreeReportTest {
         ReportElementEntity reportElement3 = createReportElement("log3", treeReportEntity, 1000);
         reportElementRepository.saveAll(List.of(reportElement1, reportElement2, reportElement3));
 
-        ReporterModel report = reportService.getReport(idReport, true, null, "");
+        ReporterModel report = reportService.getReport(idReport, true, null, "", ReportService.TaskKeyFilterMatchingType.EXACT_MATCHING);
         ReporterModel reporter = report.getSubReporters().get(0);
 
-        assertEquals(List.of("log3", "log1", "log2"), reporter.getReports().stream().map(r -> r.getReportKey()).toList());
+        assertEquals(List.of("log3", "log1", "log2"), reporter.getReports().stream().map(Report::getReportKey).toList());
     }
 }
