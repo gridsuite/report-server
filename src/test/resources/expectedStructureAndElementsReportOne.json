@@ -12,11 +12,6 @@
                     "value": "7495cb8c-04ce-4e71-b441-d48e593c5ff5"
                 }
             },
-            "reports": [
-                {
-                    "reportKey": "novalueReport"
-                }
-            ],
             "subReporters": [
                 {
                     "taskKey": "UcteReading",
@@ -335,7 +330,6 @@
                 "UcteReading": "Reading UCTE network file",
                 "createLines": "Create lines",
                 "createSubstation": "Create substation ${substationName}",
-                "novalueReport": "No value report",
                 "createTransformers": "Create transformers",
                 "fixUcteNodes": "Fix UCTE nodes",
                 "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",

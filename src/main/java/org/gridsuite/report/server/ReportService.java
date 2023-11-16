@@ -31,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
@@ -97,11 +99,15 @@ public class ReportService {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
+        AtomicReference<Long> startTime = new AtomicReference<>(null);
+        startTime.set(System.nanoTime());
         var report = new ReporterModel(reportId.toString(), reportId.toString());
         treeReportRepository.findAllByReportIdOrderByNanos(reportEntity.getId())
             .stream()
             .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() || tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
+        LOGGER.info("----- Report : {} ms", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
+
         return report;
     }
 
@@ -136,19 +142,23 @@ public class ReportService {
     }
 
     private List<ReportElementEntity> getReportElements(List<UUID> treeReportEntitiesIds, Pageable pageRequest, Set<String> severityLevels) {
+        AtomicReference<Long> startTime = new AtomicReference<>(null);
+
         // WARN org.hibernate.hql.internal.ast.QueryTranslatorImpl -
         // HHH000104: firstResult/maxResults specified with collection fetch; applying in memory!
         // cf. https://vladmihalcea.com/fix-hibernate-hhh000104-entity-fetch-pagination-warning-message/
-        Page<ReportElementEntity> reportElementsPage = reportElementRepository.findAll(reportElementRepository.getReportElementsSpecification(treeReportEntitiesIds), pageRequest);
+        startTime.set(System.nanoTime());
+        Page<ReportElementEntity> reportElementsPage = reportElementRepository.findAll(reportElementRepository.getReportElementsSpecification(treeReportEntitiesIds, severityLevels), pageRequest);
+        LOGGER.info("Pagination : {} ms", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
 
         // We must separate in two requests, one with pagination the other one with Join Fetch
         // Using the the Hibernate First-Level Cache or Persistence Context
         // cf.https://vladmihalcea.com/spring-data-jpa-multiplebagfetchexception/
+        startTime.set(System.nanoTime());
         reportElementRepository.findAllWithValuesByIdReportIn(reportElementsPage.stream().map(ReportElementEntity::getIdReport).toList());
-        return reportElementsPage
-            .stream()
-            .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
-            .toList();
+        LOGGER.info("Values : {} ms", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
+
+        return reportElementsPage.toList();
     }
 
     private ReporterModel toDto(final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,

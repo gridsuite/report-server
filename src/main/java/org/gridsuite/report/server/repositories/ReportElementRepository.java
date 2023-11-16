@@ -30,12 +30,15 @@ public interface ReportElementRepository extends JpaRepository<ReportElementEnti
     /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
     void deleteAllByIdReportIn(List<UUID> lst);
 
-    default Specification<ReportElementEntity> getReportElementsSpecification(List<UUID> uuids) {
+    default Specification<ReportElementEntity> getReportElementsSpecification(List<UUID> uuids, Set<String> severityLevels) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(root.get("parentReport").get("idNode").in(uuids));
+            if (severityLevels != null) {
+                predicates.add(root.join("values").get("value").in(severityLevels));
+            }
+            //query.distinct(true);
             return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
-
 }

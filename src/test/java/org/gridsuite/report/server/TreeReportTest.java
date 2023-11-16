@@ -9,6 +9,7 @@ package org.gridsuite.report.server;
 import com.powsybl.commons.reporter.ReporterModel;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
+import org.gridsuite.report.server.entities.ReportValueEmbeddable;
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.gridsuite.report.server.repositories.ReportElementRepository;
 import org.gridsuite.report.server.repositories.ReportRepository;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -52,7 +54,38 @@ class TreeReportTest {
     }
 
     private ReportElementEntity createReportElement(String name, TreeReportEntity parent, long nanos) {
-        return new ReportElementEntity(null, parent, nanos, name, List.of());
+        return createReportElement(name, parent, nanos, null);
+    }
+
+    private ReportElementEntity createReportElement(String name, TreeReportEntity parent, long nanos, String severity) {
+        return new ReportElementEntity(null, parent, nanos, name,
+            severity == null ? List.of() : createReportValues(severity));
+    }
+
+    private List<ReportValueEmbeddable> createReportValues(String severity) {
+        return List.of(
+            new ReportValueEmbeddable("value1", severity, "val1"),
+            new ReportValueEmbeddable("reportSeverity", severity, "LOGLEVEL"),
+            new ReportValueEmbeddable("value1", severity, "vla2")
+        );
+    }
+
+    @Test
+    void testFilters() {
+        UUID idReport = UUID.randomUUID();
+        ReportEntity reportEntity = reportRepository.save(new ReportEntity(idReport));
+        TreeReportEntity treeReportEntity = createTreeReport("test", reportEntity, null, 1000);
+        treeReportEntity = treeReportRepository.save(treeReportEntity);
+
+        ReportElementEntity reportElement1 = createReportElement("log1", treeReportEntity, 1000, "TRACE");
+        ReportElementEntity reportElement2 = createReportElement("log2", treeReportEntity, 2000, "INFO");
+        ReportElementEntity reportElement3 = createReportElement("log3", treeReportEntity, 3000, "TRACE");
+        reportElementRepository.saveAll(List.of(reportElement1, reportElement2, reportElement3));
+
+        ReporterModel report = reportService.getReport(idReport, true, Set.of("INFO", "TRACE"), "");
+        ReporterModel reporter = report.getSubReporters().get(0);
+
+        assertEquals(List.of("log1", "log2", "log3"), reporter.getReports().stream().map(r -> r.getReportKey()).toList());
     }
 
     @BeforeEach

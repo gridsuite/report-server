@@ -173,13 +173,13 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetReportWithElements() throws Exception {
+    public void testGetReportWithElementsAndFilters() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
         SQLStatementCountValidator.reset();
 
-        String result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
+        String result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=UCTE_ERROR,UCTE_TRACE"))
             .andExpect(status().isOk())
             .andReturn()
             .getResponse().getContentAsString();
