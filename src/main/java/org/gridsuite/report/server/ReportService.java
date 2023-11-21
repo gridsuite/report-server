@@ -57,7 +57,7 @@ public class ReportService {
         }
     }
 
-    public enum TaskKeyFilterMatchingType {
+    public enum ReportNameMatchingType {
         EXACT_MATCHING, ENDS_WITH
     }
 
@@ -92,17 +92,17 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter, TaskKeyFilterMatchingType taskKeyFilterMatchingType) {
+    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String reportNameFilter, ReportNameMatchingType reportNameMatchingType) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
         var report = new ReporterModel(reportId.toString(), reportId.toString());
         treeReportRepository.findAllByReportIdOrderByNanos(reportEntity.getId())
             .stream()
-                .filter(tre -> StringUtils.isBlank(taskKeyFilter)
-                        || tre.getName().startsWith("Root") // Dont know how to better manage this special Root case
-                        || taskKeyFilterMatchingType == TaskKeyFilterMatchingType.EXACT_MATCHING && tre.getName().equals(taskKeyFilter)
-                        || taskKeyFilterMatchingType == TaskKeyFilterMatchingType.ENDS_WITH && tre.getName().endsWith(taskKeyFilter))
+                .filter(tre -> StringUtils.isBlank(reportNameFilter)
+                        || tre.getName().startsWith("Root") // FIXME remove this hack when "Root" report will follow the same rules than computations and modifications
+                        || reportNameMatchingType == ReportNameMatchingType.EXACT_MATCHING && tre.getName().equals(reportNameFilter)
+                        || reportNameMatchingType == ReportNameMatchingType.ENDS_WITH && tre.getName().endsWith(reportNameFilter))
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
         return report;
     }
@@ -240,18 +240,20 @@ public class ReportService {
     }
 
     @Transactional
-    public void deleteReport(UUID id, String taskKeyTypeFilter) {
+    public void deleteReport(UUID id, String reportTypeFilter) {
         Objects.requireNonNull(id);
-        List<TreeReportEntity> allTreeReportsInReport = treeReportRepository.findAllByReportIdOrderByNanos(id);
+        List<TreeReportEntity> allTreeReportsInReport = treeReportRepository.findAllByReportId(id);
         List<TreeReportEntity> filteredTreeReportsInReport = allTreeReportsInReport
                 .stream()
-                .filter(tre -> StringUtils.isBlank(taskKeyTypeFilter) || tre.getName().endsWith(taskKeyTypeFilter))
+                .filter(tre -> StringUtils.isBlank(reportTypeFilter) || tre.getName().endsWith(reportTypeFilter))
                 .toList();
         filteredTreeReportsInReport.forEach(tre -> deleteRoot(tre.getIdNode()));
 
-        // remove the whole Report only if we have removed all its treeReport
-        if (filteredTreeReportsInReport.size() == allTreeReportsInReport.size() && reportRepository.deleteReportById(id) == 0) {
-            throw new EmptyResultDataAccessException("No element found", 1);
+        if (filteredTreeReportsInReport.size() == allTreeReportsInReport.size()) {
+            // let's remove the whole Report only if we have removed all its treeReport
+            if (reportRepository.deleteReportById(id) == 0) {
+                throw new EmptyResultDataAccessException("No element found", 1);
+            }
         }
     }
 

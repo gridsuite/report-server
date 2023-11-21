@@ -187,7 +187,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
         final String filterValue = "roundTripReporterJsonTest";
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&taskKeyFilter=" + filterValue + "&taskKeyFilterMatchingType=EXACT_MATCHING"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&reportNameFilter=" + filterValue + "&reportNameMatchingType=EXACT_MATCHING"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1)));
 
@@ -201,7 +201,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
         final String filterValue = "__noMatchingValue__";
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&taskKeyFilter=" + filterValue + "&taskKeyFilterMatchingType=EXACT_MATCHING"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&reportNameFilter=" + filterValue + "&reportNameMatchingType=EXACT_MATCHING"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
 
@@ -215,7 +215,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
         final String filterEndsWithValue = "ReporterJsonTest";
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&taskKeyFilter=" + filterEndsWithValue + "&taskKeyFilterMatchingType=ENDS_WITH"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1)));
 
@@ -229,7 +229,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
         final String filterEndsWithValue = "__noMatchingValue__";
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&taskKeyFilter=" + filterEndsWithValue + "&taskKeyFilterMatchingType=ENDS_WITH"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
 
@@ -294,7 +294,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
 
-        mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?taskKeyTypeFilter=" + reportType)
+        mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=" + reportType)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reportsKeys)))
                 .andExpect(status().isOk())
@@ -317,7 +317,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
 
-        mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?taskKeyTypeFilter=noMatchingFilter")
+        mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=noMatchingFilter")
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reportsKeys)))
                 .andExpect(status().isOk())

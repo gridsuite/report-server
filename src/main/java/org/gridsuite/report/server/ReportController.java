@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -44,13 +43,13 @@ public class ReportController {
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
     public ResponseEntity<List<ReporterModel>> getReport(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Fetch the report's elements") @RequestParam(name = "withElements", required = false, defaultValue = "false") boolean withElements,
-                                                         @Parameter(description = "Filter on a given task key. If provided, will only return elements with the given task key.") @RequestParam(name = "taskKeyFilter", required = false, defaultValue = "") String taskKeyFilter,
-                                                         @Parameter(description = "Kind of matching filter to apply to task key.") @RequestParam(name = "taskKeyFilterMatchingType", required = false) ReportService.TaskKeyFilterMatchingType taskKeyFilterMatchingType,
+                                                         @Parameter(description = "Filter on a the report name. If provided, will only return elements matching this given name.") @RequestParam(name = "reportNameFilter", required = false, defaultValue = "") String reportNameFilter,
+                                                         @Parameter(description = "Kind of matching filter to apply to the report name.") @RequestParam(name = "reportNameMatchingType", required = false) ReportService.ReportNameMatchingType reportNameMatchingType,
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
                                                          @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
-            List<ReporterModel> subReporters = service.getReport(id, withElements, withElements ? severityLevels : null, taskKeyFilter, taskKeyFilterMatchingType).getSubReporters();
-            return CollectionUtils.isEmpty(subReporters) ?
+            List<ReporterModel> subReporters = service.getReport(id, withElements, withElements ? severityLevels : null, reportNameFilter, reportNameMatchingType).getSubReporters();
+            return subReporters.isEmpty() ?
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getSubReporters()) :
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(subReporters);
         } catch (EntityNotFoundException ignored) {
@@ -85,11 +84,11 @@ public class ReportController {
     @DeleteMapping(value = "reports/{id}")
     @Operation(summary = "delete the report")
     @ApiResponse(responseCode = "200", description = "The report has been deleted")
-        public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID id,
-                                                 @Parameter(description = "Filter on a given task key type. If provided, will only delete elements with the given task key type.") @RequestParam(name = "taskKeyTypeFilter", required = false) String taskKeyTypeFilter,
+        public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID reportUuid,
+                                                 @Parameter(description = "Filter on a given report type. If provided, will only delete elements with the given report type.") @RequestParam(name = "reportTypeFilter", required = false) String reportTypeFilter,
                                                  @Parameter(description = "Return 404 if report is not found") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound) {
         try {
-            service.deleteReport(id, taskKeyTypeFilter);
+            service.deleteReport(reportUuid, reportTypeFilter);
         } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {
             return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().build();
         }
