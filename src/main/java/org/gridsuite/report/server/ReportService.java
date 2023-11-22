@@ -250,7 +250,7 @@ public class ReportService {
         filteredTreeReportsInReport.forEach(tre -> deleteRoot(tre.getIdNode()));
 
         if (filteredTreeReportsInReport.size() == allTreeReportsInReport.size()
-            && (reportRepository.deleteReportById(id) == 0)) {
+            && reportRepository.deleteReportById(id) == 0) {
             throw new EmptyResultDataAccessException("No element found", 1);
         }
     }
