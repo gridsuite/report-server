@@ -240,20 +240,18 @@ public class ReportService {
     }
 
     @Transactional
-    public void deleteReport(UUID id, String reportTypeFilter) {
+    public void deleteReport(UUID id, String reportType) {
         Objects.requireNonNull(id);
         List<TreeReportEntity> allTreeReportsInReport = treeReportRepository.findAllByReportId(id);
         List<TreeReportEntity> filteredTreeReportsInReport = allTreeReportsInReport
                 .stream()
-                .filter(tre -> StringUtils.isBlank(reportTypeFilter) || tre.getName().endsWith(reportTypeFilter))
+                .filter(tre -> StringUtils.isBlank(reportType) || tre.getName().endsWith(reportType))
                 .toList();
         filteredTreeReportsInReport.forEach(tre -> deleteRoot(tre.getIdNode()));
 
-        if (filteredTreeReportsInReport.size() == allTreeReportsInReport.size()) {
-            // let's remove the whole Report only if we have removed all its treeReport
-            if (reportRepository.deleteReportById(id) == 0) {
-                throw new EmptyResultDataAccessException("No element found", 1);
-            }
+        if (filteredTreeReportsInReport.size() == allTreeReportsInReport.size()
+            && (reportRepository.deleteReportById(id) == 0)) {
+            throw new EmptyResultDataAccessException("No element found", 1);
         }
     }
 
@@ -270,9 +268,9 @@ public class ReportService {
         identifiers.forEach(this::deleteTreeReport);
     }
 
-    private void deleteTreeReport(UUID reportId, String name) {
+    private void deleteTreeReport(UUID reportId, String reportName) {
         Objects.requireNonNull(reportId);
-        List<TreeReportEntity> treeReports = treeReportRepository.findAllByReportIdAndName(reportId, name);
+        List<TreeReportEntity> treeReports = treeReportRepository.findAllByReportIdAndName(reportId, reportName);
         treeReports.forEach(treeReport -> deleteRoot(treeReport.getIdNode()));
     }
 }
