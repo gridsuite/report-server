@@ -11,6 +11,8 @@ import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.reporter.TypedValue;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
+import org.gridsuite.report.server.dto.ReportValueFilter;
+import org.gridsuite.report.server.dto.SeverityLevel;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.ReportValueEmbeddable;
@@ -46,23 +48,9 @@ public class ReportService {
 
     private static final long NANOS_FROM_EPOCH_TO_START;
 
-    public static final String SEVERITY_VALUE_KEY = "reporterSeverity";
-    public static final String ID_VALUE_KEY = "id";
-
-    /**
-     * @see TypedValue
-     */
-    public enum SeverityLevel {
-        UNKNOWN, TRACE, DEBUG, INFO, WARN, ERROR, FATAL;
-
-        public static SeverityLevel fromValue(String value) {
-            try {
-                return valueOf(value);
-            } catch (final IllegalArgumentException | NullPointerException e) {
-                return UNKNOWN;
-            }
-        }
-    }
+    public static final String REPORTER_SEVERITY_VALUE_KEY = "reporterSeverity";
+    public static final String REPORT_SEVERITY_VALUE_KEY = Report.REPORT_SEVERITY_KEY;
+    public static final String REPORTER_ID_VALUE_KEY = "id";
 
     static {
         long nanoNow = System.nanoTime();
@@ -87,15 +75,15 @@ public class ReportService {
     }
 
     private TypedValue toTypedValue(ReportValueEmbeddable value) {
-        switch (value.getValueType()) {
-            case DOUBLE: return new TypedValue(Double.valueOf(value.getValue()), value.getType());
-            case INTEGER: return new TypedValue(Integer.valueOf(value.getValue()), value.getType());
-            default: return new TypedValue(value.getValue(), value.getType());
-        }
+        return switch (value.getValueType()) {
+            case DOUBLE -> new TypedValue(Double.valueOf(value.getValue()), value.getType());
+            case INTEGER -> new TypedValue(Integer.valueOf(value.getValue()), value.getType());
+            default -> new TypedValue(value.getValue(), value.getType());
+        };
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter) {
+    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter, Pageable pageable) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
@@ -105,23 +93,23 @@ public class ReportService {
         treeReportRepository.findAllByReportIdOrderByNanos(reportEntity.getId())
             .stream()
             .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() || tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
-            .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels)));
+            .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels, pageable)));
         LOGGER.info("----- Report : {} ms", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
 
         return report;
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getSubReport(UUID reporterId, Set<String> severityLevels) {
+    public ReporterModel getSubReport(UUID reporterId, Set<String> severityLevels, Pageable pageable) {
         Objects.requireNonNull(reporterId);
         TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
 
         var report = new ReporterModel(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString());
-        report.addSubReporter(getTreeReport(treeReportEntity, true, severityLevels));
+        report.addSubReporter(getTreeReport(treeReportEntity, true, severityLevels, pageable));
         return report;
     }
 
-    private ReporterModel getTreeReport(TreeReportEntity treeReportEntity, boolean withElements, Set<String> severityLevels) {
+    private ReporterModel getTreeReport(TreeReportEntity treeReportEntity, boolean withElements, Set<String> severityLevels, Pageable pageable) {
         // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
         final List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
                 .stream()
@@ -130,7 +118,7 @@ public class ReportService {
 
         List<ReportElementEntity> allReportElements = null;
         if (withElements) {
-            PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.ASC, "nanos"));
+            PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.ASC, "nanos"));
             allReportElements = getReportElements(treeReportEntitiesIds, pageRequest, severityLevels);
         }
 
@@ -148,7 +136,7 @@ public class ReportService {
         // HHH000104: firstResult/maxResults specified with collection fetch; applying in memory!
         // cf. https://vladmihalcea.com/fix-hibernate-hhh000104-entity-fetch-pagination-warning-message/
         startTime.set(System.nanoTime());
-        Page<ReportElementEntity> reportElementsPage = reportElementRepository.findAll(reportElementRepository.getReportElementsSpecification(treeReportEntitiesIds, severityLevels), pageRequest);
+        Page<ReportElementEntity> reportElementsPage = reportElementRepository.findAll(reportElementRepository.getReportElementsSpecification(treeReportEntitiesIds, new ReportValueFilter(TypedValue.SEVERITY, severityLevels)), pageRequest);
         LOGGER.info("Pagination : {} ms", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
 
         // We must separate in two requests, one with pagination the other one with Join Fetch
@@ -170,8 +158,8 @@ public class ReportService {
             final Map<String, String> dict = entity.getDictionary();
             treeReportEntityDictionaries.put(entity.getIdNode(), dict);
 
-            // This ID is used by the front for direct access to the reporter
-            entity.getValues().add(new ReportValueEmbeddable(ID_VALUE_KEY, entity.getIdNode(), TypedValue.UNTYPED));
+            // This ID is used by the front for direct access to the sub reporter
+            entity.getValues().add(new ReportValueEmbeddable(REPORTER_ID_VALUE_KEY, entity.getIdNode(), TypedValue.UNTYPED));
 
             ReporterModel reporter = new ReporterModel(entity.getName(), dict.get(entity.getName()), toDtoValueMap(entity.getValues()));
             reporters.put(entity.getIdNode(), reporter);
@@ -201,41 +189,38 @@ public class ReportService {
         return reporter;
     }
 
-    private ReportEntity toEntity(UUID id, ReporterModel reportElement) {
+    private void toEntity(UUID id, ReporterModel reportElement) {
         var persistedReport = reportRepository.findById(id).orElseGet(() -> reportRepository.save(new ReportEntity(id)));
         toEntity(persistedReport, reportElement, null);
-        return persistedReport;
     }
 
-    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
+    private void toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         TreeReportEntity newTreeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
             toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
-        newTreeReportEntity.getValues().add(new ReportValueEmbeddable(SEVERITY_VALUE_KEY, maxSeverity(reporterModel), TypedValue.SEVERITY));
+        newTreeReportEntity.getValues().add(new ReportValueEmbeddable(REPORTER_SEVERITY_VALUE_KEY, maxSeverity(reporterModel), TypedValue.SEVERITY));
         TreeReportEntity treeReportEntity = treeReportRepository.save(newTreeReportEntity);
 
         reporterModel.getSubReporters().forEach(r -> toEntity(null, r, treeReportEntity));
         reporterModel.getReports().forEach(r -> toEntity(treeReportEntity, r, dict));
-
-        return treeReportEntity;
     }
 
     private static String maxSeverity(ReporterModel reporter) {
         return reporter.getReports()
             .stream()
-            .map(report -> report.getValues().get("reportSeverity"))
+            .map(report -> report.getValues().get(REPORT_SEVERITY_VALUE_KEY))
             .filter(Objects::nonNull)
-            .map(severity -> SeverityLevel.fromValue(Objects.toString(severity.getValue())))
-            .max(SeverityLevel::compareTo)
+            .map(severity -> SeverityLevel.fromValue(severity.getValue().toString()))
+            .max(Comparator.comparingInt(SeverityLevel::getLevel))
             .orElse(SeverityLevel.UNKNOWN)
             .name();
     }
 
-    private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
+    private void toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
         dict.put(report.getReportKey(), report.getDefaultMessage());
-        return reportElementRepository.save(new ReportElementEntity(null, parentReport,
+        reportElementRepository.save(new ReportElementEntity(null, parentReport,
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
             report.getReportKey(), toValueEntityList(report.getValues())));
     }

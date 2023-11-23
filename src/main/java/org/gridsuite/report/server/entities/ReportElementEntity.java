@@ -6,18 +6,13 @@
  */
 package org.gridsuite.report.server.entities;
 
-import com.powsybl.commons.reporter.TypedValue;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.report.server.ReportService;
-import org.gridsuite.report.server.entities.ReportValueEmbeddable.ValueType;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -56,16 +51,4 @@ public class ReportElementEntity {
     @CollectionTable(foreignKey = @ForeignKey(name = "treeReportEmbeddable_subReports_fk"),
         indexes = @Index(name = "reportElementValues_index", columnList = "report_element_entity_id_report"))
     List<ReportValueEmbeddable> values;
-
-    public boolean hasSeverity(Set<String> severityLevels) {
-        if (CollectionUtils.isEmpty(severityLevels)) {
-            return true;
-        } else {
-            return severityLevels.contains(values.stream()
-                    .filter(value -> value.getValueType() == ValueType.STRING && TypedValue.SEVERITY.equalsIgnoreCase(value.getType()))
-                    .findAny()
-                    .map(ReportValueEmbeddable::getValue)
-                    .orElse(ReportService.SeverityLevel.UNKNOWN.name()));
-        }
-    }
 }

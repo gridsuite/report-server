@@ -8,6 +8,7 @@
 package org.gridsuite.report.server.repositories;
 
 import jakarta.persistence.criteria.Predicate;
+import org.gridsuite.report.server.dto.ReportValueFilter;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -15,7 +16,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -30,14 +34,15 @@ public interface ReportElementRepository extends JpaRepository<ReportElementEnti
     /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
     void deleteAllByIdReportIn(List<UUID> lst);
 
-    default Specification<ReportElementEntity> getReportElementsSpecification(List<UUID> uuids, Set<String> severityLevels) {
+    default Specification<ReportElementEntity> getReportElementsSpecification(List<UUID> uuids, ReportValueFilter reportValueFilter) {
+        // Implement toPredicate method
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(root.get("parentReport").get("idNode").in(uuids));
-            if (severityLevels != null) {
-                predicates.add(root.join("values").get("value").in(severityLevels));
+            if (reportValueFilter.values() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("values").get("type"), reportValueFilter.type()));
+                predicates.add(root.get("values").get("value").in(reportValueFilter.values()));
             }
-            //query.distinct(true);
             return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
