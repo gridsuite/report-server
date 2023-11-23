@@ -249,9 +249,12 @@ public class ReportService {
                 .toList();
         filteredTreeReportsInReport.forEach(tre -> deleteRoot(tre.getIdNode()));
 
-        if (filteredTreeReportsInReport.size() == allTreeReportsInReport.size()
-            && reportRepository.deleteReportById(id) == 0) {
-            throw new EmptyResultDataAccessException("No element found", 1);
+        if (filteredTreeReportsInReport.size() == allTreeReportsInReport.size()) {
+            // let's remove the whole Report only if we have removed all its treeReport
+            Integer nbReportDeleted = reportRepository.deleteReportById(id);
+            if (nbReportDeleted == 0) {
+                throw new EmptyResultDataAccessException("No element found", 1);
+            }
         }
     }
 
