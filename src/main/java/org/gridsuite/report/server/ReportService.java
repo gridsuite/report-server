@@ -11,6 +11,7 @@ import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.reporter.TypedValue;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.report.server.dto.ReportValueFilter;
 import org.gridsuite.report.server.dto.SeverityLevel;
 import org.gridsuite.report.server.entities.ReportElementEntity;
@@ -52,6 +53,10 @@ public class ReportService {
     public static final String REPORT_SEVERITY_VALUE_KEY = Report.REPORT_SEVERITY_KEY;
     public static final String REPORTER_ID_VALUE_KEY = "id";
 
+    public enum ReportNameMatchingType {
+        EXACT_MATCHING, ENDS_WITH
+    }
+
     static {
         long nanoNow = System.nanoTime();
         long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
@@ -83,7 +88,7 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String taskKeyFilter, Pageable pageable) {
+    public ReporterModel getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String reportNameFilter, ReportNameMatchingType reportNameMatchingType, Pageable pageable) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
@@ -92,10 +97,12 @@ public class ReportService {
         var report = new ReporterModel(reportId.toString(), reportId.toString());
         treeReportRepository.findAllByReportIdOrderByNanos(reportEntity.getId())
             .stream()
-            .filter(tre -> taskKeyFilter == null || taskKeyFilter.isEmpty() || tre.getName().startsWith(taskKeyFilter + "@")) // TODO later we should use exact matching, not starstWith
+                .filter(tre -> StringUtils.isBlank(reportNameFilter)
+                        || tre.getName().startsWith("Root") // FIXME remove this hack when "Root" report will follow the same rules than computations and modifications
+                        || reportNameMatchingType == ReportNameMatchingType.EXACT_MATCHING && tre.getName().equals(reportNameFilter)
+                        || reportNameMatchingType == ReportNameMatchingType.ENDS_WITH && tre.getName().endsWith(reportNameFilter))
             .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, severityLevels, pageable)));
         LOGGER.info("----- Report : {} ms", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
-
         return report;
     }
 
@@ -254,11 +261,21 @@ public class ReportService {
     }
 
     @Transactional
-    public void deleteReport(UUID id) {
+    public void deleteReport(UUID id, String reportType) {
         Objects.requireNonNull(id);
-        treeReportRepository.findIdNodeByReportId(id).forEach(r -> deleteRoot(r.getIdNode()));
-        if (reportRepository.deleteReportById(id) == 0) {
-            throw new EmptyResultDataAccessException("No element found", 1);
+        List<TreeReportEntity> allTreeReportsInReport = treeReportRepository.findAllByReportId(id);
+        List<TreeReportEntity> filteredTreeReportsInReport = allTreeReportsInReport
+                .stream()
+                .filter(tre -> StringUtils.isBlank(reportType) || tre.getName().endsWith(reportType))
+                .toList();
+        filteredTreeReportsInReport.forEach(tre -> deleteRoot(tre.getIdNode()));
+
+        if (filteredTreeReportsInReport.size() == allTreeReportsInReport.size()) {
+            // let's remove the whole Report only if we have removed all its treeReport
+            Integer nbReportDeleted = reportRepository.deleteReportById(id);
+            if (nbReportDeleted == 0) {
+                throw new EmptyResultDataAccessException("No element found", 1);
+            }
         }
     }
 
@@ -275,9 +292,9 @@ public class ReportService {
         identifiers.forEach(this::deleteTreeReport);
     }
 
-    private void deleteTreeReport(UUID reportId, String name) {
+    private void deleteTreeReport(UUID reportId, String reportName) {
         Objects.requireNonNull(reportId);
-        List<TreeReportEntity> treeReports = treeReportRepository.findAllByReportIdAndName(reportId, name);
+        List<TreeReportEntity> treeReports = treeReportRepository.findAllByReportIdAndName(reportId, reportName);
         treeReports.forEach(treeReport -> deleteRoot(treeReport.getIdNode()));
     }
 }

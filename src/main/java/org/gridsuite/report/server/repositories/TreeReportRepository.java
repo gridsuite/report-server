@@ -25,6 +25,8 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     List<TreeReportEntity> findAllByReportIdOrderByNanos(UUID uuid);
 
+    List<TreeReportEntity> findAllByReportId(UUID uuid);
+
     @EntityGraph(attributePaths = {"values", "dictionary"}, type = EntityGraph.EntityGraphType.LOAD)
     List<TreeReportEntity> findAllByIdNodeInOrderByNanos(Collection<UUID> uuids);
 

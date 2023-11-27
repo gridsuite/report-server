@@ -190,6 +190,68 @@ public class ReportControllerTest {
     }
 
     @Test
+    public void testGetReportWithExactMatchingTrue() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        SQLStatementCountValidator.reset();
+        final String filterValue = "roundTripReporterJsonTest";
+        String result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=UCTE_ERROR,UCTE_TRACE&reportNameFilter=" + filterValue + "&reportNameMatchingType=EXACT_MATCHING"))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+        assertReportEquals(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1), result, mapper);
+
+        assertRequestsCount(5, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetReportWithExactMatchingFalse() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        SQLStatementCountValidator.reset();
+        final String filterValue = "__noMatchingValue__";
+        String result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&reportNameFilter=" + filterValue + "&reportNameMatchingType=EXACT_MATCHING"))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+        assertReportEquals(toString(DEFAULT_EMPTY_REPORT1), result, mapper);
+
+        assertRequestsCount(2, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetReportWithEndsWithTrue() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        SQLStatementCountValidator.reset();
+        final String filterEndsWithValue = "ReporterJsonTest";
+        String result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=UCTE_ERROR,UCTE_TRACE&reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+        assertReportEquals(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1), result, mapper);
+
+        assertRequestsCount(5, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetReportWithEndsWithFalse() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        SQLStatementCountValidator.reset();
+        final String filterEndsWithValue = "__noMatchingValue__";
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
+
+        assertRequestsCount(2, 0, 0, 0);
+    }
+
+    @Test
     public void testGetSubReport() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
@@ -229,13 +291,59 @@ public class ReportControllerTest {
 
         mvc.perform(delete(URL_TEMPLATE + "/treereports")
                 .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(Map.of(REPORT_UUID, "LoadFlow"))))
+                .content(objectMapper.writeValueAsString(Map.of(UUID.fromString(REPORT_UUID), "LoadFlow"))))
             .andExpect(status().isOk())
             .andReturn();
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
             .andExpect(status().isOk())
-            .andExpect(content().json("[]"));
+            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
+    }
+
+    @Test
+    public void testDeleteReportWithFilter() throws Exception {
+        String testReportLoadflow = toString(REPORT_LOADFLOW);
+        insertReport(REPORT_UUID, testReportLoadflow);
+        Map<UUID, String> reportsKeys = new HashMap<>();
+        final String reportType = "LoadFlow";
+        reportsKeys.put(UUID.fromString(REPORT_UUID), reportType);
+
+        SQLStatementCountValidator.reset();
+
+        mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=" + reportType)
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reportsKeys)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertRequestsCount(5, 0, 1, 6);
+
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
+    }
+
+    @Test
+    public void testDeleteReportWithBadFilter() throws Exception {
+        String testReportLoadflow = toString(REPORT_LOADFLOW);
+        insertReport(REPORT_UUID, testReportLoadflow);
+        Map<UUID, String> reportsKeys = new HashMap<>();
+        final String reportType = "LoadFlow";
+        reportsKeys.put(UUID.fromString(REPORT_UUID), reportType);
+
+        SQLStatementCountValidator.reset();
+
+        mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=noMatchingFilter")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reportsKeys)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // no deletion here
+        assertRequestsCount(1, 0, 0, 0);
+
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
+                .andExpect(status().isOk());
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
