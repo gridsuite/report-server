@@ -8,22 +8,29 @@ package org.gridsuite.report.server;
 
 import com.powsybl.commons.reporter.Report;
 import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.reporter.TypedValue;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
+import org.gridsuite.report.server.entities.ReportValueEmbeddable;
 import org.gridsuite.report.server.entities.TreeReportEntity;
 import org.gridsuite.report.server.repositories.ReportElementRepository;
 import org.gridsuite.report.server.repositories.ReportRepository;
 import org.gridsuite.report.server.repositories.TreeReportRepository;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
+import static org.gridsuite.report.server.ReportService.REPORT_SEVERITY_VALUE_KEY;
 
 /**
  * @author Slimane Amar <slimane.amar at rte-france.com>
@@ -43,6 +50,8 @@ class TreeReportTest {
     @Autowired
     private ReportElementRepository reportElementRepository;
 
+    private static final Pageable DEFAULT_PAGEABLE = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.ASC, "nanos"));
+
     private TreeReportEntity createTreeReport(String name, ReportEntity reportEntity, TreeReportEntity parent, long nanos) {
         TreeReportEntity entity = new TreeReportEntity();
         entity.setName(name);
@@ -53,7 +62,38 @@ class TreeReportTest {
     }
 
     private ReportElementEntity createReportElement(String name, TreeReportEntity parent, long nanos) {
-        return new ReportElementEntity(null, parent, nanos, name, List.of());
+        return createReportElement(name, parent, nanos, null);
+    }
+
+    private ReportElementEntity createReportElement(String name, TreeReportEntity parent, long nanos, String severity) {
+        return new ReportElementEntity(null, parent, nanos, name,
+            severity == null ? List.of() : createReportValues(severity));
+    }
+
+    private List<ReportValueEmbeddable> createReportValues(String severity) {
+        return List.of(
+            new ReportValueEmbeddable("value1", severity, "val1"),
+            new ReportValueEmbeddable(REPORT_SEVERITY_VALUE_KEY, severity, TypedValue.SEVERITY),
+            new ReportValueEmbeddable("value1", severity, "vla2")
+        );
+    }
+
+    @Test
+    void testFilters() {
+        UUID idReport = UUID.randomUUID();
+        ReportEntity reportEntity = reportRepository.save(new ReportEntity(idReport));
+        TreeReportEntity treeReportEntity = createTreeReport("test", reportEntity, null, 1000);
+        treeReportEntity = treeReportRepository.save(treeReportEntity);
+
+        ReportElementEntity reportElement1 = createReportElement("log1", treeReportEntity, 1000, "TRACE");
+        ReportElementEntity reportElement2 = createReportElement("log2", treeReportEntity, 2000, "INFO");
+        ReportElementEntity reportElement3 = createReportElement("log3", treeReportEntity, 3000, "TRACE");
+        reportElementRepository.saveAll(List.of(reportElement1, reportElement2, reportElement3));
+
+        ReporterModel report = reportService.getReport(idReport, true, Set.of("INFO", "TRACE"), "", ReportService.ReportNameMatchingType.EXACT_MATCHING, DEFAULT_PAGEABLE);
+        ReporterModel reporter = report.getSubReporters().get(0);
+
+        Assertions.assertEquals(List.of("log1", "log2", "log3"), reporter.getReports().stream().map(Report::getReportKey).toList());
     }
 
     @BeforeEach
@@ -81,8 +121,8 @@ class TreeReportTest {
         TreeReportEntity treeReportEntity3 = createTreeReport("root3", reportEntity, null, 1000);
         treeReportRepository.saveAll(List.of(treeReportEntity1, treeReportEntity2, treeReportEntity3));
 
-        ReporterModel report = reportService.getReport(idReport, false, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
-        assertEquals(List.of("root3", "root1", "root2"), report.getSubReporters().stream().map(ReporterModel::getTaskKey).toList());
+        ReporterModel report = reportService.getReport(idReport, false, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING, DEFAULT_PAGEABLE);
+        Assertions.assertEquals(List.of("root3", "root1", "root2"), report.getSubReporters().stream().map(ReporterModel::getTaskKey).toList());
     }
 
     @Test
@@ -97,9 +137,9 @@ class TreeReportTest {
         TreeReportEntity treeReportEntity3 = createTreeReport("child3", null, treeReportEntity, 1000);
         treeReportRepository.saveAll(List.of(treeReportEntity1, treeReportEntity2, treeReportEntity3));
 
-        ReporterModel report = reportService.getReport(idReport, false, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
+        ReporterModel report = reportService.getReport(idReport, false, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING, DEFAULT_PAGEABLE);
         ReporterModel reporter = report.getSubReporters().get(0);
-        assertEquals(List.of("child3", "child1", "child2"), reporter.getSubReporters().stream().map(ReporterModel::getTaskKey).toList());
+        Assertions.assertEquals(List.of("child3", "child1", "child2"), reporter.getSubReporters().stream().map(ReporterModel::getTaskKey).toList());
     }
 
     @Test
@@ -114,9 +154,9 @@ class TreeReportTest {
         ReportElementEntity reportElement3 = createReportElement("log3", treeReportEntity, 1000);
         reportElementRepository.saveAll(List.of(reportElement1, reportElement2, reportElement3));
 
-        ReporterModel report = reportService.getReport(idReport, true, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
+        ReporterModel report = reportService.getReport(idReport, true, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING, DEFAULT_PAGEABLE);
         ReporterModel reporter = report.getSubReporters().get(0);
 
-        assertEquals(List.of("log3", "log1", "log2"), reporter.getReports().stream().map(Report::getReportKey).toList());
+        Assertions.assertEquals(List.of("log3", "log1", "log2"), reporter.getReports().stream().map(Report::getReportKey).toList());
     }
 }

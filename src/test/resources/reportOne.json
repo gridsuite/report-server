@@ -22,7 +22,7 @@
                 "values": {
                   "reportSeverity": {
                     "value": "UCTE_ERROR",
-                    "type": "ERROR_LOGLEVEL"
+                    "type": "SEVERITY"
                   },
                   "lineId": {
                     "value": "FFFFFF11 XXXXXX11 1"
@@ -38,7 +38,7 @@
                 "values": {
                   "reportSeverity": {
                     "value": "UCTE_ERROR",
-                    "type": "ERROR_LOGLEVEL"
+                    "type": "SEVERITY"
                   },
                   "lineId": {
                     "value": "FFFFFF11 XXXXXX12 1"
@@ -54,7 +54,7 @@
                 "values": {
                   "reportSeverity": {
                     "value": "UCTE_ERROR",
-                    "type": "ERROR_LOGLEVEL"
+                    "type": "SEVERITY"
                   },
                   "lineId": {
                     "value": "FFFFFF13 XXXXXX13 1"
@@ -70,7 +70,7 @@
                 "values": {
                   "reportSeverity": {
                     "value": "UCTE_ERROR",
-                    "type": "ERROR_LOGLEVEL"
+                    "type": "SEVERITY"
                   },
                   "lineId": {
                     "value": "FFFFFF13 XXXXXX14 1"
@@ -107,7 +107,7 @@
                 "values": {
                   "reportSeverity": {
                     "value": "UCTE_TRACE",
-                    "type": "TRACE_LOGLEVEL"
+                    "type": "SEVERITY"
                   },
                   "substationName": {
                     "value": "FFFFFF",
@@ -124,7 +124,7 @@
                   },
                   "reportSeverity": {
                     "value": "UCTE_TRACE",
-                    "type": "TRACE_LOGLEVEL"
+                    "type": "SEVERITY"
                   }
                 }
               },
@@ -136,7 +136,7 @@
                   },
                   "reportSeverity": {
                     "value": "UCTE_TRACE",
-                    "type": "TRACE_LOGLEVEL"
+                    "type": "SEVERITY"
                   }
                 }
               },
@@ -148,7 +148,7 @@
                   },
                   "reportSeverity": {
                     "value": "UCTE_TRACE",
-                    "type": "TRACE_LOGLEVEL"
+                    "type": "SEVERITY"
                   }
                 }
               }
@@ -175,7 +175,7 @@
               },
               "reportSeverity": {
                 "value": "UCTE_TRACE",
-                "type": "TRACE_LOGLEVEL"
+                "type": "SEVERITY"
               },
               "xnodeCode": {
                 "value": "XXXXXX11"
@@ -190,7 +190,7 @@
               },
               "reportSeverity": {
                 "value": "UCTE_TRACE",
-                "type": "TRACE_LOGLEVEL"
+                "type": "SEVERITY"
               },
               "xnodeCode": {
                 "value": "XXXXXX12"
@@ -205,7 +205,7 @@
               },
               "reportSeverity": {
                 "value": "UCTE_TRACE",
-                "type": "TRACE_LOGLEVEL"
+                "type": "SEVERITY"
               },
               "xnodeCode": {
                 "value": "XXXXXX13"
@@ -220,7 +220,7 @@
               },
               "reportSeverity": {
                 "value": "UCTE_TRACE",
-                "type": "TRACE_LOGLEVEL"
+                "type": "SEVERITY"
               },
               "xnodeCode": {
                 "value": "XXXXXX14"

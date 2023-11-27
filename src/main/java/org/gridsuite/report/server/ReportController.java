@@ -12,12 +12,13 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,9 +47,10 @@ public class ReportController {
                                                          @Parameter(description = "Filter on a the report name. If provided, will only return elements matching this given name.") @RequestParam(name = "reportNameFilter", required = false, defaultValue = "") String reportNameFilter,
                                                          @Parameter(description = "Kind of matching filter to apply to the report name.") @RequestParam(name = "reportNameMatchingType", required = false) ReportService.ReportNameMatchingType reportNameMatchingType,
                                                          @Parameter(description = "Filter on severity levels. If provided, will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
-                                                         @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+                                                         @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName,
+                                                         @Parameter(description = "Pagination parameters") Pageable pageable) {
         try {
-            List<ReporterModel> subReporters = service.getReport(id, withElements, withElements ? severityLevels : null, reportNameFilter, reportNameMatchingType).getSubReporters();
+            List<ReporterModel> subReporters = service.getReport(id, withElements, withElements ? severityLevels : null, reportNameFilter, reportNameMatchingType, pageable).getSubReporters();
             return subReporters.isEmpty() ?
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getSubReporters()) :
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(subReporters);
@@ -62,12 +64,12 @@ public class ReportController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
     public ResponseEntity<List<ReporterModel>> getSubReport(@PathVariable("id") UUID id,
-                                                         @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
+                                                            @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
+                                                            @Parameter(description = "Pagination parameters") Pageable pageable) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getSubReport(id, severityLevels)
-                            .getSubReporters());
+                    .body(service.getSubReport(id, severityLevels, pageable).getSubReporters());
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }
