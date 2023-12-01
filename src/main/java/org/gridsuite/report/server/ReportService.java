@@ -42,7 +42,9 @@ public class ReportService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
 
     private static final long NANOS_FROM_EPOCH_TO_START;
-    private static final int REQUEST_MAX_PARAM_NUMBER = 10000; // the maximum number of parameters allowed in an In request
+
+    // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
+    private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
 
     /**
      * @see TypedValue
@@ -238,10 +240,10 @@ public class ReportService {
      */
     private void deleteRoot(UUID rootTreeReportId) {
         List<UUID> treeReportIds = treeReportRepository.getSubReportsNodes(rootTreeReportId).stream().map(UUID::fromString).toList();
-        List<UUID> reportIds = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReportIds)
+        List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReportIds)
             .stream().map(ReportElementEntity.ProjectionIdReport::getIdReport).toList();
 
-        Lists.partition(reportIds, REQUEST_MAX_PARAM_NUMBER) // prevents the number of in request parameters to reach the maximum allowed (65,535)
+        Lists.partition(reportElementIds, SQL_QUERY_MAX_PARAM_NUMBER)
                 .forEach(reportElementRepository::deleteAllByIdReportIn);
 
         treeReportRepository.deleteAllByIdNodeIn(treeReportIds);
