@@ -6,6 +6,7 @@
  */
 package org.gridsuite.report.server;
 
+import com.google.common.collect.Lists;
 import com.powsybl.commons.reporter.Report;
 import com.powsybl.commons.reporter.ReporterModel;
 import com.powsybl.commons.reporter.TypedValue;
@@ -41,6 +42,9 @@ public class ReportService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
 
     private static final long NANOS_FROM_EPOCH_TO_START;
+
+    // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
+    private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
 
     /**
      * @see TypedValue
@@ -231,12 +235,18 @@ public class ReportService {
         }
     }
 
-    private void deleteRoot(UUID id) {
-        List<UUID> treeReport = treeReportRepository.getSubReportsNodes(id).stream().map(UUID::fromString).collect(Collectors.toList());
-        List<UUID> elements = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReport)
-            .stream().map(ReportElementEntity.ProjectionIdReport::getIdReport).collect(Collectors.toList());
-        reportElementRepository.deleteAllByIdReportIn(elements);
-        treeReportRepository.deleteAllByIdNodeIn(treeReport);
+    /**
+     * delete all the report and tree report elements depending on a root tree report
+     */
+    private void deleteRoot(UUID rootTreeReportId) {
+        List<UUID> treeReportIds = treeReportRepository.getSubReportsNodes(rootTreeReportId).stream().map(UUID::fromString).toList();
+        List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReportIds)
+            .stream().map(ReportElementEntity.ProjectionIdReport::getIdReport).toList();
+
+        Lists.partition(reportElementIds, SQL_QUERY_MAX_PARAM_NUMBER)
+                .forEach(reportElementRepository::deleteAllByIdReportIn);
+
+        treeReportRepository.deleteAllByIdNodeIn(treeReportIds);
     }
 
     @Transactional
