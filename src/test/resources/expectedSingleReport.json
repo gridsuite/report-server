@@ -5,7 +5,13 @@
       "taskKey": "roundTripReporterJsonTest",
       "reports": [
         {
-          "reportKey": "novalueReport"
+          "reportKey": "novalueReport",
+          "values": {
+            "reportSeverity": {
+              "value": "INFO",
+              "type": "SEVERITY"
+            }
+          }
         }
       ],
       "subReporters": [
@@ -22,8 +28,8 @@
                   "reportKey": "negativeLineResistance",
                   "values": {
                     "reportSeverity": {
-                      "value": "UCTE_ERROR",
-                      "type": "ERROR_LOGLEVEL"
+                      "value": "ERROR",
+                      "type": "SEVERITY"
                     },
                     "lineId": {
                       "value": "FFFFFF11 XXXXXX11 1"
@@ -38,8 +44,8 @@
                   "reportKey": "negativeLineResistance",
                   "values": {
                     "reportSeverity": {
-                      "value": "UCTE_ERROR",
-                      "type": "ERROR_LOGLEVEL"
+                      "value": "ERROR",
+                      "type": "SEVERITY"
                     },
                     "lineId": {
                       "value": "FFFFFF11 XXXXXX12 1"
@@ -54,8 +60,8 @@
                   "reportKey": "negativeLineResistance",
                   "values": {
                     "reportSeverity": {
-                      "value": "UCTE_ERROR",
-                      "type": "ERROR_LOGLEVEL"
+                      "value": "ERROR",
+                      "type": "SEVERITY"
                     },
                     "lineId": {
                       "value": "FFFFFF13 XXXXXX13 1"
@@ -70,8 +76,8 @@
                   "reportKey": "negativeLineResistance",
                   "values": {
                     "reportSeverity": {
-                      "value": "UCTE_ERROR",
-                      "type": "ERROR_LOGLEVEL"
+                      "value": "ERROR",
+                      "type": "SEVERITY"
                     },
                     "lineId": {
                       "value": "FFFFFF13 XXXXXX14 1"
@@ -107,8 +113,8 @@
                   "reportKey": "createSubstation",
                   "values": {
                     "reportSeverity": {
-                      "value": "UCTE_TRACE",
-                      "type": "TRACE_LOGLEVEL"
+                      "value": "TRACE",
+                      "type": "SEVERITY"
                     },
                     "substationName": {
                       "value": "FFFFFF",
@@ -124,8 +130,8 @@
                       "type": "VOLTAGE_LEVEL"
                     },
                     "reportSeverity": {
-                      "value": "UCTE_TRACE",
-                      "type": "TRACE_LOGLEVEL"
+                      "value": "TRACE",
+                      "type": "SEVERITY"
                     }
                   }
                 },
@@ -136,8 +142,8 @@
                       "value": "FFFFFF11"
                     },
                     "reportSeverity": {
-                      "value": "UCTE_TRACE",
-                      "type": "TRACE_LOGLEVEL"
+                      "value": "TRACE",
+                      "type": "SEVERITY"
                     }
                   }
                 },
@@ -148,8 +154,8 @@
                       "value": "FFFFFF13"
                     },
                     "reportSeverity": {
-                      "value": "UCTE_TRACE",
-                      "type": "TRACE_LOGLEVEL"
+                      "value": "TRACE",
+                      "type": "SEVERITY"
                     }
                   }
                 }
@@ -175,8 +181,8 @@
                   "value": "FFFFFF11 XXXXXX11 1"
                 },
                 "reportSeverity": {
-                  "value": "UCTE_TRACE",
-                  "type": "TRACE_LOGLEVEL"
+                  "value": "TRACE",
+                  "type": "SEVERITY"
                 },
                 "xnodeCode": {
                   "value": "XXXXXX11"
@@ -190,8 +196,8 @@
                   "value": "FFFFFF11 XXXXXX12 1"
                 },
                 "reportSeverity": {
-                  "value": "UCTE_TRACE",
-                  "type": "TRACE_LOGLEVEL"
+                  "value": "TRACE",
+                  "type": "SEVERITY"
                 },
                 "xnodeCode": {
                   "value": "XXXXXX12"
@@ -205,8 +211,8 @@
                   "value": "FFFFFF13 XXXXXX13 1"
                 },
                 "reportSeverity": {
-                  "value": "UCTE_TRACE",
-                  "type": "TRACE_LOGLEVEL"
+                  "value": "TRACE",
+                  "type": "SEVERITY"
                 },
                 "xnodeCode": {
                   "value": "XXXXXX13"
@@ -220,8 +226,8 @@
                   "value": "FFFFFF13 XXXXXX14 1"
                 },
                 "reportSeverity": {
-                  "value": "UCTE_TRACE",
-                  "type": "TRACE_LOGLEVEL"
+                  "value": "TRACE",
+                  "type": "SEVERITY"
                 },
                 "xnodeCode": {
                   "value": "XXXXXX14"

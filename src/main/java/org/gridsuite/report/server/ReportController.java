@@ -45,7 +45,7 @@ public class ReportController {
                                                          @Parameter(description = "Fetch the report's elements") @RequestParam(name = "withElements", required = false, defaultValue = "false") boolean withElements,
                                                          @Parameter(description = "Filter on a the report name. If provided, will only return elements matching this given name.") @RequestParam(name = "reportNameFilter", required = false, defaultValue = "") String reportNameFilter,
                                                          @Parameter(description = "Kind of matching filter to apply to the report name.") @RequestParam(name = "reportNameMatchingType", required = false) ReportService.ReportNameMatchingType reportNameMatchingType,
-                                                         @Parameter(description = "Filter on severity levels. If provided, will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
+                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
                                                          @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
             List<ReporterModel> subReporters = service.getReport(id, withElements, withElements ? severityLevels : null, reportNameFilter, reportNameMatchingType).getSubReporters();
@@ -62,7 +62,7 @@ public class ReportController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
     public ResponseEntity<List<ReporterModel>> getSubReport(@PathVariable("id") UUID id,
-                                                         @Parameter(description = "Filter on severity levels. If provided, will only return those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
+                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)

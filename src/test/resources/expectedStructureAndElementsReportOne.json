@@ -7,7 +7,13 @@
             "reports":
             [
                 {
-                    "reportKey": "novalueReport"
+                    "reportKey": "novalueReport",
+                    "values": {
+                        "reportSeverity": {
+                            "value": "INFO",
+                            "type": "SEVERITY"
+                        }
+                    }
                 }
             ],
             "subReporters":
@@ -29,8 +35,8 @@
                                     {
                                         "reportSeverity":
                                         {
-                                            "value": "UCTE_ERROR",
-                                            "type": "ERROR_LOGLEVEL"
+                                            "value": "ERROR",
+                                            "type": "SEVERITY"
                                         },
                                         "lineId":
                                         {
@@ -49,8 +55,8 @@
                                     {
                                         "reportSeverity":
                                         {
-                                            "value": "UCTE_ERROR",
-                                            "type": "ERROR_LOGLEVEL"
+                                            "value": "ERROR",
+                                            "type": "SEVERITY"
                                         },
                                         "lineId":
                                         {
@@ -69,8 +75,8 @@
                                     {
                                         "reportSeverity":
                                         {
-                                            "value": "UCTE_ERROR",
-                                            "type": "ERROR_LOGLEVEL"
+                                            "value": "ERROR",
+                                            "type": "SEVERITY"
                                         },
                                         "lineId":
                                         {
@@ -89,8 +95,8 @@
                                     {
                                         "reportSeverity":
                                         {
-                                            "value": "UCTE_ERROR",
-                                            "type": "ERROR_LOGLEVEL"
+                                            "value": "ERROR",
+                                            "type": "SEVERITY"
                                         },
                                         "lineId":
                                         {
@@ -134,8 +140,8 @@
                                     {
                                         "reportSeverity":
                                         {
-                                            "value": "UCTE_TRACE",
-                                            "type": "TRACE_LOGLEVEL"
+                                            "value": "TRACE",
+                                            "type": "SEVERITY"
                                         },
                                         "substationName":
                                         {
@@ -155,8 +161,8 @@
                                         },
                                         "reportSeverity":
                                         {
-                                            "value": "UCTE_TRACE",
-                                            "type": "TRACE_LOGLEVEL"
+                                            "value": "TRACE",
+                                            "type": "SEVERITY"
                                         }
                                     }
                                 },
@@ -170,8 +176,8 @@
                                         },
                                         "reportSeverity":
                                         {
-                                            "value": "UCTE_TRACE",
-                                            "type": "TRACE_LOGLEVEL"
+                                            "value": "TRACE",
+                                            "type": "SEVERITY"
                                         }
                                     }
                                 },
@@ -185,8 +191,8 @@
                                         },
                                         "reportSeverity":
                                         {
-                                            "value": "UCTE_TRACE",
-                                            "type": "TRACE_LOGLEVEL"
+                                            "value": "TRACE",
+                                            "type": "SEVERITY"
                                         }
                                     }
                                 }
@@ -218,8 +224,8 @@
                                 },
                                 "reportSeverity":
                                 {
-                                    "value": "UCTE_TRACE",
-                                    "type": "TRACE_LOGLEVEL"
+                                    "value": "TRACE",
+                                    "type": "SEVERITY"
                                 },
                                 "xnodeCode":
                                 {
@@ -237,8 +243,8 @@
                                 },
                                 "reportSeverity":
                                 {
-                                    "value": "UCTE_TRACE",
-                                    "type": "TRACE_LOGLEVEL"
+                                    "value": "TRACE",
+                                    "type": "SEVERITY"
                                 },
                                 "xnodeCode":
                                 {
@@ -256,8 +262,8 @@
                                 },
                                 "reportSeverity":
                                 {
-                                    "value": "UCTE_TRACE",
-                                    "type": "TRACE_LOGLEVEL"
+                                    "value": "TRACE",
+                                    "type": "SEVERITY"
                                 },
                                 "xnodeCode":
                                 {
@@ -275,8 +281,8 @@
                                 },
                                 "reportSeverity":
                                 {
-                                    "value": "UCTE_TRACE",
-                                    "type": "TRACE_LOGLEVEL"
+                                    "value": "TRACE",
+                                    "type": "SEVERITY"
                                 },
                                 "xnodeCode":
                                 {
