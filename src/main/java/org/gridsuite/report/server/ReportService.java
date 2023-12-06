@@ -190,29 +190,37 @@ public class ReportService {
         return persistedReport;
     }
 
-    private TreeReportEntity toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
+    private void toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
+        // This return a list of ReportElementEntity to be saved at the end, otherwise
+        // hibernate.order_insert don't work properly since https://hibernate.atlassian.net/browse/HHH-16485 hibernate 6.2.2
+        List<ReportElementEntity> reportElements = browseReportModeltoEntity(persistedReport, reporterModel, parentNode);
+        reportElementRepository.saveAll(reportElements);
+    }
+
+    private List<ReportElementEntity> browseReportModeltoEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
-        var newTreeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
+        TreeReportEntity treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
                 toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
-                System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
-        var treeReportEntity = treeReportRepository.save(newTreeReportEntity);
+                System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
+
+        List<ReportElementEntity> reportElementEntities = new ArrayList<>();
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
-        IntStream.range(0, subReporters.size()).forEach(idx -> toEntity(null, subReporters.get(idx), treeReportEntity));
+        IntStream.range(0, subReporters.size()).forEach(idx -> reportElementEntities.addAll(browseReportModeltoEntity(null, subReporters.get(idx), treeReportEntity)));
 
         Collection<Report> reports = reporterModel.getReports();
         List<Report> reportsAsList = new ArrayList<>(reports);
-        IntStream.range(0, reportsAsList.size()).forEach(idx -> toEntity(treeReportEntity, reportsAsList.get(idx), dict));
+        IntStream.range(0, reportsAsList.size()).forEach(idx -> reportElementEntities.add(toReportElementEntity(treeReportEntity, reportsAsList.get(idx), dict)));
 
-        return treeReportEntity;
+        return reportElementEntities;
     }
 
-    private ReportElementEntity toEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
+    private ReportElementEntity toReportElementEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
         dict.put(report.getReportKey(), report.getDefaultMessage());
-        return reportElementRepository.save(new ReportElementEntity(null, parentReport,
+        return new ReportElementEntity(null, parentReport,
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
-            report.getReportKey(), toValueEntityList(report.getValues())));
+            report.getReportKey(), toValueEntityList(report.getValues()));
     }
 
     private List<ReportValueEmbeddable> toValueEntityList(Map<String, TypedValue> values) {
