@@ -156,8 +156,8 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        assertRequestsCount(2, 2, 0, 0);
-        //12 insert for now
+        // expect 6 batched inserts of different tables and no updates
+        assertRequestsCount(2, 6, 0, 0);
         SQLStatementCountValidator.reset();
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
