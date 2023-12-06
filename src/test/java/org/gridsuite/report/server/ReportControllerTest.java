@@ -272,7 +272,7 @@ public class ReportControllerTest {
     public void testDeleteSubreports() throws Exception {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
-        
+
         // Expect 4 batched inserts only and no updates
         assertRequestsCount(2, 4, 0, 0);
 
