@@ -206,11 +206,11 @@ public class ReportService {
         List<ReportElementEntity> reportElementEntities = new ArrayList<>();
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
-        IntStream.range(0, subReporters.size()).forEach(idx -> reportElementEntities.addAll(traverseReportModel(null, subReporters.get(idx), treeReportEntity)));
+        reportElementEntities.addAll(IntStream.range(0, subReporters.size()).mapToObj(idx -> traverseReportModel(null, subReporters.get(idx), treeReportEntity)).flatMap(List::stream).collect(Collectors.toList()));
 
         Collection<Report> reports = reporterModel.getReports();
         List<Report> reportsAsList = new ArrayList<>(reports);
-        IntStream.range(0, reportsAsList.size()).forEach(idx -> reportElementEntities.add(toReportElementEntity(treeReportEntity, reportsAsList.get(idx), dict)));
+        reportElementEntities.addAll(IntStream.range(0, reportsAsList.size()).mapToObj(idx -> toReportElementEntity(treeReportEntity, reportsAsList.get(idx), dict)).collect(Collectors.toList()));
 
         return reportElementEntities;
     }
