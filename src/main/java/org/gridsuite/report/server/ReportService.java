@@ -186,18 +186,17 @@ public class ReportService {
 
     private ReportEntity toEntity(UUID id, ReporterModel reportElement) {
         var persistedReport = reportRepository.findById(id).orElseGet(() -> reportRepository.save(new ReportEntity(id)));
-        toEntity(persistedReport, reportElement, null);
+        saveAllReportElements(persistedReport, reportElement, null);
         return persistedReport;
     }
 
-    private void toEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
+    private void saveAllReportElements(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
         // This return a list of ReportElementEntity to be saved at the end, otherwise
         // hibernate.order_insert don't work properly since https://hibernate.atlassian.net/browse/HHH-16485 hibernate 6.2.2
-        List<ReportElementEntity> reportElements = browseReportModeltoEntity(persistedReport, reporterModel, parentNode);
-        reportElementRepository.saveAll(reportElements);
+        reportElementRepository.saveAll(traverseReportModel(persistedReport, reporterModel, parentNode));
     }
 
-    private List<ReportElementEntity> browseReportModeltoEntity(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
+    private List<ReportElementEntity> traverseReportModel(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         TreeReportEntity treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
@@ -207,7 +206,7 @@ public class ReportService {
         List<ReportElementEntity> reportElementEntities = new ArrayList<>();
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
-        IntStream.range(0, subReporters.size()).forEach(idx -> reportElementEntities.addAll(browseReportModeltoEntity(null, subReporters.get(idx), treeReportEntity)));
+        IntStream.range(0, subReporters.size()).forEach(idx -> reportElementEntities.addAll(traverseReportModel(null, subReporters.get(idx), treeReportEntity)));
 
         Collection<Report> reports = reporterModel.getReports();
         List<Report> reportsAsList = new ArrayList<>(reports);
@@ -236,7 +235,7 @@ public class ReportService {
         Optional<ReportEntity> reportEntity = reportRepository.findById(id);
         if (reportEntity.isPresent()) {
             LOGGER.debug("Reporter {} present, append ", reporter.getDefaultName());
-            toEntity(reportEntity.get(), reporter, null);
+            saveAllReportElements(reportEntity.get(), reporter, null);
         } else {
             LOGGER.debug("Reporter {} absent, create ", reporter.getDefaultName());
             toEntity(id, reporter);
