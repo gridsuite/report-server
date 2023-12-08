@@ -4,7 +4,13 @@
     "taskKey": "testImport",
     "reports": [
       {
-        "reportKey": "novalueReport"
+        "reportKey": "novalueReport",
+        "values": {
+          "reportSeverity": {
+            "value": "INFO",
+            "type": "SEVERITY"
+          }
+        }
       }
     ],
     "subReporters": [

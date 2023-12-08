@@ -30,7 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -113,7 +112,9 @@ public class ReportControllerTest {
     private static final String EXPECTED_SINGLE_REPORT = "/expectedSingleReport.json";
     private static final String EXPECTED_STRUCTURE_ONLY_REPORT1 = "/expectedStructureOnlyReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1 = "/expectedStructureAndElementsReportOne.json";
+    private static final String EXPECTED_STRUCTURE_AND_NO_REPORT_ELEMENT = "/expectedStructureAndNoElementReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1 = "/expectedReporterAndElements.json";
+    private static final String EXPECTED_STRUCTURE_AND_NO_REPORTER_ELEMENT = "/expectedReporterAndNoElement.json";
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
     private static final String REPORT_LOADFLOW = "/reportLoadflow.json";
@@ -131,7 +132,7 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_SINGLE_REPORT)));
 
@@ -174,7 +175,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
 
-        MvcResult mvcResult = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1)))
             .andReturn();
@@ -189,7 +190,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
         final String filterValue = "roundTripReporterJsonTest";
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&reportNameFilter=" + filterValue + "&reportNameMatchingType=EXACT_MATCHING"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR&reportNameFilter=" + filterValue + "&reportNameMatchingType=EXACT_MATCHING"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1)));
 
@@ -217,7 +218,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
         final String filterEndsWithValue = "ReporterJsonTest";
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR&reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1)));
 
@@ -239,6 +240,21 @@ public class ReportControllerTest {
     }
 
     @Test
+    public void testGetReportWithNoSeverityFilters() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        SQLStatementCountValidator.reset();
+
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_NO_REPORT_ELEMENT)))
+                .andReturn();
+
+        assertRequestsCount(4, 0, 0, 0);
+    }
+
+    @Test
     public void testGetSubReport() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
@@ -249,9 +265,27 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
 
-        mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter))
+        mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1)));
+
+        assertRequestsCount(3, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetSubReportWithNoSeverityFilters() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        List<TreeReportEntity> reporters = treeReportRepository.findByName("UcteReading");
+        assertEquals(1, reporters.size());
+        String uuidReporter = reporters.get(0).getIdNode().toString();
+
+        SQLStatementCountValidator.reset();
+
+        mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter))
+                .andExpect(status().isOk())
+                .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_NO_REPORTER_ELEMENT)));
 
         assertRequestsCount(3, 0, 0, 0);
     }
@@ -337,7 +371,7 @@ public class ReportControllerTest {
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?withElements=true"))
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(reportConcat2)));
     }

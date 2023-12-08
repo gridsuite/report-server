@@ -1,0 +1,35 @@
+[
+    {
+        "version": "1.0",
+        "reportTree":
+        {
+            "taskKey": "UcteReading",
+            "subReporters":
+            [
+                {
+                    "taskKey": "fixUcteNodes"
+                },
+                {
+                    "taskKey": "fixUcteLines"
+                },
+                {
+                    "taskKey": "fixUcteTransformer"
+                },
+                {
+                    "taskKey": "fixUcteRegulations"
+                }
+            ]
+        },
+        "dics":
+        {
+            "default":
+            {
+                "UcteReading": "Reading UCTE network file",
+                "fixUcteNodes": "Fix UCTE nodes",
+                "fixUcteLines": "Fix UCTE lines",
+                "fixUcteRegulations": "Fix UCTE regulations",
+                "fixUcteTransformer": "Fix UCTE transformers"
+            }
+        }
+    }
+]
