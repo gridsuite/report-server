@@ -193,26 +193,24 @@ public class ReportService {
     private void saveAllReportElements(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
         // This return a list of ReportElementEntity to be saved at the end, otherwise
         // hibernate.order_insert don't work properly since https://hibernate.atlassian.net/browse/HHH-16485 hibernate 6.2.2
-        reportElementRepository.saveAll(traverseReportModel(persistedReport, reporterModel, parentNode));
+        List<ReportElementEntity> reportElementEntities = new ArrayList<>();
+        traverseReportModel(persistedReport, reporterModel, parentNode, reportElementEntities);
+        reportElementRepository.saveAll(reportElementEntities);
     }
 
-    private List<ReportElementEntity> traverseReportModel(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode) {
+    private void traverseReportModel(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode, List<ReportElementEntity> reportElementEntities) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
         TreeReportEntity treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
                 toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
                 System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
 
-        List<ReportElementEntity> reportElementEntities = new ArrayList<>();
-
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
-        reportElementEntities.addAll(IntStream.range(0, subReporters.size()).mapToObj(idx -> traverseReportModel(null, subReporters.get(idx), treeReportEntity)).flatMap(List::stream).collect(Collectors.toList()));
+        IntStream.range(0, subReporters.size()).forEach(idx -> traverseReportModel(null, subReporters.get(idx), treeReportEntity, reportElementEntities));
 
         Collection<Report> reports = reporterModel.getReports();
         List<Report> reportsAsList = new ArrayList<>(reports);
-        reportElementEntities.addAll(IntStream.range(0, reportsAsList.size()).mapToObj(idx -> toReportElementEntity(treeReportEntity, reportsAsList.get(idx), dict)).collect(Collectors.toList()));
-
-        return reportElementEntities;
+        IntStream.range(0, reportsAsList.size()).forEach(idx -> reportElementEntities.add(toReportElementEntity(treeReportEntity, reportsAsList.get(idx), dict)));
     }
 
     private ReportElementEntity toReportElementEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
