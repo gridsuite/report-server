@@ -7,6 +7,8 @@
 
 package org.gridsuite.report.server.utils;
 
+import org.gridsuite.report.server.entities.ReportEntity;
+import org.gridsuite.report.server.entities.TreeReportEntity;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertDeleteCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
@@ -22,5 +24,14 @@ public final class TestUtils {
         assertInsertCount(insert);
         assertUpdateCount(update);
         assertDeleteCount(delete);
+    }
+
+    public static TreeReportEntity createTreeReport(String name, ReportEntity reportEntity, TreeReportEntity parent, long nanos) {
+        TreeReportEntity entity = new TreeReportEntity();
+        entity.setName(name);
+        entity.setNanos(nanos);
+        entity.setParentReport(parent);
+        entity.setReport(reportEntity);
+        return entity;
     }
 }

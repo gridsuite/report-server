@@ -29,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -239,14 +241,42 @@ public class ReportService {
      * delete all the report and tree report elements depending on a root tree report
      */
     private void deleteRoot(UUID rootTreeReportId) {
-        List<UUID> treeReportIds = treeReportRepository.getSubReportsNodes(rootTreeReportId).stream().map(UUID::fromString).toList();
-        List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReportIds)
-            .stream().map(ReportElementEntity.ProjectionIdReport::getIdReport).toList();
+        AtomicReference<Long> startTime = new AtomicReference<>();
+        startTime.set(System.nanoTime());
+        // Extracting node IDs with levels from the result
+        Map<Integer, List<UUID>> treeReportIdsByLevel = treeReportRepository.getSubReportsNodesWithLevel(rootTreeReportId)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        result -> (Integer) result[1],
+                        Collectors.mapping(
+                                result -> UUID.fromString((String) result[0]),
+                                Collectors.toList()
+                        )
+                ));
+
+        // Deleting the report elements in batches
+        List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(
+                        treeReportIdsByLevel.values().stream().flatMap(Collection::stream).collect(Collectors.toList())
+                )
+                .stream()
+                .map(ReportElementEntity.ProjectionIdReport::getIdReport)
+                .toList();
 
         Lists.partition(reportElementIds, SQL_QUERY_MAX_PARAM_NUMBER)
-                .forEach(reportElementRepository::deleteAllByIdReportIn);
+                .forEach(ids -> {
+                    reportElementRepository.deleteAllReportElementValuesByReportIds(ids);
+                    reportElementRepository.deleteAllByIdReportIn(ids);
+                });
 
-        treeReportRepository.deleteAllByIdNodeIn(treeReportIds);
+        // Deleting the tree reports level by level, starting from the highest level
+        treeReportIdsByLevel.entrySet().stream()
+                .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
+                .forEach(entry -> {
+                    treeReportRepository.deleteAllTreeReportValuesByReportIds(entry.getValue());
+                    treeReportRepository.deleteAllTreeReportDictionaryByReportIds(entry.getValue());
+                    treeReportRepository.deleteAllByIdNodeIn(entry.getValue());
+                });
+        LOGGER.info("The report and tree report elements of '{}' has been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
     }
 
     @Transactional
