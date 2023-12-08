@@ -19,8 +19,8 @@
                             {
                                 "reportSeverity":
                                 {
-                                    "value": "UCTE_ERROR",
-                                    "type": "ERROR_LOGLEVEL"
+                                    "value": "ERROR",
+                                    "type": "SEVERITY"
                                 },
                                 "lineId":
                                 {
@@ -39,8 +39,8 @@
                             {
                                 "reportSeverity":
                                 {
-                                    "value": "UCTE_ERROR",
-                                    "type": "ERROR_LOGLEVEL"
+                                    "value": "ERROR",
+                                    "type": "SEVERITY"
                                 },
                                 "lineId":
                                 {
@@ -59,8 +59,8 @@
                             {
                                 "reportSeverity":
                                 {
-                                    "value": "UCTE_ERROR",
-                                    "type": "ERROR_LOGLEVEL"
+                                    "value": "ERROR",
+                                    "type": "SEVERITY"
                                 },
                                 "lineId":
                                 {
@@ -79,8 +79,8 @@
                             {
                                 "reportSeverity":
                                 {
-                                    "value": "UCTE_ERROR",
-                                    "type": "ERROR_LOGLEVEL"
+                                    "value": "ERROR",
+                                    "type": "SEVERITY"
                                 },
                                 "lineId":
                                 {
