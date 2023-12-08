@@ -157,6 +157,8 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
+        // expect 6 batched inserts of different tables and no updates
+        assertRequestsCount(2, 6, 0, 0);
         SQLStatementCountValidator.reset();
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
@@ -304,6 +306,10 @@ public class ReportControllerTest {
     public void testDeleteSubreports() throws Exception {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
+
+        // Expect 4 batched inserts only and no updates
+        assertRequestsCount(2, 4, 0, 0);
+
         Map<UUID, String> reportsKeys = new HashMap<>();
         reportsKeys.put(UUID.fromString(REPORT_UUID), "LoadFlow");
 
