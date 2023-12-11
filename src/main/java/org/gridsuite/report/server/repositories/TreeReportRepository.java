@@ -31,6 +31,7 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
     @EntityGraph(attributePaths = {"values", "dictionary"}, type = EntityGraph.EntityGraphType.LOAD)
     List<TreeReportEntity> findAllByIdNodeInOrderByNanos(Collection<UUID> uuids);
 
+    List<TreeReportEntity.ProjectionIdNode> findIdNodeByReportId(UUID parentId);
 
     /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
     @Modifying
