@@ -10,6 +10,8 @@ package org.gridsuite.report.server.repositories;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -28,5 +30,11 @@ public interface ReportElementRepository extends JpaRepository<ReportElementEnti
     List<ReportElementEntity.ProjectionIdReport> findIdReportByParentReportIdNodeIn(Collection<UUID> reportId);
 
     /* TODO to remove when upgrade to new spring-data-jpa, use deleteAllByIdInBatch */
+    @Modifying
+    @Query(value = "DELETE FROM report_element WHERE id_report IN ?1", nativeQuery = true)
     void deleteAllByIdReportIn(List<UUID> lst);
+
+    @Modifying
+    @Query(value = "DELETE FROM report_element_entity_values WHERE report_element_entity_id_report IN ?1", nativeQuery = true)
+    void deleteAllReportElementValuesByIdReportIn(List<UUID> reportIds);
 }

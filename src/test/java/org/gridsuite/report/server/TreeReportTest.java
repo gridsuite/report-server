@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
-
+import static org.gridsuite.report.server.utils.TestUtils.*;
 /**
  * @author Slimane Amar <slimane.amar at rte-france.com>
  */
@@ -44,15 +44,6 @@ class TreeReportTest {
 
     @Autowired
     private ReportElementRepository reportElementRepository;
-
-    private TreeReportEntity createTreeReport(String name, ReportEntity reportEntity, TreeReportEntity parent, long nanos) {
-        TreeReportEntity entity = new TreeReportEntity();
-        entity.setName(name);
-        entity.setNanos(nanos);
-        entity.setParentReport(parent);
-        entity.setReport(reportEntity);
-        return entity;
-    }
 
     private ReportElementEntity createReportElement(String name, TreeReportEntity parent, long nanos, String severity) {
         return new ReportElementEntity(null, parent, nanos, name, List.of(new ReportValueEmbeddable("reportSeverity", severity, "SEVERITY")));

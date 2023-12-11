@@ -29,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -244,14 +246,45 @@ public class ReportService {
      * delete all the report and tree report elements depending on a root tree report
      */
     private void deleteRoot(UUID rootTreeReportId) {
-        List<UUID> treeReportIds = treeReportRepository.getSubReportsNodes(rootTreeReportId).stream().map(UUID::fromString).toList();
-        List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(treeReportIds)
-            .stream().map(ReportElementEntity.ProjectionIdReport::getIdReport).toList();
+        AtomicReference<Long> startTime = new AtomicReference<>();
+        startTime.set(System.nanoTime());
+        /**
+         * Groups tree report node IDs by level for batch deletion.
+         * This is necessary otherwise H2 throws JdbcSQLIntegrityConstraintViolationException when issuing the delete query with 'where id in (x1,x2,...)' (we use h2 for unit tests).
+         * For postgres, this is not necessary if all the ids are in the same delete query, but would be a problem
+         * if we decided to partition the deletes in smaller batches in multiple transactions (in multiple deletes in one transaction we could defer the checks at the commit with 'SET CONSTRAINTS DEFERRED')
+         */
+        Map<Integer, List<UUID>> treeReportIdsByLevel = treeReportRepository.getSubReportsNodesWithLevel(rootTreeReportId)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        result -> (Integer) result[1],
+                        Collectors.mapping(
+                                result -> UUID.fromString((String) result[0]),
+                                Collectors.toList()
+                        )
+                ));
 
+        // Deleting the report elements in subsets because they can exceed the limit of 64k elements in the IN clause
+        List<UUID> groupedTreeReportIds = treeReportIdsByLevel.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(groupedTreeReportIds)
+                .stream()
+                .map(ReportElementEntity.ProjectionIdReport::getIdReport)
+                .toList();
         Lists.partition(reportElementIds, SQL_QUERY_MAX_PARAM_NUMBER)
-                .forEach(reportElementRepository::deleteAllByIdReportIn);
+                .forEach(ids -> {
+                    reportElementRepository.deleteAllReportElementValuesByIdReportIn(ids);
+                    reportElementRepository.deleteAllByIdReportIn(ids);
+                });
 
-        treeReportRepository.deleteAllByIdNodeIn(treeReportIds);
+        // Delete all the report elements values and dictionaries since doesn't have any parent-child relationship
+        treeReportRepository.deleteAllTreeReportValuesByIdNodeIn(groupedTreeReportIds);
+        treeReportRepository.deleteAllTreeReportDictionaryByIdNodeIn(groupedTreeReportIds);
+
+        // Deleting the tree reports level by level, starting from the highest level
+        treeReportIdsByLevel.entrySet().stream()
+                .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
+                .forEach(entry -> treeReportRepository.deleteAllByIdNodeIn(entry.getValue()));
+        LOGGER.info("The report and tree report elements of '{}' has been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
     }
 
     @Transactional
