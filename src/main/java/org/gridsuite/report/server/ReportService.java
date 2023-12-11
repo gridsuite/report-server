@@ -248,7 +248,10 @@ public class ReportService {
     private void deleteRoot(UUID rootTreeReportId) {
         AtomicReference<Long> startTime = new AtomicReference<>();
         startTime.set(System.nanoTime());
-        // Extracting node IDs with levels from the result
+        /**
+         * Groups tree report node IDs by level for batch deletion. This strategy avoids constraint
+         * issues with H2 in tests and ensures integrity during hierarchical deletions.
+         */
         Map<Integer, List<UUID>> treeReportIdsByLevel = treeReportRepository.getSubReportsNodesWithLevel(rootTreeReportId)
                 .stream()
                 .collect(Collectors.groupingBy(
