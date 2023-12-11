@@ -265,25 +265,25 @@ public class ReportService {
                 ));
 
         // Deleting the report elements in batches
-        List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(
-                        treeReportIdsByLevel.values().stream().flatMap(Collection::stream).collect(Collectors.toList())
-                )
+        List<UUID> groupedTreeReportIds = treeReportIdsByLevel.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(groupedTreeReportIds)
                 .stream()
                 .map(ReportElementEntity.ProjectionIdReport::getIdReport)
                 .toList();
-
         Lists.partition(reportElementIds, SQL_QUERY_MAX_PARAM_NUMBER)
                 .forEach(ids -> {
                     reportElementRepository.deleteAllReportElementValuesByIdReportIn(ids);
                     reportElementRepository.deleteAllByIdReportIn(ids);
                 });
 
+        // Delete all the report elements values and dictionaries since doesn't have any parent-child relationship
+        treeReportRepository.deleteAllTreeReportValuesByIdNodeIn(groupedTreeReportIds);
+        treeReportRepository.deleteAllTreeReportDictionaryByIdNodeIn(groupedTreeReportIds);
+
         // Deleting the tree reports level by level, starting from the highest level
         treeReportIdsByLevel.entrySet().stream()
                 .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
                 .forEach(entry -> {
-                    treeReportRepository.deleteAllTreeReportValuesByIdNodeIn(entry.getValue());
-                    treeReportRepository.deleteAllTreeReportDictionaryByIdNodeIn(entry.getValue());
                     treeReportRepository.deleteAllByIdNodeIn(entry.getValue());
                 });
         LOGGER.info("The report and tree report elements of '{}' has been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));

@@ -84,7 +84,7 @@ class ReportServiceTest {
             * 3 for each tree-report level (3) (tree-report + tree-report-values + tree-report-dictionary)
             * 1 for report
          */
-        assertRequestsCount(3, 0, 0, 12);
+        assertRequestsCount(3, 0, 0, 8);
 
         Assertions.assertEquals(0, treeReportRepository.findAll().size());
         Assertions.assertEquals(0, reportElementRepository.findAll().size());

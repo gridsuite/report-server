@@ -340,7 +340,7 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        assertRequestsCount(3, 0, 0, 12);
+        assertRequestsCount(3, 0, 0, 8);
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
                 .andExpect(status().isOk())
