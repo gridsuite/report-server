@@ -249,8 +249,10 @@ public class ReportService {
         AtomicReference<Long> startTime = new AtomicReference<>();
         startTime.set(System.nanoTime());
         /**
-         * Groups tree report node IDs by level for batch deletion. This strategy avoids constraint
-         * issues with H2 in tests and ensures integrity during hierarchical deletions.
+         * Groups tree report node IDs by level for batch deletion.
+         * This is necessary otherwise H2 throws JdbcSQLIntegrityConstraintViolationException when issuing the delete query with 'where id in (x1,x2,...)' (we use h2 for unit tests).
+         * For postgres, this is not necessary if all the ids are in the same delete query, but would be a problem
+         * if we decided to partition the deletes in smaller batches in multiple transactions (in multiple deletes in one transaction we could defer the checks at the commit with 'SET CONSTRAINTS DEFERRED')
          */
         Map<Integer, List<UUID>> treeReportIdsByLevel = treeReportRepository.getSubReportsNodesWithLevel(rootTreeReportId)
                 .stream()
