@@ -40,11 +40,11 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
 
     @Modifying
     @Query(value = "DELETE FROM tree_report_entity_values WHERE tree_report_entity_id_node IN ?1", nativeQuery = true)
-    void deleteAllTreeReportValuesByReportIds(List<UUID> lst);
+    void deleteAllTreeReportValuesByIdNodeIn(List<UUID> nodeIds);
 
     @Modifying
     @Query(value = "DELETE FROM tree_report_entity_dictionary WHERE tree_report_entity_id_node IN ?1", nativeQuery = true)
-    void deleteAllTreeReportDictionaryByReportIds(List<UUID> lst);
+    void deleteAllTreeReportDictionaryByIdNodeIn(List<UUID> nodeIds);
 
     @Query(value = "WITH RECURSIVE fulltree(idNode) AS ("
         + "SELECT t.id_node FROM tree_report t WHERE t.parent_report = ?1 "
@@ -70,7 +70,7 @@ public interface TreeReportRepository extends JpaRepository<TreeReportEntity, UU
             + "SELECT t.id_node, gn.level + 1 "
             + "FROM tree_report t, get_nodes gn "
             + "WHERE t.parent_report = gn.idNode)) "
-            + "SELECT cast(idNode as varchar), level FROM get_nodes ORDER BY level DESC", nativeQuery = true)
+            + "SELECT cast(idNode as varchar), level FROM get_nodes", nativeQuery = true)
     //TODO we should be able to get hibernate to do this projection..
     //TODO we cast to varchar otherwise we get
     //     org.hibernate.MappingException: No Dialect mapping for JDBC type: 1111

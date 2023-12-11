@@ -269,7 +269,7 @@ public class ReportService {
 
         Lists.partition(reportElementIds, SQL_QUERY_MAX_PARAM_NUMBER)
                 .forEach(ids -> {
-                    reportElementRepository.deleteAllReportElementValuesByReportIds(ids);
+                    reportElementRepository.deleteAllReportElementValuesByIdReportIn(ids);
                     reportElementRepository.deleteAllByIdReportIn(ids);
                 });
 
@@ -277,8 +277,8 @@ public class ReportService {
         treeReportIdsByLevel.entrySet().stream()
                 .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
                 .forEach(entry -> {
-                    treeReportRepository.deleteAllTreeReportValuesByReportIds(entry.getValue());
-                    treeReportRepository.deleteAllTreeReportDictionaryByReportIds(entry.getValue());
+                    treeReportRepository.deleteAllTreeReportValuesByIdNodeIn(entry.getValue());
+                    treeReportRepository.deleteAllTreeReportDictionaryByIdNodeIn(entry.getValue());
                     treeReportRepository.deleteAllByIdNodeIn(entry.getValue());
                 });
         LOGGER.info("The report and tree report elements of '{}' has been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));

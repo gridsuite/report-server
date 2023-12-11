@@ -36,5 +36,5 @@ public interface ReportElementRepository extends JpaRepository<ReportElementEnti
 
     @Modifying
     @Query(value = "DELETE FROM report_element_entity_values WHERE report_element_entity_id_report IN ?1", nativeQuery = true)
-    void deleteAllReportElementValuesByReportIds(List<UUID> lst);
+    void deleteAllReportElementValuesByIdReportIn(List<UUID> reportIds);
 }
