@@ -283,9 +283,7 @@ public class ReportService {
         // Deleting the tree reports level by level, starting from the highest level
         treeReportIdsByLevel.entrySet().stream()
                 .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
-                .forEach(entry -> {
-                    treeReportRepository.deleteAllByIdNodeIn(entry.getValue());
-                });
+                .forEach(entry -> treeReportRepository.deleteAllByIdNodeIn(entry.getValue()));
         LOGGER.info("The report and tree report elements of '{}' has been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
     }
 
