@@ -264,7 +264,7 @@ public class ReportService {
                         )
                 ));
 
-        // Deleting the report elements in batches
+        // Deleting the report elements in subsets because they can exceed the limit of 64k elements in the IN clause
         List<UUID> groupedTreeReportIds = treeReportIdsByLevel.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
         List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(groupedTreeReportIds)
                 .stream()

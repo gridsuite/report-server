@@ -79,9 +79,10 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.deleteReport(idReport, null);
-        /* 12 delete for one report
+        /* 8 delete for one report
             * 2 for report-element (report-element + report-element-values)
-            * 3 for each tree-report level (3) (tree-report + tree-report-values + tree-report-dictionary)
+            * 2 for tree-report tree-report-values + tree-report-dictionary
+            * 3 for each tree-report level (3)
             * 1 for report
          */
         assertRequestsCount(3, 0, 0, 8);
