@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -57,6 +58,21 @@ public class ReportController {
         }
     }
 
+    @GetMapping(value = "/reports/{id}/severityLevel", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
+            @ApiResponse(responseCode = "404", description = "The report does not exists")})
+    public ResponseEntity<List<String>> getReportSeverity(@PathVariable("id") UUID id,
+                                                         @Parameter(description = "Fetch the report's elements") @RequestParam(name = "withElements", required = false, defaultValue = "false") boolean withElements,
+                                                         @Parameter(description = "Filter on a the report name. If provided, will only return elements matching this given name.") @RequestParam(name = "reportNameFilter", required = false, defaultValue = "") String reportNameFilter,
+                                                         @Parameter(description = "Kind of matching filter to apply to the report name.") @RequestParam(name = "reportNameMatchingType", required = false) ReportService.ReportNameMatchingType reportNameMatchingType) {
+        try {
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getReportSeverity(id, withElements, reportNameFilter, reportNameMatchingType));
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(Stream.of(ReportService.SeverityLevel.values()).map(Enum::name).toList());
+        }
+    }
+
     @GetMapping(value = "/subreports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the elements of a reporter and its subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
@@ -68,6 +84,20 @@ public class ReportController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(service.getSubReport(id, severityLevels)
                             .getSubReporters());
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping(value = "/subreports/{id}/severityLevel", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the elements of a reporter and its subreporters")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
+            @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
+    public ResponseEntity<List<String>> getSubReportSeverity(@PathVariable("id") UUID id) {
+        try {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(service.getSubReportSeverity(id));
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }

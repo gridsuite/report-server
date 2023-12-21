@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 
 /**
@@ -114,6 +115,23 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
+    public List<String> getReportSeverity(UUID reportId, boolean withElements, String reportNameFilter, ReportNameMatchingType reportNameMatchingType) {
+        Objects.requireNonNull(reportId);
+        ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
+
+        var report = new ReporterModel(reportId.toString(), reportId.toString());
+        treeReportRepository.findAllByReportIdOrderByNanos(reportEntity.getId())
+                .stream()
+                .filter(tre -> StringUtils.isBlank(reportNameFilter)
+                        || tre.getName().startsWith("Root") // FIXME remove this hack when "Root" report will follow the same rules than computations and modifications
+                        || reportNameMatchingType == ReportNameMatchingType.EXACT_MATCHING && tre.getName().equals(reportNameFilter)
+                        || reportNameMatchingType == ReportNameMatchingType.ENDS_WITH && tre.getName().endsWith(reportNameFilter))
+                .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet()))));
+
+        return getNotificationSecurityLevelList(report.getSubReporters());
+    }
+
+    @Transactional(readOnly = true)
     public ReporterModel getSubReport(UUID reporterId, Set<String> severityLevels) {
         Objects.requireNonNull(reporterId);
         TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
@@ -121,6 +139,33 @@ public class ReportService {
         var report = new ReporterModel(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString());
         report.addSubReporter(getTreeReport(treeReportEntity, true, severityLevels));
         return report;
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getSubReportSeverity(UUID reporterId) {
+        Objects.requireNonNull(reporterId);
+        TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
+
+        var report = new ReporterModel(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString());
+        report.addSubReporter(getTreeReport(treeReportEntity, true, Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet())));
+        return getNotificationSecurityLevelList(report.getSubReporters());
+    }
+
+    private List<String> getNotificationSecurityLevelList(List<ReporterModel> subReporters) {
+        return subReporters.stream().map(this::getNotificationSecurityLevelList).flatMap(Collection::stream).distinct().toList();
+    }
+
+    private List<String> getNotificationSecurityLevelList(ReporterModel reporterModel) {
+        if (reporterModel.getSubReporters().isEmpty()) {
+            return reporterModel.getReports().stream().map(report -> report.getValue("reportSeverity").getValue().toString()).distinct().toList();
+        }
+        List<String> reportSeverityList = new ArrayList<>(reporterModel.getSubReporters().stream()
+                .map(this::getNotificationSecurityLevelList)
+                .flatMap(Collection::stream)
+                .toList());
+
+        reportSeverityList.addAll(reporterModel.getReports().stream().map(report -> report.getValue("reportSeverity").getValue().toString()).distinct().toList());
+        return reportSeverityList.stream().distinct().toList();
     }
 
     private ReporterModel getTreeReport(TreeReportEntity treeReportEntity, boolean withElements, Set<String> severityLevels) {
