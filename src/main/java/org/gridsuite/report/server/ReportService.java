@@ -116,19 +116,9 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public List<String> getReportSeverity(UUID reportId, boolean withElements, String reportNameFilter, ReportNameMatchingType reportNameMatchingType) {
-        Objects.requireNonNull(reportId);
-        ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
-        var report = new ReporterModel(reportId.toString(), reportId.toString());
-        treeReportRepository.findAllByReportIdOrderByNanos(reportEntity.getId())
-                .stream()
-                .filter(tre -> StringUtils.isBlank(reportNameFilter)
-                        || tre.getName().startsWith("Root") // FIXME remove this hack when "Root" report will follow the same rules than computations and modifications
-                        || reportNameMatchingType == ReportNameMatchingType.EXACT_MATCHING && tre.getName().equals(reportNameFilter)
-                        || reportNameMatchingType == ReportNameMatchingType.ENDS_WITH && tre.getName().endsWith(reportNameFilter))
-                .forEach(treeReportEntity -> report.addSubReporter(getTreeReport(treeReportEntity, withElements, Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet()))));
-
-        return getNotificationSecurityLevelList(report.getSubReporters());
+        var report = getReport(reportId, withElements, Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet()), reportNameFilter, reportNameMatchingType);
+        return getNotificationSecurityLevelList(report);
     }
 
     @Transactional(readOnly = true)
@@ -143,16 +133,8 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public List<String> getSubReportSeverity(UUID reporterId) {
-        Objects.requireNonNull(reporterId);
-        TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
-
-        var report = new ReporterModel(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString());
-        report.addSubReporter(getTreeReport(treeReportEntity, true, Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet())));
-        return getNotificationSecurityLevelList(report.getSubReporters());
-    }
-
-    private List<String> getNotificationSecurityLevelList(List<ReporterModel> subReporters) {
-        return subReporters.stream().map(this::getNotificationSecurityLevelList).flatMap(Collection::stream).distinct().toList();
+        var report = getSubReport(reporterId, Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet()));
+        return getNotificationSecurityLevelList(report);
     }
 
     private List<String> getNotificationSecurityLevelList(ReporterModel reporterModel) {
