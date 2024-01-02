@@ -117,7 +117,9 @@ public class ReportService {
     @Transactional(readOnly = true)
     public List<String> getReportSeverity(UUID reportId, boolean withElements, String reportNameFilter, ReportNameMatchingType reportNameMatchingType) {
 
-        var report = getReport(reportId, withElements, Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet()), reportNameFilter, reportNameMatchingType);
+        Set<String> allLevels = Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet());
+
+        var report = getReport(reportId, withElements, allLevels, reportNameFilter, reportNameMatchingType);
         return getNotificationSecurityLevelList(report);
     }
 
@@ -133,20 +135,26 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public List<String> getSubReportSeverity(UUID reporterId) {
-        var report = getSubReport(reporterId, Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet()));
+
+        Set<String> allLevels = Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet());
+
+        var report = getSubReport(reporterId, allLevels);
         return getNotificationSecurityLevelList(report);
     }
 
     private List<String> getNotificationSecurityLevelList(ReporterModel reporterModel) {
+
+        List<String> topReportSeverityList = reporterModel.getReports().stream().map(report -> report.getValue("reportSeverity").getValue().toString()).distinct().toList();
+
         if (reporterModel.getSubReporters().isEmpty()) {
-            return reporterModel.getReports().stream().map(report -> report.getValue("reportSeverity").getValue().toString()).distinct().toList();
+            return topReportSeverityList;
         }
         List<String> reportSeverityList = new ArrayList<>(reporterModel.getSubReporters().stream()
                 .map(this::getNotificationSecurityLevelList)
                 .flatMap(Collection::stream)
                 .toList());
 
-        reportSeverityList.addAll(reporterModel.getReports().stream().map(report -> report.getValue("reportSeverity").getValue().toString()).distinct().toList());
+        reportSeverityList.addAll(topReportSeverityList);
         return reportSeverityList.stream().distinct().toList();
     }
 

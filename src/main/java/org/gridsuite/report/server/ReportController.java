@@ -59,8 +59,8 @@ public class ReportController {
     }
 
     @GetMapping(value = "/reports/{id}/severityLevel", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
+    @Operation(summary = "Get the the severity levels of a report, its reporters, and their subreporters")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The different severity levels of the report, reporters and subreporters"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
     public ResponseEntity<List<String>> getReportSeverity(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Fetch the report's elements") @RequestParam(name = "withElements", required = false, defaultValue = "false") boolean withElements,
@@ -90,8 +90,8 @@ public class ReportController {
     }
 
     @GetMapping(value = "/subreports/{id}/severityLevel", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get the elements of a reporter and its subreporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
+    @Operation(summary = "Get the severity levels of a reporter and its subreporters")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The different severity levels of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
     public ResponseEntity<List<String>> getSubReportSeverity(@PathVariable("id") UUID id) {
         try {
