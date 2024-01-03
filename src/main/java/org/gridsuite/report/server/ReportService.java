@@ -33,7 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 
 /**
@@ -115,15 +114,6 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> getReportSeverity(UUID reportId, boolean withElements, String reportNameFilter, ReportNameMatchingType reportNameMatchingType) {
-
-        Set<String> allLevels = Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet());
-
-        var report = getReport(reportId, withElements, allLevels, reportNameFilter, reportNameMatchingType);
-        return getNotificationSecurityLevelList(report);
-    }
-
-    @Transactional(readOnly = true)
     public ReporterModel getSubReport(UUID reporterId, Set<String> severityLevels) {
         Objects.requireNonNull(reporterId);
         TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
@@ -131,31 +121,6 @@ public class ReportService {
         var report = new ReporterModel(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString());
         report.addSubReporter(getTreeReport(treeReportEntity, true, severityLevels));
         return report;
-    }
-
-    @Transactional(readOnly = true)
-    public List<String> getSubReportSeverity(UUID reporterId) {
-
-        Set<String> allLevels = Stream.of(SeverityLevel.values()).map(Enum::name).collect(Collectors.toSet());
-
-        var report = getSubReport(reporterId, allLevels);
-        return getNotificationSecurityLevelList(report);
-    }
-
-    private List<String> getNotificationSecurityLevelList(ReporterModel reporterModel) {
-
-        List<String> topReportSeverityList = reporterModel.getReports().stream().map(report -> report.getValue("reportSeverity").getValue().toString()).distinct().toList();
-
-        if (reporterModel.getSubReporters().isEmpty()) {
-            return topReportSeverityList;
-        }
-        List<String> reportSeverityList = new ArrayList<>(reporterModel.getSubReporters().stream()
-                .map(this::getNotificationSecurityLevelList)
-                .flatMap(Collection::stream)
-                .toList());
-
-        reportSeverityList.addAll(topReportSeverityList);
-        return reportSeverityList.stream().distinct().toList();
     }
 
     private ReporterModel getTreeReport(TreeReportEntity treeReportEntity, boolean withElements, Set<String> severityLevels) {
@@ -238,9 +203,13 @@ public class ReportService {
     private void traverseReportModel(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode, List<ReportElementEntity> reportElementEntities) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
-        TreeReportEntity treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
+        TreeReportEntity treeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
                 toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
-                System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
+                System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
+
+        treeReportEntity.getValues().add(new ReportValueEmbeddable("severityList", severityList(reporterModel), TypedValue.SEVERITY));
+
+        treeReportRepository.save(treeReportEntity);
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
         IntStream.range(0, subReporters.size()).forEach(idx -> traverseReportModel(null, subReporters.get(idx), treeReportEntity, reportElementEntities));
@@ -248,6 +217,15 @@ public class ReportService {
         Collection<Report> reports = reporterModel.getReports();
         List<Report> reportsAsList = new ArrayList<>(reports);
         IntStream.range(0, reportsAsList.size()).forEach(idx -> reportElementEntities.add(toReportElementEntity(treeReportEntity, reportsAsList.get(idx), dict)));
+    }
+
+    private static List<String> severityList(ReporterModel reporter) {
+        return reporter.getReports()
+                .stream()
+                .map(report -> report.getValues().get("reportSeverity"))
+                .filter(Objects::nonNull)
+                .map(severity -> SeverityLevel.fromValue(Objects.toString(severity.getValue())).toString())
+                .distinct().toList();
     }
 
     private ReportElementEntity toReportElementEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {

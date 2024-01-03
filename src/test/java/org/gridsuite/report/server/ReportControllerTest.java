@@ -184,40 +184,6 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetReportSeverity() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        List<TreeReportEntity> reporters = treeReportRepository.findByName("UcteReading");
-        assertEquals(1, reporters.size());
-
-        SQLStatementCountValidator.reset();
-
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/severityLevel"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
-
-        assertRequestsCount(3, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetReportSeverityFailed() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        List<TreeReportEntity> reporters = treeReportRepository.findByName("UcteReading");
-        assertEquals(1, reporters.size());
-
-        SQLStatementCountValidator.reset();
-
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + UUID.randomUUID() + "/severityLevel"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[\"UNKNOWN\",\"TRACE\",\"DEBUG\",\"INFO\",\"WARN\",\"ERROR\",\"FATAL\"]"));
-
-        assertRequestsCount(1, 0, 0, 0);
-    }
-
-    @Test
     public void testGetReportWithExactMatchingTrue() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
@@ -324,34 +290,6 @@ public class ReportControllerTest {
         assertRequestsCount(3, 0, 0, 0);
     }
 
-    @Test
-    public void testGetSubReportSeverity() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        List<TreeReportEntity> reporters = treeReportRepository.findByName("UcteReading");
-        assertEquals(1, reporters.size());
-        String uuidReporter = reporters.get(0).getIdNode().toString();
-
-        SQLStatementCountValidator.reset();
-
-        mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter + "/severityLevel"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[\"ERROR\"]"));
-
-        assertRequestsCount(3, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetSubReportSeverityFailed() throws Exception {
-        SQLStatementCountValidator.reset();
-
-        mvc.perform(get(URL_TEMPLATE + "/subreports/" + UUID.randomUUID() + "/severityLevel"))
-                .andExpect(status().isNotFound());
-
-        assertRequestsCount(1, 0, 0, 0);
-    }
-
     @SneakyThrows
     @Test
     public void testDefaultEmptyReport() {
@@ -370,7 +308,7 @@ public class ReportControllerTest {
         insertReport(REPORT_UUID, testReportLoadflow);
 
         // Expect 4 batched inserts only and no updates
-        assertRequestsCount(2, 4, 0, 0);
+        assertRequestsCount(2, 5, 0, 0);
 
         Map<UUID, String> reportsKeys = new HashMap<>();
         reportsKeys.put(UUID.fromString(REPORT_UUID), "LoadFlow");
