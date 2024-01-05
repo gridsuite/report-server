@@ -307,7 +307,7 @@ public class ReportControllerTest {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
 
-        // Expect 4 batched inserts only and no updates
+        // Expect 5 batched inserts only and no updates
         assertRequestsCount(2, 5, 0, 0);
 
         Map<UUID, String> reportsKeys = new HashMap<>();

@@ -203,11 +203,13 @@ public class ReportService {
     private void traverseReportModel(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode, List<ReportElementEntity> reportElementEntities) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
-        TreeReportEntity treeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-                toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
-                System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
 
-        treeReportEntity.getValues().add(new ReportValueEmbeddable("severityList", severityList(reporterModel), TypedValue.SEVERITY));
+        List<ReportValueEmbeddable> reportValueEmbeddableList = toValueEntityList(reporterModel.getTaskValues());
+        reportValueEmbeddableList.add(new ReportValueEmbeddable("severityList", severityList(reporterModel), TypedValue.SEVERITY));
+
+        TreeReportEntity treeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
+                reportValueEmbeddableList, parentNode, dict,
+                System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
 
         treeReportRepository.save(treeReportEntity);
 
