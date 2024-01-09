@@ -225,8 +225,7 @@ public class ReportService {
         return reporter.getReports()
                 .stream()
                 .map(report -> report.getValues().get("reportSeverity"))
-                .filter(Objects::nonNull)
-                .map(severity -> SeverityLevel.fromValue(Objects.toString(severity.getValue())).toString())
+                .map(severity -> severity == null ? SeverityLevel.UNKNOWN.toString() : SeverityLevel.fromValue(Objects.toString(severity.getValue())).toString())
                 .distinct().toList();
     }
 
