@@ -203,9 +203,15 @@ public class ReportService {
     private void traverseReportModel(ReportEntity persistedReport, ReporterModel reporterModel, TreeReportEntity parentNode, List<ReportElementEntity> reportElementEntities) {
         Map<String, String> dict = new HashMap<>();
         dict.put(reporterModel.getTaskKey(), reporterModel.getDefaultName());
-        TreeReportEntity treeReportEntity = treeReportRepository.save(new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
-                toValueEntityList(reporterModel.getTaskValues()), parentNode, dict,
-                System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
+
+        List<ReportValueEmbeddable> reportValueEmbeddableList = toValueEntityList(reporterModel.getTaskValues());
+        reportValueEmbeddableList.add(new ReportValueEmbeddable("severityList", severityList(reporterModel), TypedValue.SEVERITY));
+
+        TreeReportEntity treeReportEntity = new TreeReportEntity(null, reporterModel.getTaskKey(), persistedReport,
+                reportValueEmbeddableList, parentNode, dict,
+                System.nanoTime() - NANOS_FROM_EPOCH_TO_START);
+
+        treeReportRepository.save(treeReportEntity);
 
         List<ReporterModel> subReporters = reporterModel.getSubReporters();
         IntStream.range(0, subReporters.size()).forEach(idx -> traverseReportModel(null, subReporters.get(idx), treeReportEntity, reportElementEntities));
@@ -213,6 +219,14 @@ public class ReportService {
         Collection<Report> reports = reporterModel.getReports();
         List<Report> reportsAsList = new ArrayList<>(reports);
         IntStream.range(0, reportsAsList.size()).forEach(idx -> reportElementEntities.add(toReportElementEntity(treeReportEntity, reportsAsList.get(idx), dict)));
+    }
+
+    private static List<String> severityList(ReporterModel reporter) {
+        return reporter.getReports()
+                .stream()
+                .map(report -> report.getValues().get("reportSeverity"))
+                .map(severity -> severity == null ? SeverityLevel.UNKNOWN.toString() : SeverityLevel.fromValue(Objects.toString(severity.getValue())).toString())
+                .distinct().toList();
     }
 
     private ReportElementEntity toReportElementEntity(TreeReportEntity parentReport, Report report, Map<String, String> dict) {
