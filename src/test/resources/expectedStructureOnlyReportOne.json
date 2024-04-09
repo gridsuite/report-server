@@ -1,36 +1,36 @@
 [
     {
-        "version": "1.0",
-        "reportTree":
+        "version": "2.0",
+        "reportRoot":
         {
-            "taskKey": "roundTripReporterJsonTest",
-            "subReporters":
+            "messageKey": "roundTripReporterJsonTest",
+            "children":
             [
                 {
-                    "taskKey": "UcteReading",
-                    "subReporters":
+                    "messageKey": "UcteReading",
+                    "children":
                     [
                         {
-                            "taskKey": "fixUcteNodes"
+                            "messageKey": "fixUcteNodes"
                         },
                         {
-                            "taskKey": "fixUcteLines"
+                            "messageKey": "fixUcteLines"
                         },
                         {
-                            "taskKey": "fixUcteTransformer"
+                            "messageKey": "fixUcteTransformer"
                         },
                         {
-                            "taskKey": "fixUcteRegulations"
+                            "messageKey": "fixUcteRegulations"
                         }
                     ]
                 },
                 {
-                    "taskKey": "createBuses",
-                    "subReporters":
+                    "messageKey": "createBuses",
+                    "children":
                     [
                         {
-                            "taskKey": "createBusesSubstation",
-                            "taskValues":
+                            "messageKey": "createBusesSubstation",
+                            "values":
                             {
                                 "substation":
                                 {
@@ -39,8 +39,8 @@
                             }
                         },
                         {
-                            "taskKey": "createBusesSubstation",
-                            "taskValues":
+                            "messageKey": "createBusesSubstation",
+                            "values":
                             {
                                 "substation":
                                 {
@@ -51,27 +51,28 @@
                     ]
                 },
                 {
-                    "taskKey": "createLines"
+                    "messageKey": "createLines"
                 },
                 {
-                    "taskKey": "createTransformers"
+                    "messageKey": "createTransformers"
                 }
-            ]
-        },
-        "dics":
-        {
-            "default":
+            ],
+
+            "dictionaries":
             {
-                "UcteReading": "Reading UCTE network file",
-                "createLines": "Create lines",
-                "createTransformers": "Create transformers",
-                "fixUcteNodes": "Fix UCTE nodes",
-                "fixUcteLines": "Fix UCTE lines",
-                "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-                "createBusesSubstation": "Create buses for substation ${substation}",
-                "fixUcteRegulations": "Fix UCTE regulations",
-                "fixUcteTransformer": "Fix UCTE transformers",
-                "createBuses": "Create buses"
+                "default":
+                {
+                    "UcteReading": "Reading UCTE network file",
+                    "createLines": "Create lines",
+                    "createTransformers": "Create transformers",
+                    "fixUcteNodes": "Fix UCTE nodes",
+                    "fixUcteLines": "Fix UCTE lines",
+                    "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+                    "createBusesSubstation": "Create buses for substation ${substation}",
+                    "fixUcteRegulations": "Fix UCTE regulations",
+                    "fixUcteTransformer": "Fix UCTE transformers",
+                    "createBuses": "Create buses"
+                }
             }
         }
     }
