@@ -154,7 +154,7 @@ public class ReportControllerTest {
 
     @Test
     public void testGetReportNoElements() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
+         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
         // expect 6 batched inserts of different tables and no updates

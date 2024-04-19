@@ -6,8 +6,8 @@
       {
         "messageKey": "novalueReport",
         "values": {
-          "reportSeverity": {
-            "value": "INFO",
+          "reportSeverity" : {
+            "value" : "INFO",
             "type": "SEVERITY"
           }
         }
@@ -157,14 +157,6 @@
                 }
               }
             ]
-          },
-          {
-            "messageKey": "createBusesSubstation",
-            "values": {
-              "substation": {
-                "value": "XXXXXX"
-              }
-            }
           }
         ]
       },
@@ -234,7 +226,13 @@
         ]
       },
       {
-        "messageKey": "createTransformers"
+        "messageKey": "createTransformers",
+        "values": {
+          "reportSeverity": {
+            "value": "TRACE",
+            "type": "SEVERITY"
+          }
+        }
       }
     ],
     "dictionaries": {
