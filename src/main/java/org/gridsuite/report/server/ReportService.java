@@ -257,6 +257,9 @@ public class ReportService {
 
     private static void addChildNodes(ReportNode parentNode, UUID reportNodeId, Map<UUID, List<TreeReportEntity>> reportNodeIdToChildren, Map<UUID, ReportNode> treeReportIdToReportNodes) {
         List<TreeReportEntity> children = reportNodeIdToChildren.get(reportNodeId);
+        if (children == null) {
+            return;
+        }
         children.forEach(childEntity -> {
             ReportNodeAdder adder = parentNode.newReportNode().withMessageTemplate(childEntity.getName(), childEntity.getDictionary().get(childEntity.getName()));
             childEntity.getValues().forEach(value -> addTypedValue(value, adder));

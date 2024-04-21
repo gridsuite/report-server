@@ -9,6 +9,9 @@ package org.gridsuite.report.server.utils;
 
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.TreeReportEntity;
+
+import java.util.Map;
+
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertDeleteCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
@@ -32,6 +35,12 @@ public final class TestUtils {
         entity.setNanos(nanos);
         entity.setParentReport(parent);
         entity.setReport(reportEntity);
+        entity.setDictionary(Map.of(
+                "test", "test",
+                "log1", "log1",
+                "log2", "log2",
+                "log3", "log3")
+        );
         return entity;
     }
 }
