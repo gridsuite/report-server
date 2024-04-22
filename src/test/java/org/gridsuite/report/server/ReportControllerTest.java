@@ -132,6 +132,9 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
+        String res = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
+                .andReturn().getResponse().getContentAsString();
+
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_SINGLE_REPORT)));
@@ -232,6 +235,7 @@ public class ReportControllerTest {
 
         SQLStatementCountValidator.reset();
         final String filterEndsWithValue = "__noMatchingValue__";
+
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
@@ -371,6 +375,9 @@ public class ReportControllerTest {
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
+        String res = mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
         mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(reportConcat2)));

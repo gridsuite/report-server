@@ -1,30 +1,28 @@
 {
-  "version": "1.0",
-  "reportTree": {
-    "taskKey": "testImport",
-    "reports": [
+  "version": "2.0",
+  "reportRoot": {
+    "messageKey": "testImport",
+    "children": [
       {
-        "reportKey": "novalueReport",
+        "messageKey": "novalueReport",
         "values": {
           "reportSeverity": {
             "value": "INFO",
             "type": "SEVERITY"
           }
         }
-      }
-    ],
-    "subReporters": [
+      },
       {
-        "taskKey": "testNewValue",
-        "subReporters": [
+        "messageKey": "testNewValue",
+        "children": [
           {
-            "taskKey": "fixUcteNodes"
+            "messageKey": "fixUcteNodes"
           }
         ]
       }
     ]
   },
-  "dics": {
+  "dictionaries": {
     "default": {
       "fixUcteNodes": "Fix UCTE nodes",
       "testImport": "test Second import",

@@ -1,36 +1,36 @@
 [
     {
-        "version": "1.0",
-        "reportTree":
+        "version": "2.0",
+        "reportRoot":
         {
-            "taskKey": "roundTripReporterJsonTest",
-            "subReporters":
+            "messageKey": "roundTripReporterJsonTest",
+            "children":
             [
                 {
-                    "taskKey": "UcteReading",
-                    "subReporters":
+                    "messageKey": "UcteReading",
+                    "children":
                     [
                         {
-                            "taskKey": "fixUcteNodes"
+                            "messageKey": "fixUcteNodes"
                         },
                         {
-                            "taskKey": "fixUcteLines"
+                            "messageKey": "fixUcteLines"
                         },
                         {
-                            "taskKey": "fixUcteTransformer"
+                            "messageKey": "fixUcteTransformer"
                         },
                         {
-                            "taskKey": "fixUcteRegulations"
+                            "messageKey": "fixUcteRegulations"
                         }
                     ]
                 },
                 {
-                    "taskKey": "createBuses",
-                    "subReporters":
+                    "messageKey": "createBuses",
+                    "children":
                     [
                         {
-                            "taskKey": "createBusesSubstation",
-                            "taskValues":
+                            "messageKey": "createBusesSubstation",
+                            "values":
                             {
                                 "substation":
                                 {
@@ -39,8 +39,8 @@
                             }
                         },
                         {
-                            "taskKey": "createBusesSubstation",
-                            "taskValues":
+                            "messageKey": "createBusesSubstation",
+                            "values":
                             {
                                 "substation":
                                 {
@@ -58,7 +58,7 @@
                 }
             ]
         },
-        "dics":
+        "dictionaries":
         {
             "default":
             {

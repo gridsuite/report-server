@@ -1,26 +1,26 @@
 [
     {
-        "version": "1.0",
-        "reportTree":
+        "version": "2.0",
+        "reportRoot":
         {
-            "taskKey": "UcteReading",
-            "subReporters":
+            "messageKey": "UcteReading",
+            "children":
             [
                 {
-                    "taskKey": "fixUcteNodes"
+                    "messageKey": "fixUcteNodes"
                 },
                 {
-                    "taskKey": "fixUcteLines"
+                    "messageKey": "fixUcteLines"
                 },
                 {
-                    "taskKey": "fixUcteTransformer"
+                    "messageKey": "fixUcteTransformer"
                 },
                 {
-                    "taskKey": "fixUcteRegulations"
+                    "messageKey": "fixUcteRegulations"
                 }
             ]
         },
-        "dics":
+        "dictionaries":
         {
             "default":
             {

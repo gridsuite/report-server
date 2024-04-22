@@ -1,31 +1,29 @@
 {
-  "version": "1.0",
-  "reportTree":
+  "version": "2.0",
+  "reportRoot":
     {
-    "taskKey": "LoadFlow",
-    "reports": [
+    "messageKey": "LoadFlow",
+    "children": [
       {
-        "reportKey": "LoadFlow"
-      }
-    ],
-    "subReporters": [
+        "messageKey": "LoadFlow"
+      },
       {
-        "taskKey": "randomSubReport",
-        "reports": [
+        "messageKey": "randomSubReport",
+        "children": [
           {
-            "reportKey": "randomReport",
+            "messageKey": "randomReport",
             "values": {}
           }
         ]
       },
       {
-        "taskKey": "LoadFlow",
-        "subReporters": [
+        "messageKey": "LoadFlow",
+        "children": [
           {
-            "taskKey": "LoadFlow",
-            "reports": [
+            "messageKey": "LoadFlow",
+            "children": [
               {
-                "reportKey": "LoadFlow",
+                "messageKey": "LoadFlow",
                 "values": {}
               }
             ]
@@ -34,7 +32,7 @@
       }
     ]
   },
-  "dics": {
+  "dictionaries": {
     "default": {
       "LoadFlow": "LoadFlow",
       "randomSubReport": "randomSubReport",
