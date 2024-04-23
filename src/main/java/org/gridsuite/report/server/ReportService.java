@@ -107,7 +107,7 @@ public class ReportService {
                         || reportNameMatchingType == ReportNameMatchingType.EXACT_MATCHING && tre.getName().equals(reportNameFilter)
                         || reportNameMatchingType == ReportNameMatchingType.ENDS_WITH && tre.getName().endsWith(reportNameFilter)).toList();
 
-        treeReportEntities.forEach(treeReportEntity ->  addSubReportNode(rootReportNode, treeReportEntity, withElements, severityLevels));
+        treeReportEntities.forEach(treeReportEntity -> addSubReportNode(rootReportNode, treeReportEntity, withElements, severityLevels));
 
         return rootReportNode;
     }
@@ -121,10 +121,8 @@ public class ReportService {
                 .withMessageTemplate(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString())
                 .build();
 
-        ReportNode subReport = getTreeReport(treeReportEntity, true, severityLevels);
-        ReportNodeAdder adder = report.newReportNode().withMessageTemplate(subReport.getMessageKey(), subReport.getMessageTemplate());
-        subReport.getValues().forEach((key, value) -> adder.withTypedValue(key, value.getValue().toString(), value.getType()));
-        adder.add();
+        addSubReportNode(report, treeReportEntity, true, severityLevels);
+
         return report;
     }
 
@@ -192,69 +190,6 @@ public class ReportService {
         }
     }
 
-    private ReportNode getTreeReport(TreeReportEntity treeReportEntity, boolean withElements, Set<String> severityLevels) {
-        // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
-        final List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(treeReportEntity.getIdNode())
-                .stream()
-                .map(UUID::fromString)
-                .toList();
-
-        List<ReportElementEntity> allReportElements = null;
-        if (withElements) {
-            // Let's find all the reportElements that are linked to the found treeReports
-            allReportElements = reportElementRepository.findAllByParentReportIdNodeInOrderByNanos(treeReportEntitiesIds)
-                    .stream()
-                    .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
-                    .toList();
-        }
-
-        // We need to get the entities to have access to the dictionaries
-        List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeInOrderByNanos(treeReportEntitiesIds);
-
-        // Now we can rebuild the tree
-        return toDto(treeReportEntity, treeReportEntities, allReportElements);
-    }
-
-    private ReportNode toDto(final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
-                             @Nullable final List<ReportElementEntity> allReportElements) {
-        // We convert our entities to PowSyBl Reporter
-        Map<UUID, Map<String, String>> treeReportEntityDictionaries = new HashMap<>(allTreeReports.size());
-
-        Map<UUID, List<TreeReportEntity>> reportNodeIdToChildTreeReports = new HashMap<>(allTreeReports.size());
-        Map<UUID, ReportNode> treeReportIdToReportNodes = new HashMap<>(allTreeReports.size());
-
-        for (final TreeReportEntity treeReportEntity : allTreeReports) {
-            TreeReportEntity parentTreeReport = treeReportEntity.getParentReport();
-            if (parentTreeReport != null) {
-                UUID parentId = parentTreeReport.getIdNode();
-                if (!reportNodeIdToChildTreeReports.containsKey(parentId)) {
-                    reportNodeIdToChildTreeReports.put(parentId, new ArrayList<>());
-                }
-                reportNodeIdToChildTreeReports.get(parentId).add(treeReportEntity);
-            }
-        }
-
-        final Map<String, String> rootDictionnary = rootTreeReportEntity.getDictionary();
-        rootTreeReportEntity.getValues().add(new ReportValueEmbeddable("id", rootTreeReportEntity.getIdNode(), "ID"));
-        ReportNodeBuilder reportNodeBuilder = ReportNode.newRootReportNode()
-                .withMessageTemplate(rootTreeReportEntity.getName(), rootDictionnary.get(rootTreeReportEntity.getName()));
-        rootTreeReportEntity.getValues().forEach(value -> addTypedValue(value, reportNodeBuilder));
-        ReportNode rootReportNode = reportNodeBuilder.build();
-        treeReportIdToReportNodes.put(rootTreeReportEntity.getIdNode(), rootReportNode);
-
-        addChildNodes(rootReportNode, rootTreeReportEntity.getIdNode(), reportNodeIdToChildTreeReports, treeReportIdToReportNodes);
-
-        if (allReportElements != null) {
-            for (final ReportElementEntity entity : allReportElements) {
-                final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReport().getIdNode());
-                ReportNodeAdder reportNodeAdder = treeReportIdToReportNodes.get(entity.getParentReport().getIdNode()).newReportNode().withMessageTemplate(entity.getName(), dict.get(entity.getName()));
-                entity.getValues().forEach(value -> addTypedValue(value, reportNodeAdder));
-                reportNodeAdder.add();
-            }
-        }
-        return rootReportNode;
-    }
-
     private static void addChildNodes(ReportNode parentNode, UUID reportNodeId, Map<UUID, List<TreeReportEntity>> reportNodeIdToChildren, Map<UUID, ReportNode> treeReportIdToReportNodes) {
         List<TreeReportEntity> children = reportNodeIdToChildren.get(reportNodeId);
         if (children == null) {
@@ -265,7 +200,7 @@ public class ReportService {
             childEntity.getValues().forEach(value -> addTypedValue(value, adder));
             ReportNode childReportNode = adder.add();
             treeReportIdToReportNodes.put(childEntity.getIdNode(), childReportNode);
-            if(reportNodeIdToChildren.containsKey(childEntity.getIdNode())) {
+            if (reportNodeIdToChildren.containsKey(childEntity.getIdNode())) {
                 addChildNodes(childReportNode, childEntity.getIdNode(), reportNodeIdToChildren, treeReportIdToReportNodes);
             }
         });

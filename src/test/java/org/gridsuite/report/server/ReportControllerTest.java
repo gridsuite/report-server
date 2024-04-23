@@ -132,9 +132,6 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        String res = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
-                .andReturn().getResponse().getContentAsString();
-
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_SINGLE_REPORT)));
@@ -157,7 +154,7 @@ public class ReportControllerTest {
 
     @Test
     public void testGetReportNoElements() throws Exception {
-         String testReport1 = toString(REPORT_ONE);
+        String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
         // expect 6 batched inserts of different tables and no updates
@@ -312,7 +309,7 @@ public class ReportControllerTest {
         insertReport(REPORT_UUID, testReportLoadflow);
 
         // Expect 5 batched inserts only and no updates
-        assertRequestsCount(2, 5, 0, 0);
+        assertRequestsCount(2, 4, 0, 0);
 
         Map<UUID, String> reportsKeys = new HashMap<>();
         reportsKeys.put(UUID.fromString(REPORT_UUID), "LoadFlow");

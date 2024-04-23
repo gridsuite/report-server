@@ -25,15 +25,10 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import org.gridsuite.report.server.ReportService;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-
-import static com.powsybl.commons.report.TypedValue.SEVERITY;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -85,15 +80,4 @@ public class TreeReportEntity {
     @Column
     long nanos;
 
-    public boolean hasSeverity(Set<String> severityLevels) {
-        if (CollectionUtils.isEmpty(severityLevels)) {
-            return false;
-        } else {
-            return severityLevels.contains(values.stream()
-                    .filter(value -> value.getValueType() == ReportValueEmbeddable.ValueType.STRING && SEVERITY.equalsIgnoreCase(value.getType()))
-                    .findAny()
-                    .map(ReportValueEmbeddable::getValue)
-                    .orElse(ReportService.SeverityLevel.UNKNOWN.name()));
-        }
-    }
 }

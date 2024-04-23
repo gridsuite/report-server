@@ -11,16 +11,7 @@
                     "children":
                     [
                         {
-                            "messageKey": "fixUcteNodes"
-                        },
-                        {
                             "messageKey": "fixUcteLines"
-                        },
-                        {
-                            "messageKey": "fixUcteTransformer"
-                        },
-                        {
-                            "messageKey": "fixUcteRegulations"
                         }
                     ]
                 },
@@ -37,41 +28,24 @@
                                     "value": "FFFFFF"
                                 }
                             }
-                        },
-                        {
-                            "messageKey": "createBusesSubstation",
-                            "values":
-                            {
-                                "substation":
-                                {
-                                    "value": "XXXXXX"
-                                }
-                            }
                         }
                     ]
                 },
                 {
-                    "taskKey": "createLines"
-                },
-                {
-                    "taskKey": "createTransformers"
+                    "messageKey": "createLines"
                 }
-            ]
-        },
-        "dictionaries":
-        {
-            "default":
+            ],
+            "dictionaries":
             {
-                "UcteReading": "Reading UCTE network file",
-                "createLines": "Create lines",
-                "createTransformers": "Create transformers",
-                "fixUcteNodes": "Fix UCTE nodes",
-                "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-                "createBusesSubstation": "Create buses for substation ${substation}",
-                "createBuses": "Create buses",
-                "fixUcteLines": "Fix UCTE lines",
-                "fixUcteRegulations": "Fix UCTE regulations",
-                "fixUcteTransformer": "Fix UCTE transformers"
+                "default":
+                {
+                    "UcteReading": "Reading UCTE network file",
+                    "createLines": "Create lines",
+                    "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+                    "createBusesSubstation": "Create buses for substation ${substation}",
+                    "createBuses": "Create buses",
+                    "fixUcteLines": "Fix UCTE lines"
+                }
             }
         }
     }

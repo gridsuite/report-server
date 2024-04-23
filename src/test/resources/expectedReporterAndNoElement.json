@@ -4,31 +4,12 @@
         "reportRoot":
         {
             "messageKey": "UcteReading",
-            "children":
-            [
-                {
-                    "messageKey": "fixUcteNodes"
-                },
-                {
-                    "messageKey": "fixUcteLines"
-                },
-                {
-                    "messageKey": "fixUcteTransformer"
-                },
-                {
-                    "messageKey": "fixUcteRegulations"
-                }
-            ]
-        },
-        "dictionaries":
-        {
-            "default":
+            "dictionaries":
             {
-                "UcteReading": "Reading UCTE network file",
-                "fixUcteNodes": "Fix UCTE nodes",
-                "fixUcteLines": "Fix UCTE lines",
-                "fixUcteRegulations": "Fix UCTE regulations",
-                "fixUcteTransformer": "Fix UCTE transformers"
+                "default":
+                {
+                    "UcteReading": "Reading UCTE network file"
+                }
             }
         }
     }
