@@ -198,6 +198,7 @@ public class ReportService {
         children.forEach(childEntity -> {
             ReportNodeAdder adder = parentNode.newReportNode().withMessageTemplate(childEntity.getName(), childEntity.getDictionary().get(childEntity.getName()));
             childEntity.getValues().forEach(value -> addTypedValue(value, adder));
+            adder.withUntypedValue("id", childEntity.getIdNode().toString());
             ReportNode childReportNode = adder.add();
             treeReportIdToReportNodes.put(childEntity.getIdNode(), childReportNode);
             if (reportNodeIdToChildren.containsKey(childEntity.getIdNode())) {
@@ -237,7 +238,7 @@ public class ReportService {
         dict.put(reportNode.getMessageKey(), reportNode.getMessageTemplate());
 
         List<ReportValueEmbeddable> reportValueEmbeddableList = toValueEntityList(reportNode.getValues());
-        //reportValueEmbeddableList.add(new ReportValueEmbeddable("severityList", severityList(reportNode), TypedValue.SEVERITY));
+        reportValueEmbeddableList.add(new ReportValueEmbeddable("severityList", severityList(reportNode), TypedValue.SEVERITY));
 
         TreeReportEntity treeReportEntity = new TreeReportEntity(null, reportNode.getMessageKey(), persistedReport,
                 reportValueEmbeddableList, parentNode, dict,
@@ -255,6 +256,7 @@ public class ReportService {
     private static List<String> severityList(ReportNode reportNode) {
         return reportNode.getChildren()
                 .stream()
+                .filter(report -> report.getChildren().isEmpty())
                 .map(report -> report.getValues().get("reportSeverity"))
                 .map(severity -> severity == null ? SeverityLevel.UNKNOWN.toString() : SeverityLevel.fromValue(Objects.toString(severity.getValue())).toString())
                 .distinct().toList();
