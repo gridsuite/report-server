@@ -138,7 +138,7 @@ public class ReportService {
             // Let's find all the reportElements that are linked to the found treeReports
             allReportElements = reportElementRepository.findAllByParentReportIdNodeInOrderByNanos(treeReportEntitiesIds)
                     .stream()
-                    .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels))
+                    .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels) || reportElementEntity.getValues().isEmpty()) // reportElementEntity.getValues().isEmpty() is a hack to get the empty subreports
                     .toList();
         }
 
@@ -185,6 +185,10 @@ public class ReportService {
                 final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReport().getIdNode());
                 ReportNodeAdder reportElementAdder = treeReportIdToReportNodes.get(entity.getParentReport().getIdNode()).newReportNode().withMessageTemplate(entity.getName(), dict.get(entity.getName()));
                 entity.getValues().forEach(value -> addTypedValue(value, reportElementAdder));
+                // reports without values are considered as subreports
+                if (entity.getValues().isEmpty()) {
+                    reportElementAdder.withUntypedValue("id", entity.getIdReport().toString());
+                }
                 reportElementAdder.add();
             }
         }
@@ -256,7 +260,7 @@ public class ReportService {
     private static List<String> severityList(ReportNode reportNode) {
         return reportNode.getChildren()
                 .stream()
-                .filter(report -> report.getChildren().isEmpty())
+                .filter(report -> report.getChildren().isEmpty() && !report.getValues().isEmpty()) // reports without values are considered as subreports so we don't want them in the severity list
                 .map(report -> report.getValues().get("reportSeverity"))
                 .map(severity -> severity == null ? SeverityLevel.UNKNOWN.toString() : SeverityLevel.fromValue(Objects.toString(severity.getValue())).toString())
                 .distinct().toList();
