@@ -76,9 +76,9 @@ public class ReportController {
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
-    public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNode reporter) {
+    public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNode reportNode) {
 
-        service.createReport(id, reporter);
+        service.createReport(id, reportNode);
     }
 
     @DeleteMapping(value = "reports/{id}")

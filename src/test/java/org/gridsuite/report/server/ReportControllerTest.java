@@ -246,7 +246,6 @@ public class ReportControllerTest {
         insertReport(REPORT_UUID, testReport1);
 
         SQLStatementCountValidator.reset();
-
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_NO_REPORT_ELEMENT)))
@@ -309,7 +308,7 @@ public class ReportControllerTest {
         insertReport(REPORT_UUID, testReportLoadflow);
 
         // Expect 5 batched inserts only and no updates
-        assertRequestsCount(2, 4, 0, 0);
+        assertRequestsCount(2, 5, 0, 0);
 
         Map<UUID, String> reportsKeys = new HashMap<>();
         reportsKeys.put(UUID.fromString(REPORT_UUID), "LoadFlow");

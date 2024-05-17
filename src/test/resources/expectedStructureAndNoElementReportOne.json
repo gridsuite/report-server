@@ -1,50 +1,77 @@
 [
     {
         "version": "2.0",
-        "reportRoot":
-        {
+        "reportRoot": {
             "messageKey": "roundTripReporterJsonTest",
-            "children":
-            [
+            "values": {
+                "severityList": {
+                    "value": "[INFO, TRACE]",
+                    "type": "SEVERITY"
+                }
+            },
+            "children": [
                 {
                     "messageKey": "UcteReading",
-                    "children":
-                    [
-                        {
-                            "messageKey": "fixUcteLines"
+                    "values": {
+                        "severityList": {
+                            "value": "[UNKNOWN]",
+                            "type": "SEVERITY"
                         }
-                    ]
-                },
-                {
-                    "messageKey": "createBuses",
-                    "children":
-                    [
+                    },
+                    "children": [
                         {
-                            "messageKey": "createBusesSubstation",
-                            "values":
-                            {
-                                "substation":
-                                {
-                                    "value": "FFFFFF"
+                            "messageKey": "fixUcteLines",
+                            "values": {
+                                "severityList": {
+                                    "value": "[ERROR]",
+                                    "type": "SEVERITY"
                                 }
                             }
                         }
                     ]
                 },
                 {
-                    "messageKey": "createLines"
+                    "messageKey": "createBuses",
+                    "values": {
+                        "severityList": {
+                            "value": "[]",
+                            "type": "SEVERITY"
+                        }
+                    },
+                    "children": [
+                        {
+                            "messageKey": "createBusesSubstation",
+                            "values": {
+                                "substation": {
+                                    "value": "FFFFFF"
+                                },
+                                "severityList": {
+                                    "value": "[TRACE]",
+                                    "type": "SEVERITY"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "messageKey": "createLines",
+                    "values": {
+                        "severityList": {
+                            "value": "[TRACE]",
+                            "type": "SEVERITY"
+                        }
+                    }
                 }
             ],
-            "dictionaries":
-            {
-                "default":
-                {
+            "dictionaries": {
+                "default": {
+                    "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
                     "UcteReading": "Reading UCTE network file",
-                    "createLines": "Create lines",
-                    "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-                    "createBusesSubstation": "Create buses for substation ${substation}",
                     "createBuses": "Create buses",
-                    "fixUcteLines": "Fix UCTE lines"
+                    "createBusesSubstation": "Create buses for substation ${substation}",
+                    "createLines": "Create lines",
+                    "fixUcteLines": "Fix UCTE lines",
+                    "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
                 }
             }
         }
