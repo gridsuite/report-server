@@ -68,8 +68,7 @@ public class ReportControllerTest {
     @Before
     public void setUp() {
         Configuration.defaultConfiguration();
-        MockitoAnnotations.initMocks(this);
-        final ObjectMapper objectMapper = new ObjectMapper();
+        MockitoAnnotations.openMocks(this);
         objectMapper.enable(DeserializationFeature.USE_LONG_FOR_INTS);
         objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
         objectMapper.disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE);
@@ -371,9 +370,6 @@ public class ReportControllerTest {
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
-        String res = mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-
         mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?withElements=true&severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(reportConcat2)));
