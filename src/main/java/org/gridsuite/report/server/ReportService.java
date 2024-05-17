@@ -81,7 +81,7 @@ public class ReportService {
         this.reportElementRepository = reportElementRepository;
     }
 
-    private static void addTypedValue(ReportValueEmbeddable value, ReportNodeAdderOrBuilder adder) {
+    private static void addTypedValue(ReportValueEmbeddable value, ReportNodeAdderOrBuilder<ReportNodeAdder> adder) {
         switch (value.getValueType()) {
             case DOUBLE: adder.withTypedValue(value.getName(), Double.valueOf(value.getValue()), value.getType());
                 break;
