@@ -25,6 +25,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -78,4 +79,5 @@ public class TreeReportEntity {
 
     @Column
     long nanos;
+
 }

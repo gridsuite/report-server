@@ -1,12 +1,12 @@
 [
   {
-    "version": "1.0",
-    "reportTree": {
-      "taskKey": "defaultName"
-    },
-    "dics": {
-      "default": {
-        "defaultName": "defaultName"
+    "version": "2.0",
+    "reportRoot": {
+      "messageKey": "defaultName",
+      "dictionaries": {
+        "default": {
+          "defaultName": "defaultName"
+        }
       }
     }
   }

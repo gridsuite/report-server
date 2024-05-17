@@ -1,34 +1,15 @@
 [
     {
-        "version": "1.0",
-        "reportTree":
+        "version": "2.0",
+        "reportRoot":
         {
-            "taskKey": "UcteReading",
-            "subReporters":
-            [
-                {
-                    "taskKey": "fixUcteNodes"
-                },
-                {
-                    "taskKey": "fixUcteLines"
-                },
-                {
-                    "taskKey": "fixUcteTransformer"
-                },
-                {
-                    "taskKey": "fixUcteRegulations"
-                }
-            ]
-        },
-        "dics":
-        {
-            "default":
+            "messageKey": "UcteReading",
+            "dictionaries":
             {
-                "UcteReading": "Reading UCTE network file",
-                "fixUcteNodes": "Fix UCTE nodes",
-                "fixUcteLines": "Fix UCTE lines",
-                "fixUcteRegulations": "Fix UCTE regulations",
-                "fixUcteTransformer": "Fix UCTE transformers"
+                "default":
+                {
+                    "UcteReading": "Reading UCTE network file"
+                }
             }
         }
     }
