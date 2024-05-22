@@ -1,77 +1,43 @@
 [
     {
-        "version": "1.0",
-        "reportTree":
-        {
-            "taskKey": "roundTripReporterJsonTest",
-            "subReporters":
-            [
+        "version": "2.0",
+        "reportRoot": {
+            "messageKey": "roundTripReporterJsonTest",
+            "children": [
                 {
-                    "taskKey": "UcteReading",
-                    "subReporters":
-                    [
+                    "messageKey": "UcteReading",
+                    "children": [
                         {
-                            "taskKey": "fixUcteNodes"
-                        },
-                        {
-                            "taskKey": "fixUcteLines"
-                        },
-                        {
-                            "taskKey": "fixUcteTransformer"
-                        },
-                        {
-                            "taskKey": "fixUcteRegulations"
+                            "messageKey": "fixUcteLines"
                         }
                     ]
                 },
                 {
-                    "taskKey": "createBuses",
-                    "subReporters":
-                    [
+                    "messageKey": "createBuses",
+                    "children": [
                         {
-                            "taskKey": "createBusesSubstation",
-                            "taskValues":
-                            {
-                                "substation":
-                                {
+                            "messageKey": "createBusesSubstation",
+                            "values": {
+                                "substation": {
                                     "value": "FFFFFF"
                                 }
                             }
-                        },
-                        {
-                            "taskKey": "createBusesSubstation",
-                            "taskValues":
-                            {
-                                "substation":
-                                {
-                                    "value": "XXXXXX"
-                                }
-                            }
                         }
                     ]
                 },
                 {
-                    "taskKey": "createLines"
-                },
-                {
-                    "taskKey": "createTransformers"
+                    "messageKey": "createLines"
                 }
-            ]
-        },
-        "dics":
-        {
-            "default":
-            {
-                "UcteReading": "Reading UCTE network file",
-                "createLines": "Create lines",
-                "createTransformers": "Create transformers",
-                "fixUcteNodes": "Fix UCTE nodes",
-                "fixUcteLines": "Fix UCTE lines",
-                "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-                "createBusesSubstation": "Create buses for substation ${substation}",
-                "fixUcteRegulations": "Fix UCTE regulations",
-                "fixUcteTransformer": "Fix UCTE transformers",
-                "createBuses": "Create buses"
+            ],
+            "dictionaries": {
+                "default": {
+                    "UcteReading": "Reading UCTE network file",
+                    "createLines": "Create lines",
+                    "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+                    "createBusesSubstation": "Create buses for substation ${substation}",
+                    "createBuses": "Create buses",
+                    "fixUcteLines": "Fix UCTE lines"
+                }
             }
         }
     }

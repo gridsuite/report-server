@@ -6,7 +6,7 @@
  */
 package org.gridsuite.report.server.entities;
 
-import com.powsybl.commons.reporter.TypedValue;
+import static com.powsybl.commons.report.TypedValue.SEVERITY;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -62,7 +62,7 @@ public class ReportElementEntity {
             return false;
         } else {
             return severityLevels.contains(values.stream()
-                    .filter(value -> value.getValueType() == ValueType.STRING && TypedValue.SEVERITY.equalsIgnoreCase(value.getType()))
+                    .filter(value -> value.getValueType() == ValueType.STRING && SEVERITY.equalsIgnoreCase(value.getType()))
                     .findAny()
                     .map(ReportValueEmbeddable::getValue)
                     .orElse(ReportService.SeverityLevel.UNKNOWN.name()));
