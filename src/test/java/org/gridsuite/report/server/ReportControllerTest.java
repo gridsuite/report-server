@@ -157,7 +157,7 @@ public class ReportControllerTest {
         insertReport(REPORT_UUID, testReport1);
 
         // expect 6 batched inserts of different tables and no updates
-        assertRequestsCount(2, 6, 0, 0);
+        assertRequestsCount(1, 6, 0, 0);
         SQLStatementCountValidator.reset();
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
@@ -207,7 +207,7 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
 
-        assertRequestsCount(2, 0, 0, 0);
+        assertRequestsCount(1, 0, 0, 0);
     }
 
     @Test
@@ -236,7 +236,7 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
 
-        assertRequestsCount(2, 0, 0, 0);
+        assertRequestsCount(1, 0, 0, 0);
     }
 
     @Test
