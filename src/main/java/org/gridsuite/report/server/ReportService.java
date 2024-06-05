@@ -81,7 +81,7 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReportNode getReport(UUID reportId, boolean withElements, Set<String> severityLevels, String reportNameFilter, ReportNameMatchingType reportNameMatchingType) {
+    public ReportNode getReport(UUID reportId, @Nullable Set<String> severityLevels, String reportNameFilter, @Nullable ReportNameMatchingType reportNameMatchingType) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
@@ -96,7 +96,7 @@ public class ReportService {
                 || reportNameMatchingType == ReportNameMatchingType.EXACT_MATCHING && tre.getName().equals(reportNameFilter)
                 || reportNameMatchingType == ReportNameMatchingType.ENDS_WITH && tre.getName().endsWith(reportNameFilter)).toList();
 
-        treeReportEntities.forEach(treeReportEntity -> addSubReportNode(rootReportNode, treeReportEntity, withElements, severityLevels));
+        treeReportEntities.forEach(treeReportEntity -> addSubReportNode(rootReportNode, treeReportEntity, severityLevels));
 
         return rootReportNode;
     }
@@ -110,33 +110,29 @@ public class ReportService {
             .withMessageTemplate(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString())
             .build();
 
-        addSubReportNode(report, treeReportEntity, true, severityLevels);
+        addSubReportNode(report, treeReportEntity, severityLevels);
 
         return report;
     }
 
-    private ReportNode addSubReportNode(ReportNode rootReportNdoe, TreeReportEntity subTreeReport, boolean withElements, Set<String> severityLevels) {
+    private void addSubReportNode(ReportNode rootReportNdoe, TreeReportEntity subTreeReport, @Nullable Set<String> severityLevels) {
         // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
         final List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(subTreeReport.getIdNode())
             .stream()
             .map(UUID::fromString)
             .toList();
 
-        List<ReportElementEntity> allReportElements = null;
-        if (withElements) {
-            // Let's find all the reportElements that are linked to the found treeReports
-            allReportElements = reportElementRepository.findAllByParentReportIdNodeInOrderByNanos(treeReportEntitiesIds)
+        // Let's find all the reportElements that are linked to the found treeReports
+        List<ReportElementEntity> allReportElements = reportElementRepository.findAllByParentReportIdNodeInOrderByNanos(treeReportEntitiesIds)
                 .stream()
                 .filter(reportElementEntity -> reportElementEntity.hasSeverity(severityLevels) || reportElementEntity.getValues().isEmpty()) // reportElementEntity.getValues().isEmpty() is a hack to get the empty subreports
                 .toList();
-        }
 
         // We need to get the entities to have access to the dictionaries
         List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeInOrderByNanos(treeReportEntitiesIds);
 
         // Now we can rebuild the tree
         addSubReportNode(rootReportNdoe, subTreeReport, treeReportEntities, allReportElements);
-        return rootReportNdoe;
     }
 
     private void addSubReportNode(final ReportNode rootReportNode, final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
