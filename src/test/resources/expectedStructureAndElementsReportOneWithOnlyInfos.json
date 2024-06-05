@@ -9,7 +9,7 @@
           "type": "SEVERITY"
         },
         "id": {
-          "value": "5edfa318-2c4d-4682-a67c-3aed7c13686c",
+          "value": "ed562a2a-11a6-4eaf-ab81-4d67b02625f2",
           "type": "ID"
         }
       },
@@ -22,7 +22,7 @@
               "type": "SEVERITY"
             },
             "id": {
-              "value": "b76b6bfb-1dc7-492b-9917-44e6af85053c"
+              "value": "2abe3075-fdc7-471a-9e0f-d66836eb55a6"
             }
           },
           "children": [
@@ -34,7 +34,31 @@
                   "type": "SEVERITY"
                 },
                 "id": {
-                  "value": "31a9fb49-9e1d-418e-9200-352b9ab1d97a"
+                  "value": "934ec990-a56e-437b-8ac1-cc74099b3e8e"
+                }
+              }
+            },
+            {
+              "messageKey": "fixUcteNodes",
+              "values": {
+                "id": {
+                  "value": "7c5b8153-329f-43ef-b46b-78cc74131cd7"
+                }
+              }
+            },
+            {
+              "messageKey": "fixUcteTransformer",
+              "values": {
+                "id": {
+                  "value": "7bc239e8-9b25-4cd6-8f6f-3918107a1519"
+                }
+              }
+            },
+            {
+              "messageKey": "fixUcteRegulations",
+              "values": {
+                "id": {
+                  "value": "888f19d4-db62-4e6f-b476-1b6c703e2b00"
                 }
               }
             }
@@ -48,7 +72,7 @@
               "type": "SEVERITY"
             },
             "id": {
-              "value": "472a23ec-ebff-4a22-9eb6-bc7826c5f8f4"
+              "value": "6d4ba099-ff52-4cbc-ace9-bb685c9a9374"
             }
           },
           "children": [
@@ -63,7 +87,7 @@
                   "type": "SEVERITY"
                 },
                 "id": {
-                  "value": "93fad821-006b-4c72-a80e-90430b70558d"
+                  "value": "4fd914fa-4b40-497e-afa3-e11246dc7914"
                 }
               }
             }
@@ -77,7 +101,16 @@
               "type": "SEVERITY"
             },
             "id": {
-              "value": "0472d16f-2111-42dc-948b-66e0fa76c503"
+              "value": "1d6a5592-9b40-4025-a957-4ea79de37614"
+            }
+          }
+        },
+        {
+          "messageKey": "novalueReport",
+          "values": {
+            "reportSeverity": {
+              "value": "INFO",
+              "type": "SEVERITY"
             }
           }
         }
@@ -90,6 +123,10 @@
           "createBusesSubstation": "Create buses for substation ${substation}",
           "createLines": "Create lines",
           "fixUcteLines": "Fix UCTE lines",
+          "fixUcteNodes": "Fix UCTE nodes",
+          "fixUcteRegulations": "Fix UCTE regulations",
+          "fixUcteTransformer": "Fix UCTE transformers",
+          "novalueReport": "No value report",
           "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
         }
       }

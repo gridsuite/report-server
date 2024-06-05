@@ -2,40 +2,12 @@
   "version": "2.0",
   "reportRoot": {
     "messageKey": "roundTripReporterJsonTest",
-    "values": {
-      "severityList": {
-        "value": "[INFO, TRACE]",
-        "type": "SEVERITY"
-      },
-      "id": {
-        "value": "bf0e389e-aa3e-4256-bc6d-72082d179534",
-        "type": "ID"
-      }
-    },
     "children": [
       {
         "messageKey": "UcteReading",
-        "values": {
-          "severityList": {
-            "value": "[]",
-            "type": "SEVERITY"
-          },
-          "id": {
-            "value": "fbe78039-43c1-4a87-80d8-c5bd25ae98b7"
-          }
-        },
         "children": [
           {
             "messageKey": "fixUcteLines",
-            "values": {
-              "severityList": {
-                "value": "[ERROR]",
-                "type": "SEVERITY"
-              },
-              "id": {
-                "value": "e8b3127e-da04-4431-a26b-a40e1de2f3e4"
-              }
-            },
             "children": [
               {
                 "messageKey": "negativeLineResistance",
@@ -104,55 +76,24 @@
             ]
           },
           {
-            "messageKey": "fixUcteNodes",
-            "values": {
-              "id": {
-                "value": "4a8afba6-1fcc-45fe-81a9-798983f02591"
-              }
-            }
+            "messageKey": "fixUcteNodes"
           },
           {
-            "messageKey": "fixUcteTransformer",
-            "values": {
-              "id": {
-                "value": "6619c7fa-18f6-4a58-9bbc-f12adde95df6"
-              }
-            }
+            "messageKey": "fixUcteTransformer"
           },
           {
-            "messageKey": "fixUcteRegulations",
-            "values": {
-              "id": {
-                "value": "a3af1aea-aa5c-4cb3-8723-e59e8833cd04"
-              }
-            }
+            "messageKey": "fixUcteRegulations"
           }
         ]
       },
       {
         "messageKey": "createBuses",
-        "values": {
-          "severityList": {
-            "value": "[]",
-            "type": "SEVERITY"
-          },
-          "id": {
-            "value": "a46b1761-c908-48b2-98cf-1559fb584a67"
-          }
-        },
         "children": [
           {
             "messageKey": "createBusesSubstation",
             "values": {
               "substation": {
                 "value": "FFFFFF"
-              },
-              "severityList": {
-                "value": "[TRACE]",
-                "type": "SEVERITY"
-              },
-              "id": {
-                "value": "637713e5-d7cf-4cd2-95c3-29667b2fa2de"
               }
             },
             "children": [
@@ -212,15 +153,6 @@
       },
       {
         "messageKey": "createLines",
-        "values": {
-          "severityList": {
-            "value": "[TRACE]",
-            "type": "SEVERITY"
-          },
-          "id": {
-            "value": "23eaa643-e35c-4264-8690-32025d3c164c"
-          }
-        },
         "children": [
           {
             "messageKey": "danglingLineCreation",
