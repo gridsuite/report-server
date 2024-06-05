@@ -7,6 +7,10 @@
         "severityList": {
           "value": "[INFO, TRACE]",
           "type": "SEVERITY"
+        },
+        "id": {
+          "value": "2935b092-9d13-40b3-b8fb-f892956fc351",
+          "type": "ID"
         }
       },
       "children": [
@@ -16,6 +20,9 @@
             "severityList": {
               "value": "[]",
               "type": "SEVERITY"
+            },
+            "id": {
+              "value": "658fc8ae-b4fa-406f-b22d-9d0b49d4531e"
             }
           },
           "children": [
@@ -25,6 +32,9 @@
                 "severityList": {
                   "value": "[ERROR]",
                   "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "db106c74-28bd-4f29-b2cd-e63dd2f4b869"
                 }
               },
               "children": [
@@ -95,13 +105,28 @@
               ]
             },
             {
-              "messageKey": "fixUcteNodes"
+              "messageKey": "fixUcteNodes",
+              "values": {
+                "id": {
+                  "value": "96c5aa57-051c-4668-9105-4e19da25f86a"
+                }
+              }
             },
             {
-              "messageKey": "fixUcteTransformer"
+              "messageKey": "fixUcteTransformer",
+              "values": {
+                "id": {
+                  "value": "850b7462-c33c-4e76-9f57-73267cefddf8"
+                }
+              }
             },
             {
-              "messageKey": "fixUcteRegulations"
+              "messageKey": "fixUcteRegulations",
+              "values": {
+                "id": {
+                  "value": "4bffc681-d078-4b39-bd45-138857fe7ef1"
+                }
+              }
             }
           ]
         },
@@ -111,6 +136,9 @@
             "severityList": {
               "value": "[]",
               "type": "SEVERITY"
+            },
+            "id": {
+              "value": "2b30c2a7-ac51-4a24-aace-43b13db8e625"
             }
           },
           "children": [
@@ -123,6 +151,9 @@
                 "severityList": {
                   "value": "[TRACE]",
                   "type": "SEVERITY"
+                },
+                "id": {
+                  "value": "f63caa8f-31b8-47b6-87a8-bc9b9c803c63"
                 }
               },
               "children": [
@@ -186,6 +217,9 @@
             "severityList": {
               "value": "[TRACE]",
               "type": "SEVERITY"
+            },
+            "id": {
+              "value": "e02c165c-0b9c-436d-aa09-1313abef0821"
             }
           },
           "children": [
@@ -272,6 +306,7 @@
       ],
       "dictionaries": {
         "default": {
+          "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
           "UcteReading": "Reading UCTE network file",
           "createBus": "Create bus ${bus}",
           "createBuses": "Create buses",
@@ -302,6 +337,10 @@
         "severityList": {
           "value": "[INFO]",
           "type": "SEVERITY"
+        },
+        "id": {
+          "value": "4c29c759-e838-485d-91b9-529491082466",
+          "type": "ID"
         }
       },
       "children": [
@@ -311,11 +350,19 @@
             "severityList": {
               "value": "[]",
               "type": "SEVERITY"
+            },
+            "id": {
+              "value": "16273bc4-bdd9-4ad4-b579-d7740b93efc5"
             }
           },
           "children": [
             {
-              "messageKey": "fixUcteNodes"
+              "messageKey": "fixUcteNodes",
+              "values": {
+                "id": {
+                  "value": "86c32a55-cc30-46b5-8cc6-b075ac6d09ad"
+                }
+              }
             }
           ]
         },
@@ -331,6 +378,7 @@
       ],
       "dictionaries": {
         "default": {
+          "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
           "UcteReading": "Reading UCTE network file",
           "createBus": "Create bus ${bus}",
           "createBuses": "Create buses",

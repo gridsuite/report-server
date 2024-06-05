@@ -7,6 +7,10 @@
         "severityList": {
           "value": "[]",
           "type": "SEVERITY"
+        },
+        "id": {
+          "value": "593a8546-bc05-4b53-b8d9-a2caf0e2f0f8",
+          "type": "ID"
         }
       },
       "children": [
@@ -16,6 +20,9 @@
             "severityList": {
               "value": "[ERROR]",
               "type": "SEVERITY"
+            },
+            "id": {
+              "value": "641a7c9b-5ed3-47bd-9d58-6a248a1d7621"
             }
           },
           "children": [
@@ -86,17 +93,33 @@
           ]
         },
         {
-          "messageKey": "fixUcteNodes"
+          "messageKey": "fixUcteNodes",
+          "values": {
+            "id": {
+              "value": "8345715b-127a-4922-a84c-fdab7a0433ef"
+            }
+          }
         },
         {
-          "messageKey": "fixUcteTransformer"
+          "messageKey": "fixUcteTransformer",
+          "values": {
+            "id": {
+              "value": "789de7bc-6228-4798-aaca-19e701548f53"
+            }
+          }
         },
         {
-          "messageKey": "fixUcteRegulations"
+          "messageKey": "fixUcteRegulations",
+          "values": {
+            "id": {
+              "value": "c5798b8c-a1cc-4be7-ba45-e938c1c130a4"
+            }
+          }
         }
       ],
       "dictionaries": {
         "default": {
+          "593a8546-bc05-4b53-b8d9-a2caf0e2f0f8": "593a8546-bc05-4b53-b8d9-a2caf0e2f0f8",
           "UcteReading": "Reading UCTE network file",
           "fixUcteLines": "Fix UCTE lines",
           "fixUcteNodes": "Fix UCTE nodes",
