@@ -111,6 +111,8 @@ public class ReportControllerTest {
     private static final String EXPECTED_SINGLE_REPORT = "/expectedSingleReport.json";
     private static final String EXPECTED_STRUCTURE_ONLY_REPORT1 = "/expectedStructureOnlyReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1 = "/expectedStructureAndElementsReportOne.json";
+    private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS = "/expectedStructureAndElementsReportOneWithOnlyErrors.json";
+    private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS = "/expectedStructureAndElementsReportOneWithOnlyInfos.json";
     private static final String EXPECTED_STRUCTURE_AND_NO_REPORT_ELEMENT = "/expectedStructureAndNoElementReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1 = "/expectedReporterAndElements.json";
     private static final String EXPECTED_STRUCTURE_AND_NO_REPORTER_ELEMENT = "/expectedReporterAndNoElement.json";
@@ -249,6 +251,34 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_NO_REPORT_ELEMENT)))
                 .andReturn();
+
+        assertRequestsCount(4, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetReportWithSeverityFiltersOnError() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        SQLStatementCountValidator.reset();
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=ERROR"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS)))
+            .andReturn();
+
+        assertRequestsCount(4, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetReportWithSeverityFiltersOnInfo() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        SQLStatementCountValidator.reset();
+        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS)))
+            .andReturn();
 
         assertRequestsCount(4, 0, 0, 0);
     }
