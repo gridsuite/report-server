@@ -49,29 +49,29 @@ public final class TestUtils {
         return entity;
     }
 
-    public static void assertReportsAreEqualIgnoringIds(ReportNode node1, ReportNode node2) {
-        assertEquals(node2.getMessageKey(), node1.getMessageKey());
-        assertEquals(node2.getMessageTemplate(), node1.getMessageTemplate());
-        assertEquals(node2.getValues().size(), node1.getValues().size());
-        for (var entry : node2.getValues().entrySet()) {
-            TypedValue value = node1.getValues().getOrDefault(entry.getKey(), null);
-            assertNotNull(value);
-            assertEquals(entry.getValue().getType(), value.getType());
-            if (entry.getKey().equals("id")) {
+    public static void assertReportsAreEqualIgnoringIds(ReportNode expectedNode, ReportNode actualNode) {
+        assertEquals(expectedNode.getMessageKey(), actualNode.getMessageKey());
+        assertEquals(expectedNode.getMessageTemplate(), actualNode.getMessageTemplate());
+        assertEquals(expectedNode.getValues().size(), actualNode.getValues().size());
+        for (var actualNodeEntry : actualNode.getValues().entrySet()) {
+            TypedValue expectedValue = expectedNode.getValues().getOrDefault(actualNodeEntry.getKey(), null);
+            assertNotNull(expectedValue);
+            assertEquals(expectedValue.getType(), actualNodeEntry.getValue().getType());
+            if (actualNodeEntry.getKey().equals("id")) {
                 continue;
             }
-            assertEquals(entry.getValue().getValue(), value.getValue());
+            assertEquals(expectedValue.getValue(), actualNodeEntry.getValue().getValue());
         }
-        assertEquals(node1.getChildren().size(), node2.getChildren().size());
-        for (int i = 0; i < node1.getChildren().size(); i++) {
-            assertReportsAreEqualIgnoringIds(node1.getChildren().get(i), node2.getChildren().get(i));
+        assertEquals(expectedNode.getChildren().size(), actualNode.getChildren().size());
+        for (int i = 0; i < expectedNode.getChildren().size(); i++) {
+            assertReportsAreEqualIgnoringIds(expectedNode.getChildren().get(i), actualNode.getChildren().get(i));
         }
     }
 
-    public static void assertReportListsAreEqualIgnoringIds(List<ReportNode> nodeList1, List<ReportNode> nodeList2) {
-        assertEquals(nodeList1.size(), nodeList2.size());
-        for (int i = 0; i < nodeList1.size(); i++) {
-            assertReportsAreEqualIgnoringIds(nodeList1.get(i), nodeList2.get(i));
+    public static void assertReportListsAreEqualIgnoringIds(List<ReportNode> expectedNodeList, List<ReportNode> actualNodeList) {
+        assertEquals(expectedNodeList.size(), actualNodeList.size());
+        for (int i = 0; i < expectedNodeList.size(); i++) {
+            assertReportsAreEqualIgnoringIds(expectedNodeList.get(i), actualNodeList.get(i));
         }
     }
 }
