@@ -10,7 +10,6 @@ import com.google.common.collect.Lists;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.commons.report.ReportNodeAdder;
 import com.powsybl.commons.report.ReportNodeAdderOrBuilder;
-import com.powsybl.commons.report.TypedValue;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
@@ -229,7 +228,8 @@ public class ReportService {
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
             messageTemplateEntity,
             createValues(reportNode),
-            parentReportNodeEntity
+            parentReportNodeEntity,
+            severities(reportNode)
         );
 
         reportNodeRepository.save(reportNodeEntity);
@@ -237,21 +237,17 @@ public class ReportService {
     }
 
     private static List<ValueEntity> createValues(ReportNode reportNode) {
-        var values = new ArrayList<>(reportNode.getValues()
+        return reportNode.getValues()
             .entrySet()
             .stream()
-            .map(k -> new ValueEntity(k.getKey(), k.getValue().getValue().toString(), k.getValue().getType())).toList());
-        values.add(new ValueEntity("severityList", severityList(reportNode).toString(), TypedValue.SEVERITY));
-        return values;
+            .map(k -> new ValueEntity(k.getKey(), k.getValue().getValue().toString(), k.getValue().getType())).toList();
     }
 
-    private static List<String> severityList(ReportNode reportNode) {
-        return reportNode.getChildren()
-            .stream()
-            .filter(report -> report.getChildren().isEmpty() && !report.getValues().isEmpty()) // reports without values are considered as subreports so we don't want them in the severity list
-            .map(report -> report.getValues().get("reportSeverity"))
-            .map(severity -> severity == null ? ReportSeverity.UNKNOWN.toString() : ReportSeverity.valueOf(Objects.toString(severity.getValue())).toString())
-            .distinct().toList();
+    private static Set<String> severities(ReportNode reportNode) {
+        Set<String> severities = new HashSet<>();
+        reportNode.getChildren().forEach(child -> severities.addAll(severities(child)));
+        severities.add(Optional.ofNullable(reportNode.getValues().get("reportSeverity")).map(s -> ReportSeverity.valueOf(Objects.toString(s.getValue())).toString()).orElse(ReportSeverity.UNKNOWN.toString()));
+        return severities;
     }
 
     @Transactional

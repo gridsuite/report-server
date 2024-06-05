@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
-    <changeSet author="mancinijor (generated)" id="1717169287626-7">
+    <changeSet author="mancinijor (generated)" id="1717422052519-7">
         <createTable tableName="message_template">
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="message_templatePK"/>
@@ -11,18 +11,17 @@
             </column>
         </createTable>
     </changeSet>
-    <changeSet author="mancinijor (generated)" id="1717169287626-8">
+    <changeSet author="mancinijor (generated)" id="1717422052519-8">
         <createTable tableName="report_node">
             <column name="id" type="UUID">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="report_nodePK"/>
             </column>
             <column name="nanos" type="BIGINT"/>
-            <column name="severity" type="VARCHAR(255)"/>
             <column name="message_template_id" type="UUID"/>
             <column name="parent_id" type="UUID"/>
         </createTable>
     </changeSet>
-    <changeSet author="mancinijor (generated)" id="1717169287626-9">
+    <changeSet author="mancinijor (generated)" id="1717422052519-9">
         <createTable tableName="report_node_values">
             <column name="report_node_id" type="UUID">
                 <constraints nullable="false"/>
@@ -36,18 +35,34 @@
             <column name="value_type" type="VARCHAR(255)"/>
         </createTable>
     </changeSet>
-    <changeSet author="mancinijor (generated)" id="1717169287626-11">
+    <changeSet author="mancinijor (generated)" id="1717422052519-10">
+        <createTable tableName="severity_level">
+            <column name="report_node_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="severities" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1717422052519-11">
+        <createIndex indexName="report_node_severity_idx" tableName="severity_level">
+            <column name="report_node_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1717422052519-12">
         <createIndex indexName="report_node_value_idx" tableName="report_node_values">
             <column name="report_node_id"/>
         </createIndex>
     </changeSet>
-    <changeSet author="mancinijor (generated)" id="1717169287626-12">
+    <changeSet author="mancinijor (generated)" id="1717422052519-13">
         <addForeignKeyConstraint baseColumnNames="message_template_id" baseTableName="report_node" constraintName="FK342nc24j9vhueopm2t0q4ltf1" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="message_template" validate="true"/>
     </changeSet>
-    <changeSet author="mancinijor (generated)" id="1717169287626-13">
+    <changeSet author="mancinijor (generated)" id="1717422052519-14">
         <addForeignKeyConstraint baseColumnNames="parent_id" baseTableName="report_node" constraintName="FKbj6ti2m0o5faxme65mv8aguj5" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="report_node" validate="true"/>
     </changeSet>
-    <changeSet author="mancinijor (generated)" id="1717169287626-14">
+    <changeSet author="mancinijor (generated)" id="1717422052519-15">
+        <addForeignKeyConstraint baseColumnNames="report_node_id" baseTableName="severity_level" constraintName="report_node_severity_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="report_node" validate="true"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1717422052519-16">
         <addForeignKeyConstraint baseColumnNames="report_node_id" baseTableName="report_node_values" constraintName="report_node_value_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="report_node" validate="true"/>
     </changeSet>
 </databaseChangeLog>
