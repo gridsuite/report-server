@@ -1,107 +1,110 @@
 [
-    {
-        "version": "2.0",
-        "reportRoot":
-        {
-            "messageKey": "UcteReading",
-            "children":
-            [
-                {
-                    "messageKey": "fixUcteLines",
-                    "children":
-                    [
-                        {
-                            "messageKey": "negativeLineResistance",
-                            "values":
-                            {
-                                "reportSeverity":
-                                {
-                                    "value": "ERROR",
-                                    "type": "SEVERITY"
-                                },
-                                "lineId":
-                                {
-                                    "value": "FFFFFF11 XXXXXX11 1"
-                                },
-                                "resistance":
-                                {
-                                    "value": 0,
-                                    "type": "RESISTANCE"
-                                }
-                            }
-                        },
-                        {
-                            "messageKey": "negativeLineResistance",
-                            "values":
-                            {
-                                "reportSeverity":
-                                {
-                                    "value": "ERROR",
-                                    "type": "SEVERITY"
-                                },
-                                "lineId":
-                                {
-                                    "value": "FFFFFF11 XXXXXX12 1"
-                                },
-                                "resistance":
-                                {
-                                    "value": 0.0,
-                                    "type": "RESISTANCE"
-                                }
-                            }
-                        },
-                        {
-                            "messageKey": "negativeLineResistance",
-                            "values":
-                            {
-                                "reportSeverity":
-                                {
-                                    "value": "ERROR",
-                                    "type": "SEVERITY"
-                                },
-                                "lineId":
-                                {
-                                    "value": "FFFFFF13 XXXXXX13 1"
-                                },
-                                "resistance":
-                                {
-                                    "value": 0.0,
-                                    "type": "RESISTANCE"
-                                }
-                            }
-                        },
-                        {
-                            "messageKey": "negativeLineResistance",
-                            "values":
-                            {
-                                "reportSeverity":
-                                {
-                                    "value": "ERROR",
-                                    "type": "SEVERITY"
-                                },
-                                "lineId":
-                                {
-                                    "value": "FFFFFF13 XXXXXX14 1"
-                                },
-                                "resistance":
-                                {
-                                    "value": 0.0,
-                                    "type": "RESISTANCE"
-                                }
-                            }
-                        }
-                    ]
-                }
-            ],
-            "dictionaries":
-            {
-                "default":
-                {
-                    "UcteReading": "Reading UCTE network file",
-                    "fixUcteLines": "Fix UCTE lines",
-                    "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)"
-                }
-            }
+  {
+    "version": "2.0",
+    "reportRoot": {
+      "messageKey": "UcteReading",
+      "values": {
+        "severityList": {
+          "value": "[]",
+          "type": "SEVERITY"
         }
+      },
+      "children": [
+        {
+          "messageKey": "fixUcteLines",
+          "values": {
+            "severityList": {
+              "value": "[ERROR]",
+              "type": "SEVERITY"
+            }
+          },
+          "children": [
+            {
+              "messageKey": "negativeLineResistance",
+              "values": {
+                "reportSeverity": {
+                  "value": "ERROR",
+                  "type": "SEVERITY"
+                },
+                "lineId": {
+                  "value": "FFFFFF11 XXXXXX11 1"
+                },
+                "resistance": {
+                  "value": 0,
+                  "type": "RESISTANCE"
+                }
+              }
+            },
+            {
+              "messageKey": "negativeLineResistance",
+              "values": {
+                "reportSeverity": {
+                  "value": "ERROR",
+                  "type": "SEVERITY"
+                },
+                "lineId": {
+                  "value": "FFFFFF11 XXXXXX12 1"
+                },
+                "resistance": {
+                  "value": 0,
+                  "type": "RESISTANCE"
+                }
+              }
+            },
+            {
+              "messageKey": "negativeLineResistance",
+              "values": {
+                "reportSeverity": {
+                  "value": "ERROR",
+                  "type": "SEVERITY"
+                },
+                "lineId": {
+                  "value": "FFFFFF13 XXXXXX13 1"
+                },
+                "resistance": {
+                  "value": 0,
+                  "type": "RESISTANCE"
+                }
+              }
+            },
+            {
+              "messageKey": "negativeLineResistance",
+              "values": {
+                "reportSeverity": {
+                  "value": "ERROR",
+                  "type": "SEVERITY"
+                },
+                "lineId": {
+                  "value": "FFFFFF13 XXXXXX14 1"
+                },
+                "resistance": {
+                  "value": 0,
+                  "type": "RESISTANCE"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "messageKey": "fixUcteNodes"
+        },
+        {
+          "messageKey": "fixUcteTransformer"
+        },
+        {
+          "messageKey": "fixUcteRegulations"
+        }
+      ],
+      "dictionaries": {
+        "default": {
+          "UcteReading": "Reading UCTE network file",
+          "fixUcteLines": "Fix UCTE lines",
+          "fixUcteNodes": "Fix UCTE nodes",
+          "fixUcteRegulations": "Fix UCTE regulations",
+          "fixUcteTransformer": "Fix UCTE transformers",
+          "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)"
+        }
+      }
     }
+  }
 ]

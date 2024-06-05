@@ -3,21 +3,30 @@
     "version": "2.0",
     "reportRoot": {
       "messageKey": "roundTripReporterJsonTest",
+      "values": {
+        "severityList": {
+          "value": "[INFO, TRACE]",
+          "type": "SEVERITY"
+        }
+      },
       "children": [
         {
-          "messageKey": "novalueReport",
+          "messageKey": "UcteReading",
           "values": {
-            "reportSeverity": {
-              "value": "INFO",
+            "severityList": {
+              "value": "[]",
               "type": "SEVERITY"
             }
-          }
-        },
-        {
-          "messageKey": "UcteReading",
+          },
           "children": [
             {
               "messageKey": "fixUcteLines",
+              "values": {
+                "severityList": {
+                  "value": "[ERROR]",
+                  "type": "SEVERITY"
+                }
+              },
               "children": [
                 {
                   "messageKey": "negativeLineResistance",
@@ -46,7 +55,7 @@
                       "value": "FFFFFF11 XXXXXX12 1"
                     },
                     "resistance": {
-                      "value": 0.0,
+                      "value": 0,
                       "type": "RESISTANCE"
                     }
                   }
@@ -62,7 +71,7 @@
                       "value": "FFFFFF13 XXXXXX13 1"
                     },
                     "resistance": {
-                      "value": 0.0,
+                      "value": 0,
                       "type": "RESISTANCE"
                     }
                   }
@@ -78,23 +87,42 @@
                       "value": "FFFFFF13 XXXXXX14 1"
                     },
                     "resistance": {
-                      "value": 0.0,
+                      "value": 0,
                       "type": "RESISTANCE"
                     }
                   }
                 }
               ]
+            },
+            {
+              "messageKey": "fixUcteNodes"
+            },
+            {
+              "messageKey": "fixUcteTransformer"
+            },
+            {
+              "messageKey": "fixUcteRegulations"
             }
           ]
         },
         {
           "messageKey": "createBuses",
+          "values": {
+            "severityList": {
+              "value": "[]",
+              "type": "SEVERITY"
+            }
+          },
           "children": [
             {
               "messageKey": "createBusesSubstation",
               "values": {
                 "substation": {
                   "value": "FFFFFF"
+                },
+                "severityList": {
+                  "value": "[TRACE]",
+                  "type": "SEVERITY"
                 }
               },
               "children": [
@@ -154,6 +182,12 @@
         },
         {
           "messageKey": "createLines",
+          "values": {
+            "severityList": {
+              "value": "[TRACE]",
+              "type": "SEVERITY"
+            }
+          },
           "children": [
             {
               "messageKey": "danglingLineCreation",
@@ -218,24 +252,42 @@
           ]
         },
         {
-          "messageKey": "createTransformers"
+          "messageKey": "novalueReport",
+          "values": {
+            "reportSeverity": {
+              "value": "INFO",
+              "type": "SEVERITY"
+            }
+          }
+        },
+        {
+          "messageKey": "createTransformers",
+          "values": {
+            "reportSeverity": {
+              "value": "TRACE",
+              "type": "SEVERITY"
+            }
+          }
         }
       ],
       "dictionaries": {
         "default": {
           "UcteReading": "Reading UCTE network file",
-          "createLines": "Create lines",
-          "createSubstation": "Create substation ${substationName}",
-          "novalueReport": "No value report",
-          "createTransformers": "Create transformers",
-          "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-          "createBusesSubstation": "Create buses for substation ${substation}",
           "createBus": "Create bus ${bus}",
           "createBuses": "Create buses",
-          "danglingLineCreation": "Create dangling line '${ucteLine}' (Xnode='${xnodeCode}')",
+          "createBusesSubstation": "Create buses for substation ${substation}",
+          "createLines": "Create lines",
+          "createSubstation": "Create substation ${substationName}",
+          "createTransformers": "Create transformers",
           "createVoltageLevel": "Create voltage level ${voltageLevelName}",
+          "danglingLineCreation": "Create dangling line '${ucteLine}' (Xnode='${xnodeCode}')",
           "fixUcteLines": "Fix UCTE lines",
-          "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)"
+          "fixUcteNodes": "Fix UCTE nodes",
+          "fixUcteRegulations": "Fix UCTE regulations",
+          "fixUcteTransformer": "Fix UCTE transformers",
+          "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)",
+          "novalueReport": "No value report",
+          "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
         }
       }
     }
