@@ -69,30 +69,6 @@ public class ReportControllerTest {
     public void setUp() {
         Configuration.defaultConfiguration();
         MockitoAnnotations.openMocks(this);
-        objectMapper.enable(DeserializationFeature.USE_LONG_FOR_INTS);
-        objectMapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
-        objectMapper.disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE);
-
-        Configuration.setDefaults(new Configuration.Defaults() {
-
-            private final JsonProvider jsonProvider = new JacksonJsonProvider(objectMapper);
-            private final MappingProvider mappingProvider = new JacksonMappingProvider(objectMapper);
-
-            @Override
-            public JsonProvider jsonProvider() {
-                return jsonProvider;
-            }
-
-            @Override
-            public MappingProvider mappingProvider() {
-                return mappingProvider;
-            }
-
-            @Override
-            public Set<Option> options() {
-                return EnumSet.noneOf(Option.class);
-            }
-        });
         reportService.deleteAll();
         SQLStatementCountValidator.reset();
     }
@@ -165,6 +141,8 @@ public class ReportControllerTest {
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andExpect(content().json(toString(EXPECTED_STRUCTURE_ONLY_REPORT1)));
+
+
 
         assertRequestsCount(3, 0, 0, 0);
     }
