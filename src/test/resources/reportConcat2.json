@@ -4,37 +4,39 @@
     "reportRoot": {
       "messageKey": "roundTripReporterJsonTest",
       "values": {
-        "severityList": {
-          "value": "[INFO, TRACE]",
-          "type": "SEVERITY"
-        },
         "id": {
-          "value": "58a4819a-a987-422e-9bb3-ef24646ad01e",
+          "value": "e55e7e35-5294-47d8-99ba-7b8ddd9d38c1",
           "type": "ID"
+        },
+        "severityList": {
+          "value": "[TRACE, INFO]",
+          "type": "SEVERITY"
         }
       },
       "children": [
         {
           "messageKey": "UcteReading",
           "values": {
+            "id": {
+              "value": "b0c152d7-8334-4682-9ac2-fe4a6c81b804",
+              "type": "ID"
+            },
             "severityList": {
               "value": "[]",
               "type": "SEVERITY"
-            },
-            "id": {
-              "value": "29253283-8c86-4cae-9771-d7f558b156c2"
             }
           },
           "children": [
             {
               "messageKey": "fixUcteLines",
               "values": {
+                "id": {
+                  "value": "911db7c1-6a1f-4804-afd8-e513f6e8ef25",
+                  "type": "ID"
+                },
                 "severityList": {
                   "value": "[ERROR]",
                   "type": "SEVERITY"
-                },
-                "id": {
-                  "value": "38c0198a-0734-4a47-9493-d69f2201d767"
                 }
               },
               "children": [
@@ -108,7 +110,8 @@
               "messageKey": "fixUcteNodes",
               "values": {
                 "id": {
-                  "value": "37d5720f-6264-497b-a530-0541487b0763"
+                  "value": "3553e349-c95d-4a07-ade5-edc76b634d2e",
+                  "type": "ID"
                 }
               }
             },
@@ -116,7 +119,8 @@
               "messageKey": "fixUcteTransformer",
               "values": {
                 "id": {
-                  "value": "d5694b6a-4890-443e-b443-fd94d3e253c4"
+                  "value": "2e6fa2e1-ef8e-48ea-ab64-65326325f005",
+                  "type": "ID"
                 }
               }
             },
@@ -124,7 +128,8 @@
               "messageKey": "fixUcteRegulations",
               "values": {
                 "id": {
-                  "value": "87dfd181-3e90-4aa0-8447-d6f8bf9508bb"
+                  "value": "0b43631c-bd6c-4778-9c4a-5b262523cdf8",
+                  "type": "ID"
                 }
               }
             }
@@ -133,12 +138,13 @@
         {
           "messageKey": "createBuses",
           "values": {
+            "id": {
+              "value": "d0b237a7-01e2-4726-890a-2952f1f81696",
+              "type": "ID"
+            },
             "severityList": {
               "value": "[]",
               "type": "SEVERITY"
-            },
-            "id": {
-              "value": "076bf511-6497-4c5e-90a9-a66bad97eb98"
             }
           },
           "children": [
@@ -148,12 +154,13 @@
                 "substation": {
                   "value": "FFFFFF"
                 },
+                "id": {
+                  "value": "48941d15-9871-4e13-91d3-4295baead280",
+                  "type": "ID"
+                },
                 "severityList": {
                   "value": "[TRACE]",
                   "type": "SEVERITY"
-                },
-                "id": {
-                  "value": "a2e10aad-cecf-4a67-adf7-eff57952f78d"
                 }
               },
               "children": [
@@ -214,12 +221,13 @@
         {
           "messageKey": "createLines",
           "values": {
+            "id": {
+              "value": "952e1cdc-3960-4af8-838f-2b669c8ba8e1",
+              "type": "ID"
+            },
             "severityList": {
               "value": "[TRACE]",
               "type": "SEVERITY"
-            },
-            "id": {
-              "value": "e42f4e21-b9bb-42c9-83db-87a5940cceb5"
             }
           },
           "children": [
@@ -334,38 +342,16 @@
     "reportRoot": {
       "messageKey": "testImport",
       "values": {
+        "id": {
+          "value": "1a0eb81e-7c47-4d44-adf3-2556a5a00f74",
+          "type": "ID"
+        },
         "severityList": {
           "value": "[INFO]",
           "type": "SEVERITY"
-        },
-        "id": {
-          "value": "8d957907-0e2b-46e7-9b2a-2960ee2a2f3a",
-          "type": "ID"
         }
       },
       "children": [
-        {
-          "messageKey": "testNewValue",
-          "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
-            "id": {
-              "value": "e9ac003d-6924-416a-92aa-eeec9ef3138b"
-            }
-          },
-          "children": [
-            {
-              "messageKey": "fixUcteNodes",
-              "values": {
-                "id": {
-                  "value": "39831972-7771-4219-92bb-21ddad0f78bd"
-                }
-              }
-            }
-          ]
-        },
         {
           "messageKey": "novalueReport",
           "values": {
@@ -374,6 +360,30 @@
               "type": "SEVERITY"
             }
           }
+        },
+        {
+          "messageKey": "testNewValue",
+          "values": {
+            "id": {
+              "value": "e9950a73-c36d-4880-8eec-a36a1a7ac86a",
+              "type": "ID"
+            },
+            "severityList": {
+              "value": "[]",
+              "type": "SEVERITY"
+            }
+          },
+          "children": [
+            {
+              "messageKey": "fixUcteNodes",
+              "values": {
+                "id": {
+                  "value": "9e015a70-62c4-432a-bc1b-404a760d7bd8",
+                  "type": "ID"
+                }
+              }
+            }
+          ]
         }
       ],
       "dictionaries": {
@@ -406,37 +416,39 @@
     "reportRoot": {
       "messageKey": "roundTripReporterJsonTest",
       "values": {
-        "severityList": {
-          "value": "[INFO, TRACE]",
-          "type": "SEVERITY"
-        },
         "id": {
-          "value": "1690b347-c460-4ba2-aa00-4cabca538a69",
+          "value": "17f35628-3fdf-48b1-b841-60d4b4a8ce6c",
           "type": "ID"
+        },
+        "severityList": {
+          "value": "[TRACE, INFO]",
+          "type": "SEVERITY"
         }
       },
       "children": [
         {
           "messageKey": "UcteReading",
           "values": {
+            "id": {
+              "value": "97379263-2c9c-4a38-a1ad-9ac0927fdd44",
+              "type": "ID"
+            },
             "severityList": {
               "value": "[]",
               "type": "SEVERITY"
-            },
-            "id": {
-              "value": "dd4bb1b9-f5df-45a0-aa13-d0751763becc"
             }
           },
           "children": [
             {
               "messageKey": "fixUcteLines",
               "values": {
+                "id": {
+                  "value": "c93f416b-3288-4558-9e05-abf701bed83f",
+                  "type": "ID"
+                },
                 "severityList": {
                   "value": "[ERROR]",
                   "type": "SEVERITY"
-                },
-                "id": {
-                  "value": "895d91ee-b03c-4bba-85fa-8a8f12912075"
                 }
               },
               "children": [
@@ -510,7 +522,8 @@
               "messageKey": "fixUcteNodes",
               "values": {
                 "id": {
-                  "value": "15f447ce-40a7-4703-9178-24ab50e66e51"
+                  "value": "9f06de15-3020-4b40-ac77-b56110c146b6",
+                  "type": "ID"
                 }
               }
             },
@@ -518,7 +531,8 @@
               "messageKey": "fixUcteTransformer",
               "values": {
                 "id": {
-                  "value": "c0cb2516-4495-49b9-abd3-19124cbeee13"
+                  "value": "d1dcce24-5564-43e1-acfd-df8cda9b366f",
+                  "type": "ID"
                 }
               }
             },
@@ -526,7 +540,8 @@
               "messageKey": "fixUcteRegulations",
               "values": {
                 "id": {
-                  "value": "afedcafe-6fe0-4302-b09f-6f774b394c8b"
+                  "value": "c3e32f36-9335-4da0-a4da-333f23f7bef0",
+                  "type": "ID"
                 }
               }
             }
@@ -535,12 +550,13 @@
         {
           "messageKey": "createBuses",
           "values": {
+            "id": {
+              "value": "1df921e9-e9e4-4533-b7d1-975999cf4128",
+              "type": "ID"
+            },
             "severityList": {
               "value": "[]",
               "type": "SEVERITY"
-            },
-            "id": {
-              "value": "0d66f574-88d2-4f3c-acda-97d0ba8c1451"
             }
           },
           "children": [
@@ -550,12 +566,13 @@
                 "substation": {
                   "value": "FFFFFF"
                 },
+                "id": {
+                  "value": "7e89cabe-fd7e-42aa-a19e-9a9fc711143d",
+                  "type": "ID"
+                },
                 "severityList": {
                   "value": "[TRACE]",
                   "type": "SEVERITY"
-                },
-                "id": {
-                  "value": "26df6b8d-60a8-4599-8949-527940f39c85"
                 }
               },
               "children": [
@@ -616,12 +633,13 @@
         {
           "messageKey": "createLines",
           "values": {
+            "id": {
+              "value": "eaa0c975-6250-4c70-8602-51635889ef45",
+              "type": "ID"
+            },
             "severityList": {
               "value": "[TRACE]",
               "type": "SEVERITY"
-            },
-            "id": {
-              "value": "f5a7920f-50dc-4dfd-9d2e-5749775d3da0"
             }
           },
           "children": [

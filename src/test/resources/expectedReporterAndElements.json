@@ -22,7 +22,8 @@
               "type": "SEVERITY"
             },
             "id": {
-              "value": "641a7c9b-5ed3-47bd-9d58-6a248a1d7621"
+              "value": "641a7c9b-5ed3-47bd-9d58-6a248a1d7621",
+              "type": "ID"
             }
           },
           "children": [
@@ -96,7 +97,8 @@
           "messageKey": "fixUcteNodes",
           "values": {
             "id": {
-              "value": "8345715b-127a-4922-a84c-fdab7a0433ef"
+              "value": "8345715b-127a-4922-a84c-fdab7a0433ef",
+              "type": "ID"
             }
           }
         },
@@ -104,7 +106,8 @@
           "messageKey": "fixUcteTransformer",
           "values": {
             "id": {
-              "value": "789de7bc-6228-4798-aaca-19e701548f53"
+              "value": "789de7bc-6228-4798-aaca-19e701548f53",
+              "type": "ID"
             }
           }
         },
@@ -112,7 +115,8 @@
           "messageKey": "fixUcteRegulations",
           "values": {
             "id": {
-              "value": "c5798b8c-a1cc-4be7-ba45-e938c1c130a4"
+              "value": "c5798b8c-a1cc-4be7-ba45-e938c1c130a4",
+              "type": "ID"
             }
           }
         }

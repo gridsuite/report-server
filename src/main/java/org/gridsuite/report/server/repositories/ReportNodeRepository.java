@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,4 +23,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
 
     @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.children WHERE r.id = :id")
     Optional<ReportNodeEntity> findByIdWithChildren(UUID id);
+
+    @Query(value = "SELECT r FROM ReportNodeEntity r WHERE r.messageTemplate.key = :key")
+    List<ReportNodeEntity> findByMessageTemplateKey(String key);
 }

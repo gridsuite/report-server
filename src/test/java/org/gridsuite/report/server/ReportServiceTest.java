@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -61,42 +60,6 @@ class ReportServiceTest {
         reportNodeRepository.deleteAll();
     }
 
-    private ReportElementEntity createReportElement(String name, TreeReportEntity parent, long nanos) {
-        return new ReportElementEntity(null, parent, nanos, name, List.of());
-    }
-
-    @Test
-    void testDeleteRootReport() {
-        UUID idReport = UUID.randomUUID();
-        ReportEntity reportEntity = reportRepository.save(new ReportEntity(idReport));
-        TreeReportEntity treeReportEntity = createTreeReport("root1", reportEntity, null, 2000);
-        treeReportRepository.save(treeReportEntity);
-
-        TreeReportEntity treeReportEntity1 = createTreeReport("root2", null, treeReportEntity, 3000);
-        TreeReportEntity treeReportEntity2 = createTreeReport("root3", null, treeReportEntity, 1000);
-        TreeReportEntity treeReportEntity3 = createTreeReport("root4", null, treeReportEntity2, 4000);
-        treeReportRepository.saveAll(List.of(treeReportEntity1, treeReportEntity2, treeReportEntity3));
-
-        ReportElementEntity reportElement1 = createReportElement("log1", treeReportEntity1, 2000);
-        ReportElementEntity reportElement2 = createReportElement("log2", treeReportEntity1, 3000);
-        ReportElementEntity reportElement3 = createReportElement("log3", treeReportEntity2, 1000);
-        reportElementRepository.saveAll(List.of(reportElement1, reportElement2, reportElement3));
-
-        SQLStatementCountValidator.reset();
-        reportService.deleteReport(idReport, null);
-        /* 8 delete for one report
-            * 2 for report-element (report-element + report-element-values)
-            * 2 for tree-report tree-report-values + tree-report-dictionary
-            * 3 for each tree-report level (3)
-            * 1 for report
-         */
-        assertRequestsCount(3, 0, 0, 8);
-
-        assertEquals(0, treeReportRepository.findAll().size());
-        assertEquals(0, reportElementRepository.findAll().size());
-        assertEquals(0, reportRepository.findAll().size());
-    }
-
     @Test
     void createNonExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
@@ -107,14 +70,14 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, reportNode);
-        assertRequestsCount(1, 4, 0, 0);
+        assertRequestsCount(1, 3, 0, 0);
 
         assertEquals(2, reportNodeRepository.findAll().size());
         var parentReportEntity = reportNodeRepository.findByIdWithChildren(parentReportId);
         assertTrue(parentReportEntity.isPresent());
         assertEquals(1, parentReportEntity.get().getChildren().size());
         var childReportEntity = parentReportEntity.get().getChildren().get(0);
-        assertReportsAreEqual(childReportEntity, reportNode, Set.of(ReportSeverity.UNKNOWN.toString()));
+        assertReportsAreEqual(childReportEntity, reportNode, Set.of());
     }
 
     @Test
@@ -147,19 +110,19 @@ class ReportServiceTest {
 
         assertEquals(1, parentReportEntity.get().getChildren().size());
         var childReportEntity = parentReportEntity.get().getChildren().get(0);
-        assertReportsAreEqual(childReportEntity, reportNode, Set.of(ReportSeverity.UNKNOWN.toString(), ReportSeverity.ERROR.toString(), ReportSeverity.INFO.toString()));
+        assertReportsAreEqual(childReportEntity, reportNode, Set.of(ReportSeverity.ERROR.toString()));
 
         childReportEntity = reportNodeRepository.findByIdWithChildren(childReportEntity.getId()).orElseThrow();
         assertEquals(2, childReportEntity.getChildren().size());
         var subChildReportNode1 = childReportEntity.getChildren().get(0);
-        assertReportsAreEqual(subChildReportNode1, subReportNode1, Set.of(ReportSeverity.UNKNOWN.toString(), ReportSeverity.INFO.toString()));
+        assertReportsAreEqual(subChildReportNode1, subReportNode1, Set.of(ReportSeverity.INFO.toString()));
         var subChildReportNode2 = childReportEntity.getChildren().get(1);
-        assertReportsAreEqual(subChildReportNode2, subReportNode2, Set.of(ReportSeverity.ERROR.toString()));
+        assertReportsAreEqual(subChildReportNode2, subReportNode2, Set.of());
 
         subChildReportNode1 = reportNodeRepository.findByIdWithChildren(subChildReportNode1.getId()).orElseThrow();
         assertEquals(1, subChildReportNode1.getChildren().size());
         var subSubChildReportNode = subChildReportNode1.getChildren().get(0);
-        assertReportsAreEqual(subSubChildReportNode, subSubReportNode1, Set.of(ReportSeverity.INFO.toString()));
+        assertReportsAreEqual(subSubChildReportNode, subSubReportNode1, Set.of());
     }
 
     @Test
@@ -178,14 +141,14 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(2, 4, 0, 0);
+        assertRequestsCount(2, 3, 0, 0);
 
         assertEquals(3, reportNodeRepository.findAll().size());
         var parentReportEntity = reportNodeRepository.findByIdWithChildren(parentReportId);
         assertTrue(parentReportEntity.isPresent());
         assertEquals(2, parentReportEntity.get().getChildren().size());
         var anotherChildReportEntity = parentReportEntity.get().getChildren().get(1);
-        assertReportsAreEqual(anotherChildReportEntity, anotherReport, Set.of(ReportSeverity.UNKNOWN.toString()));
+        assertReportsAreEqual(anotherChildReportEntity, anotherReport, Set.of());
     }
 
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, Set<String> severityList) {

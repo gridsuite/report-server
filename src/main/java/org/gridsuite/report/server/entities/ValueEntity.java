@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Embeddable
 public class ValueEntity {
+
     @Column(name = "key_", nullable = false)
     private String key;
 
@@ -26,9 +27,19 @@ public class ValueEntity {
     @Column(name = "value_type")
     private String valueType;
 
-    public ValueEntity(String key, String value, String valueType) {
+    @Column(name = "local_value_type")
+    private ValueType localValueType;
+
+    public ValueEntity(String key, Object value, String valueType) {
         this.key = key;
-        this.value = value;
+        this.value = value.toString();
         this.valueType = valueType;
+        if (value instanceof Double || value instanceof Float) {
+            this.localValueType = ValueType.DOUBLE;
+        } else if (value instanceof Number) {
+            this.localValueType = ValueType.INTEGER;
+        } else {
+            this.localValueType = ValueType.STRING;
+        }
     }
 }
