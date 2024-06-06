@@ -39,7 +39,6 @@ import java.util.*;
 import static org.gridsuite.report.server.utils.TestUtils.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.Assert.*;
 
@@ -53,6 +52,7 @@ import static org.junit.Assert.*;
 public class ReportControllerTest {
 
     public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION;
+
     @Autowired
     private MockMvc mvc;
 
@@ -302,21 +302,21 @@ public class ReportControllerTest {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
 
-        // Expect 5 batched inserts only and no updates
-        assertRequestsCount(1, 5, 0, 0);
-
         Map<UUID, String> reportsKeys = new HashMap<>();
         reportsKeys.put(UUID.fromString(REPORT_UUID), "LoadFlow");
 
+        SQLStatementCountValidator.reset();
         mvc.perform(delete(URL_TEMPLATE + "/treereports")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reportsKeys)))
             .andExpect(status().isOk())
             .andReturn();
+        assertRequestsCount(23, 0, 0, 14);
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
-            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
+            .andReturn();
+        assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
     }
 
     @Test
@@ -328,18 +328,17 @@ public class ReportControllerTest {
         reportsKeys.put(UUID.fromString(REPORT_UUID), reportType);
 
         SQLStatementCountValidator.reset();
-
         mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=" + reportType)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reportsKeys)))
                 .andExpect(status().isOk())
                 .andReturn();
+        assertRequestsCount(24, 0, 0, 15);
 
-        assertRequestsCount(3, 0, 0, 8);
-
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
-                .andExpect(status().isOk())
-                .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+            .andExpect(status().isOk())
+            .andReturn();
+        assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
     }
 
     @Test
@@ -351,15 +350,13 @@ public class ReportControllerTest {
         reportsKeys.put(UUID.fromString(REPORT_UUID), reportType);
 
         SQLStatementCountValidator.reset();
-
         mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=noMatchingFilter")
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reportsKeys)))
                 .andExpect(status().isOk())
                 .andReturn();
-
         // no deletion here
-        assertRequestsCount(1, 0, 0, 0);
+        assertRequestsCount(5, 0, 0, 0);
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
                 .andExpect(status().isOk());

@@ -10,10 +10,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.commons.report.TypedValue;
 import com.vladmihalcea.sql.SQLStatementCountValidator;
 import org.gridsuite.report.server.entities.*;
-import org.gridsuite.report.server.repositories.ReportElementRepository;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
-import org.gridsuite.report.server.repositories.ReportRepository;
-import org.gridsuite.report.server.repositories.TreeReportRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,14 +30,6 @@ class ReportServiceTest {
     private ReportService reportService;
 
     @Autowired
-    ReportRepository reportRepository;
-
-    @Autowired
-    private TreeReportRepository treeReportRepository;
-
-    @Autowired
-    private ReportElementRepository reportElementRepository;
-    @Autowired
     private ReportNodeRepository reportNodeRepository;
 
     @BeforeEach
@@ -54,10 +43,7 @@ class ReportServiceTest {
     }
 
     private void cleanDB() {
-        reportElementRepository.deleteAll();
-        treeReportRepository.deleteAll();
-        reportRepository.deleteAll();
-        reportNodeRepository.deleteAll();
+        reportService.deleteAll();
     }
 
     @Test

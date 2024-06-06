@@ -26,4 +26,6 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
 
     @Query(value = "SELECT r FROM ReportNodeEntity r WHERE r.messageTemplate.key = :key")
     List<ReportNodeEntity> findByMessageTemplateKey(String key);
+
+    List<ReportNodeEntity> findAllByParentIdAndMessageTemplateKey(UUID parentId, String messageTemplateKey);
 }
