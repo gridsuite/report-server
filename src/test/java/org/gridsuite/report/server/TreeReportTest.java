@@ -73,7 +73,7 @@ class TreeReportTest {
         TreeReportEntity treeReportEntity3 = createTreeReport("log3", reportEntity, null, 1000);
         treeReportRepository.saveAll(List.of(treeReportEntity1, treeReportEntity2, treeReportEntity3));
 
-        ReportNode report = reportService.getReport(idReport, false, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
+        ReportNode report = reportService.getReport(idReport, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
         assertEquals(List.of("log3", "log1", "log2"), report.getChildren().stream().map(ReportNode::getMessageKey).toList());
     }
 
@@ -89,7 +89,7 @@ class TreeReportTest {
         TreeReportEntity treeReportEntity3 = createTreeReport("log3", null, treeReportEntity, 1000);
         treeReportRepository.saveAll(List.of(treeReportEntity1, treeReportEntity2, treeReportEntity3));
 
-        ReportNode report = reportService.getReport(idReport, false, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
+        ReportNode report = reportService.getReport(idReport, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
         ReportNode reporter = report.getChildren().get(0);
         assertEquals(List.of("log3", "log1", "log2"), reporter.getChildren().stream().map(ReportNode::getMessageKey).toList());
     }
@@ -106,7 +106,7 @@ class TreeReportTest {
         ReportElementEntity reportElement3 = createReportElement("log3", treeReportEntity, 1000, "TRACE");
         reportElementRepository.saveAll(List.of(reportElement1, reportElement2, reportElement3));
 
-        ReportNode report = reportService.getReport(idReport, true, Set.of("INFO", "TRACE", "ERROR"), "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
+        ReportNode report = reportService.getReport(idReport, Set.of("INFO", "TRACE", "ERROR"), "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
         ReportNode reporter = report.getChildren().get(0);
 
         assertEquals(List.of("log3", "log1", "log2"), reporter.getChildren().stream().map(ReportNode::getMessageKey).toList());

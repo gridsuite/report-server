@@ -16,6 +16,7 @@ import org.gridsuite.report.server.ReportService;
 import org.gridsuite.report.server.entities.ReportValueEmbeddable.ValueType;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -57,7 +58,7 @@ public class ReportElementEntity {
         indexes = @Index(name = "reportElementValues_index", columnList = "report_element_entity_id_report"))
     List<ReportValueEmbeddable> values;
 
-    public boolean hasSeverity(Set<String> severityLevels) {
+    public boolean hasSeverity(@Nullable Set<String> severityLevels) {
         if (CollectionUtils.isEmpty(severityLevels)) {
             return false;
         } else {
