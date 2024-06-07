@@ -8,7 +8,7 @@
           "value": "[INFO, TRACE]",
           "type": "SEVERITY"
         },
-        "id": {
+        "subReportId": {
           "value": "c6893511-9d40-427b-8a8a-9a3dcf84ebe0",
           "type": "ID"
         }
@@ -21,7 +21,7 @@
               "value": "[]",
               "type": "SEVERITY"
             },
-            "id": {
+            "subReportId": {
               "value": "9b57831b-f9b2-466e-a223-f896f843bda2"
             }
           },
@@ -33,7 +33,7 @@
                   "value": "[ERROR]",
                   "type": "SEVERITY"
                 },
-                "id": {
+                "subReportId": {
                   "value": "43af593f-e6fb-44c8-b5ee-ffaab0d8c0d9"
                 }
               }
@@ -41,7 +41,7 @@
             {
               "messageKey": "fixUcteNodes",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "b4cdcf7c-fff1-48c8-913a-2e777b9c3fd2"
                 }
               }
@@ -49,7 +49,7 @@
             {
               "messageKey": "fixUcteTransformer",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "6f12aba4-8a2a-449a-93fc-7db9951418e2"
                 }
               }
@@ -57,7 +57,7 @@
             {
               "messageKey": "fixUcteRegulations",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "1def4303-aaa9-488d-951e-38f8495bd8b2"
                 }
               }
@@ -71,7 +71,7 @@
               "value": "[]",
               "type": "SEVERITY"
             },
-            "id": {
+            "subReportId": {
               "value": "ed425133-b70c-465c-b311-deb3b07073d9"
             }
           },
@@ -86,7 +86,7 @@
                   "value": "[TRACE]",
                   "type": "SEVERITY"
                 },
-                "id": {
+                "subReportId": {
                   "value": "2e0094f2-410e-4186-ad04-795d7c3a08b6"
                 }
               }
@@ -100,7 +100,7 @@
               "value": "[TRACE]",
               "type": "SEVERITY"
             },
-            "id": {
+            "subReportId": {
               "value": "0a7dc6e2-5712-42af-a053-b4b7352a4682"
             }
           }

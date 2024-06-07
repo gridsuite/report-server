@@ -167,7 +167,7 @@ public class ReportService {
         }
 
         final Map<String, String> rootDictionnary = rootTreeReportEntity.getDictionary();
-        rootTreeReportEntity.getValues().add(new ReportValueEmbeddable("id", rootTreeReportEntity.getIdNode(), "ID"));
+        rootTreeReportEntity.getValues().add(new ReportValueEmbeddable("subReportId", rootTreeReportEntity.getIdNode(), "ID"));
         ReportNodeAdder reportNodeAdder = rootReportNode.newReportNode()
                 .withMessageTemplate(rootTreeReportEntity.getName(), rootDictionnary.get(rootTreeReportEntity.getName()));
         rootTreeReportEntity.getValues().forEach(value -> addTypedValue(value, reportNodeAdder));
@@ -183,7 +183,7 @@ public class ReportService {
                 entity.getValues().forEach(value -> addTypedValue(value, reportElementAdder));
                 // reports without values are considered as subreports
                 if (entity.getValues().isEmpty()) {
-                    reportElementAdder.withUntypedValue("id", entity.getIdReport().toString());
+                    reportElementAdder.withUntypedValue("subReportId", entity.getIdReport().toString());
                 }
                 reportElementAdder.add();
             }
@@ -198,7 +198,7 @@ public class ReportService {
         children.forEach(childEntity -> {
             ReportNodeAdder adder = parentNode.newReportNode().withMessageTemplate(childEntity.getName(), childEntity.getDictionary().get(childEntity.getName()));
             childEntity.getValues().forEach(value -> addTypedValue(value, adder));
-            adder.withUntypedValue("id", childEntity.getIdNode().toString());
+            adder.withUntypedValue("subReportId", childEntity.getIdNode().toString());
             ReportNode childReportNode = adder.add();
             treeReportIdToReportNodes.put(childEntity.getIdNode(), childReportNode);
             if (reportNodeIdToChildren.containsKey(childEntity.getIdNode())) {
