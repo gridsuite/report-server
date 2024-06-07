@@ -137,7 +137,7 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -167,7 +167,7 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -182,7 +182,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -197,7 +197,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -213,7 +213,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -227,7 +227,7 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -241,7 +241,7 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -249,7 +249,7 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        List<ReportNodeEntity> reporters = reportNodeRepository.findByMessageTemplateKey("UcteReading");
+        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessageKey("UcteReading");
         assertEquals(1, reporters.size());
         String uuidReporter = reporters.get(0).getId().toString();
 
@@ -260,7 +260,7 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @Test
@@ -268,7 +268,7 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        List<ReportNodeEntity> reporters = reportNodeRepository.findByMessageTemplateKey("UcteReading");
+        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessageKey("UcteReading");
         assertEquals(1, reporters.size());
         String uuidReporter = reporters.get(0).getId().toString();
 
@@ -279,7 +279,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
     }
 
     @SneakyThrows
@@ -333,7 +333,7 @@ public class ReportControllerTest {
                         .content(objectMapper.writeValueAsString(reportsKeys)))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
 
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
@@ -356,7 +356,7 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         // no deletion here
-        assertRequestsCount(3, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
                 .andExpect(status().isOk());

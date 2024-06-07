@@ -64,7 +64,6 @@ public class ReportService {
         return reportNodeRepository.findByIdWithChildren(id).map(reportNodeEntity -> {
             reportNodeRepository.findAllWithValuesByIdIn(List.of(id));
             reportNodeRepository.findAllWithSeveritiesByIdIn(List.of(id));
-            reportNodeRepository.findAllWithMessageTemplateByIdIn(List.of(id));
             return reportNodeEntity;
         });
     }
@@ -91,12 +90,11 @@ public class ReportService {
         // Then we flatten the ID list to be able to fetch related data in one request (what if this list is too big ?)
         List<UUID> idList = treeIds.values().stream().flatMap(Collection::stream).toList();
 
-        // We do these 3 requests to load all data related to ReportNodeEntity thanks to JPA first-level of cache, and we just do a mapping to find fast an entity by its ID
-        Map<UUID, ReportNodeEntity> reportNodeEntityById = reportNodeRepository.findAllWithMessageTemplateByIdIn(idList).stream().collect(Collectors.toMap(
+        // We do these 2 requests to load all data related to ReportNodeEntity thanks to JPA first-level of cache, and we just do a mapping to find fast an entity by its ID
+        Map<UUID, ReportNodeEntity> reportNodeEntityById = reportNodeRepository.findAllWithSeveritiesByIdIn(idList).stream().collect(Collectors.toMap(
             ReportNodeEntity::getId,
             Function.identity()
         ));
-        reportNodeRepository.findAllWithSeveritiesByIdIn(idList);
         reportNodeRepository.findAllWithValuesByIdIn(idList);
 
         return new OptimizedReportNodeEntities(treeIds, reportNodeEntityById);
@@ -137,10 +135,10 @@ public class ReportService {
     }
 
     private void traverseReportModel(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
-        var messageTemplateEntity = new MessageTemplateEntity(reportNode.getMessageKey(), reportNode.getMessageTemplate());
         var reportNodeEntity = new ReportNodeEntity(
+            reportNode.getMessageKey(),
+            reportNode.getMessageTemplate(),
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
-            messageTemplateEntity,
             createValues(reportNode),
             parentReportNodeEntity,
             severities(reportNode)
@@ -169,7 +167,7 @@ public class ReportService {
         ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(id).orElseThrow(() -> new EmptyResultDataAccessException("No element found", 1));
         List<ReportNodeEntity> filteredChildrenList = reportNodeEntity.getChildren()
             .stream()
-            .filter(child -> StringUtils.isBlank(reportType) || child.getMessageTemplate().getKey().endsWith(reportType))
+            .filter(child -> StringUtils.isBlank(reportType) || child.getMessageKey().endsWith(reportType))
             .toList();
         filteredChildrenList.forEach(child -> deleteRoot(child.getId()));
 
@@ -187,7 +185,7 @@ public class ReportService {
 
     private void deleteTreeReport(UUID reportId, String reportName) {
         Objects.requireNonNull(reportId);
-        List<ReportNodeEntity> reportNodeEntities = reportNodeRepository.findAllByParentIdAndMessageTemplateKey(reportId, reportName);
+        List<ReportNodeEntity> reportNodeEntities = reportNodeRepository.findAllByParentIdAndMessageKey(reportId, reportName);
         reportNodeEntities.forEach(reportNodeEntity -> deleteRoot(reportNodeEntity.getId()));
     }
 

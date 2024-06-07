@@ -25,6 +25,15 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Id
     private UUID id;
 
+    @Column(name = "nanos")
+    private long nanos;
+
+    @Column(name = "message_key")
+    private String messageKey;
+
+    @Column(name = "message")
+    private String message;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
         name = "severity_level",
@@ -34,12 +43,6 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     )
     @Column(name = "severities")
     private Set<String> severities;
-
-    @Column
-    long nanos;
-
-    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private MessageTemplateEntity messageTemplate;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
@@ -56,10 +59,11 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<ReportNodeEntity> children;
 
-    public ReportNodeEntity(long nanos, MessageTemplateEntity messageTemplate, List<ValueEntity> values, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(String messageKey, String message, long nanos, List<ValueEntity> values, ReportNodeEntity parent, Set<String> severities) {
         this.id = UUID.randomUUID();
+        this.messageKey = messageKey;
+        this.message = message;
         this.nanos = nanos;
-        this.messageTemplate = messageTemplate;
         this.values = values;
         this.parent = parent;
         this.severities = severities;

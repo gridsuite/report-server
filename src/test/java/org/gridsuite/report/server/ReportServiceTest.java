@@ -56,7 +56,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, reportNode);
-        assertRequestsCount(1, 3, 0, 0);
+        assertRequestsCount(1, 2, 0, 0);
 
         assertEquals(2, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -88,7 +88,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, reportNode);
-        assertRequestsCount(1, 4, 0, 0);
+        assertRequestsCount(1, 3, 0, 0);
 
         assertEquals(5, reportNodeRepository.findAll().size());
         var parentReportEntity = reportNodeRepository.findByIdWithChildren(parentReportId);
@@ -127,7 +127,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(1, 3, 0, 0);
+        assertRequestsCount(1, 2, 0, 0);
 
         assertEquals(3, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -138,8 +138,8 @@ class ReportServiceTest {
     }
 
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, Set<String> severityList) {
-        assertEquals(reportNode.getMessageKey(), entity.getMessageTemplate().getKey());
-        assertEquals(reportNode.getMessageTemplate(), entity.getMessageTemplate().getMessage());
+        assertEquals(reportNode.getMessageKey(), entity.getMessageKey());
+        assertEquals(reportNode.getMessageTemplate(), entity.getMessage());
         assertEquals(reportNode.getValues().size(), entity.getValues().size());
         for (var entry : reportNode.getValues().entrySet()) {
             var valueEntity = entity.getValues().stream().filter(v -> v.getKey().equals(entry.getKey())).findAny().orElse(null);

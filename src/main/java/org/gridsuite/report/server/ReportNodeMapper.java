@@ -50,8 +50,8 @@ public final class ReportNodeMapper {
 
     private static void mapRootNode(ReportNodeEntity rootReportNodeEntity, Map<UUID, ReportNode> reportsMap) {
         ReportNodeBuilder builder = ReportNode.newRootReportNode();
-        if (!Objects.isNull(rootReportNodeEntity.getMessageTemplate())) {
-            builder.withMessageTemplate(rootReportNodeEntity.getMessageTemplate().getKey(), rootReportNodeEntity.getMessageTemplate().getMessage());
+        if (!Objects.isNull(rootReportNodeEntity.getMessageKey())) {
+            builder.withMessageTemplate(rootReportNodeEntity.getMessageKey(), rootReportNodeEntity.getMessage());
         } else {
             builder.withMessageTemplate(rootReportNodeEntity.getId().toString(), rootReportNodeEntity.getId().toString());
         }
@@ -74,7 +74,7 @@ public final class ReportNodeMapper {
         ReportNodeEntity reportNodeEntity = reportEntities.get(id);
         Optional.ofNullable(reports.get(reportNodeEntity.getParent().getId())).ifPresent(parentReport -> {
             ReportNodeAdder adder = parentReport.newReportNode()
-                .withMessageTemplate(reportNodeEntity.getMessageTemplate().getKey(), reportNodeEntity.getMessageTemplate().getMessage());
+                .withMessageTemplate(reportNodeEntity.getMessageKey(), reportNodeEntity.getMessage());
             mapValues(reportNodeEntity, adder);
             ReportNode newNode = adder.add();
             reports.put(id, newNode);
@@ -115,9 +115,9 @@ public final class ReportNodeMapper {
 
     private static Predicate<ReportNodeEntity> reportMessageKeyMatches(@Nullable String reportNameFilter, @Nullable ReportService.ReportNameMatchingType reportNameMatchingType) {
         return reportNodeEntity -> StringUtils.isBlank(reportNameFilter)
-            || reportNodeEntity.getMessageTemplate().getKey().startsWith("Root") // FIXME remove this hack when "Root" report will follow the same rules than computations and modifications
-            || reportNameMatchingType == ReportService.ReportNameMatchingType.EXACT_MATCHING && reportNodeEntity.getMessageTemplate().getKey().equals(reportNameFilter)
-            || reportNameMatchingType == ReportService.ReportNameMatchingType.ENDS_WITH && reportNodeEntity.getMessageTemplate().getKey().endsWith(reportNameFilter);
+            || reportNodeEntity.getMessageKey().startsWith("Root") // FIXME remove this hack when "Root" report will follow the same rules than computations and modifications
+            || reportNameMatchingType == ReportService.ReportNameMatchingType.EXACT_MATCHING && reportNodeEntity.getMessageKey().equals(reportNameFilter)
+            || reportNameMatchingType == ReportService.ReportNameMatchingType.ENDS_WITH && reportNodeEntity.getMessageKey().endsWith(reportNameFilter);
     }
 
     private static boolean hasNoReportSeverity(ReportNodeEntity reportNodeEntity) {
