@@ -25,9 +25,6 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.children WHERE r.id = :id")
     Optional<ReportNodeEntity> findByIdWithChildren(UUID id);
 
-    @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.messageKey WHERE r.id IN :ids")
-    List<ReportNodeEntity> findAllWithMessageTemplateByIdIn(List<UUID> ids);
-
     @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.values WHERE r.id IN :ids")
     List<ReportNodeEntity> findAllWithValuesByIdIn(List<UUID> ids);
 
@@ -41,8 +38,8 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     @Modifying
     @Query(value = """
         BEGIN;
-        DELETE FROM severity_level WHERE report_node_id IN :ids ;
-        DELETE FROM report_node_values WHERE report_node_id IN :ids ;
+        DELETE FROM severity WHERE report_node_id IN :ids ;
+        DELETE FROM report_node_value WHERE report_node_id IN :ids ;
         DELETE FROM report_node WHERE id IN :ids ;
         COMMIT;
         """, nativeQuery = true)

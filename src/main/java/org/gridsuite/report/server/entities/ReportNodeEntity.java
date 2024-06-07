@@ -36,17 +36,17 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
-        name = "severity_level",
+        name = "severity",
         joinColumns = {@JoinColumn(name = "report_node_id")},
         foreignKey = @ForeignKey(name = "report_node_severity_fk"),
         indexes = @Index(name = "report_node_severity_idx", columnList = "report_node_id")
     )
-    @Column(name = "severities")
+    @Column(name = "severity")
     private Set<String> severities;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
-        name = "report_node_values",
+        name = "report_node_value",
         joinColumns = {@JoinColumn(name = "report_node_id")},
         foreignKey = @ForeignKey(name = "report_node_value_fk"),
         indexes = @Index(name = "report_node_value_idx", columnList = "report_node_id")
@@ -54,6 +54,7 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     private List<ValueEntity> values;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "parent_fk"))
     private ReportNodeEntity parent;
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
