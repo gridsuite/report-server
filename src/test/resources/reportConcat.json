@@ -20,10 +20,6 @@
             "id": {
               "value": "36659f01-e408-4d03-9ef2-0423bc9bfca1",
               "type": "ID"
-            },
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
             }
           },
           "children": [
@@ -141,10 +137,6 @@
             "id": {
               "value": "832974ff-d45b-4955-a472-4497c8f2886f",
               "type": "ID"
-            },
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
             }
           },
           "children": [
@@ -367,10 +359,6 @@
             "id": {
               "value": "23d156f5-c792-4897-ba00-5aff35649fa2",
               "type": "ID"
-            },
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
             }
           },
           "children": [

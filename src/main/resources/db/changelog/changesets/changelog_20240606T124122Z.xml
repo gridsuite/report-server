@@ -70,19 +70,19 @@
         <dropForeignKeyConstraint baseTableName="TREE_REPORT" constraintName="REPORT_ID_FK_CONSTRAINT"/>
     </changeSet>
     <changeSet author="mancinijor (generated)" id="1717677691736-12">
-        <dropForeignKeyConstraint baseTableName="REPORT_ELEMENT" constraintName="TREEREPORTELEMENT_ID_FK_CONSTRAINT"/>
+        <dropForeignKeyConstraint baseTableName="REPORT_ELEMENT" constraintName="treeReportElement_id_fk_constraint"/>
     </changeSet>
     <changeSet author="mancinijor (generated)" id="1717677691736-13">
-        <dropForeignKeyConstraint baseTableName="TREE_REPORT_ENTITY_VALUES" constraintName="TREEREPORTEMBEDDABLE_NAME_FK"/>
+        <dropForeignKeyConstraint baseTableName="TREE_REPORT_ENTITY_VALUES" constraintName="treeReportEmbeddable_name_fk"/>
     </changeSet>
     <changeSet author="mancinijor (generated)" id="1717677691736-14">
-        <dropForeignKeyConstraint baseTableName="REPORT_ELEMENT_ENTITY_VALUES" constraintName="TREEREPORTEMBEDDABLE_SUBREPORTS_FK"/>
+        <dropForeignKeyConstraint baseTableName="REPORT_ELEMENT_ENTITY_VALUES" constraintName="treeReportEmbeddable_subReports_fk"/>
     </changeSet>
     <changeSet author="mancinijor (generated)" id="1717677691736-15">
-        <dropForeignKeyConstraint baseTableName="TREE_REPORT_ENTITY_DICTIONARY" constraintName="TREEREPORTENTITY_DICTIONARY_FK"/>
+        <dropForeignKeyConstraint baseTableName="TREE_REPORT_ENTITY_DICTIONARY" constraintName="treeReportEntity_dictionary_fk"/>
     </changeSet>
     <changeSet author="mancinijor (generated)" id="1717677691736-16">
-        <dropForeignKeyConstraint baseTableName="TREE_REPORT" constraintName="TREEREPORT_ID_FK_CONSTRAINT"/>
+        <dropForeignKeyConstraint baseTableName="TREE_REPORT" constraintName="treeReport_id_fk_constraint"/>
     </changeSet>
     <changeSet author="mancinijor (generated)" id="1717677691736-17">
         <dropTable tableName="REPORT"/>

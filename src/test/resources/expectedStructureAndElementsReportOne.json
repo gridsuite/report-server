@@ -17,10 +17,6 @@
         {
           "messageKey": "UcteReading",
           "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
             "id": {
               "value": "dff542a7-f6ce-489b-b57f-87bde3c7f810",
               "type": "ID"
@@ -138,10 +134,6 @@
         {
           "messageKey": "createBuses",
           "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
             "id": {
               "value": "42056d2c-d056-47a4-8375-45fb302d5698",
               "type": "ID"

@@ -6,8 +6,8 @@
  */
 package org.gridsuite.report.server;
 
+import com.google.common.collect.Lists;
 import com.powsybl.commons.report.*;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.report.server.entities.*;
@@ -18,12 +18,14 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.gridsuite.report.server.ReportNodeMapper.mapper;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -36,7 +38,7 @@ public class ReportService {
     private static final long NANOS_FROM_EPOCH_TO_START;
 
     // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
-//    private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
+    private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
 
     public static final String SEVERITY_LIST_KEY = "severityList";
 
@@ -56,94 +58,51 @@ public class ReportService {
         this.reportNodeRepository = reportNodeRepository;
     }
 
+    // To use only for tests to fetch an entity with all the relationships
+    @Transactional(readOnly = true)
+    Optional<ReportNodeEntity> getReportNodeEntity(UUID id) {
+        return reportNodeRepository.findByIdWithChildren(id).map(reportNodeEntity -> {
+            reportNodeRepository.findAllWithValuesByIdIn(List.of(id));
+            reportNodeRepository.findAllWithSeveritiesByIdIn(List.of(id));
+            reportNodeRepository.findAllWithMessageTemplateByIdIn(List.of(id));
+            return reportNodeEntity;
+        });
+    }
+
     @Transactional(readOnly = true)
     public ReportNode getReport(UUID reportId, Set<String> severityLevels, String reportNameFilter, ReportNameMatchingType reportNameMatchingType) {
         Objects.requireNonNull(reportId);
-        ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
-
-        return mapper(reportNodeEntity, severityLevels, reportNameFilter, reportNameMatchingType);
+        OptimizedReportNodeEntities optimizedReportNodeEntities = getOptimizedReportNodeEntities(reportId);
+        return mapper(optimizedReportNodeEntities, severityLevels, reportNameFilter, reportNameMatchingType);
     }
 
-    @Transactional(readOnly = true)
-    public ReportNode getSubReport(UUID reporterId, Set<String> severityLevels) {
-        Objects.requireNonNull(reporterId);
-        ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
-
-        return mapper(reportNodeEntity, severityLevels, null, null);
-    }
-
-    private static ReportNode mapper(ReportNodeEntity reportNodeEntity, @Nullable Set<String> severityLevels, @Nullable String reportNameFilter, @Nullable ReportNameMatchingType reportNameMatchingType) {
-        ReportNodeBuilder builder = ReportNode.newRootReportNode();
-        if (!Objects.isNull(reportNodeEntity.getMessageTemplate())) {
-            builder.withMessageTemplate(reportNodeEntity.getMessageTemplate().getKey(), reportNodeEntity.getMessageTemplate().getMessage());
-        } else {
-            builder.withMessageTemplate(reportNodeEntity.getId().toString(), reportNodeEntity.getId().toString());
-        }
-        for (ValueEntity valueEntity : reportNodeEntity.getValues()) {
-            addTypedValue(valueEntity, builder);
-        }
-        if (reportNodeEntity.getValues().stream().noneMatch(v -> v.getKey().equals(ReportConstants.REPORT_SEVERITY_KEY))) {
-            builder.withTypedValue("id", reportNodeEntity.getId().toString(), "ID");
-            if (!reportNodeEntity.getChildren().isEmpty()) {
-                builder.withTypedValue(SEVERITY_LIST_KEY, reportNodeEntity.getSeverities().toString(), TypedValue.SEVERITY);
-            }
-        }
-        ReportNode reportNode = builder.build();
-        reportNodeEntity.getChildren()
+    private OptimizedReportNodeEntities getOptimizedReportNodeEntities(UUID rootReportNodeId) {
+        // We first do a recursive find from the root node to aggregate all the IDs of the tree by their tree depth
+        Map<Integer, List<UUID>> treeIds = reportNodeRepository.findTreeFromRootReport(rootReportNodeId)
             .stream()
-            .filter(child -> StringUtils.isBlank(reportNameFilter)
-                || child.getMessageTemplate().getKey().startsWith("Root") // FIXME remove this hack when "Root" report will follow the same rules than computations and modifications
-                || reportNameMatchingType == ReportNameMatchingType.EXACT_MATCHING && child.getMessageTemplate().getKey().equals(reportNameFilter)
-                || reportNameMatchingType == ReportNameMatchingType.ENDS_WITH && child.getMessageTemplate().getKey().endsWith(reportNameFilter))
-            .filter(hasOneOfSeverityLevels(severityLevels))
-            .forEach(child -> mapper(reportNode, child, severityLevels));
-        return reportNode;
+            .collect(Collectors.groupingBy(
+                result -> (Integer) result[0],
+                Collectors.mapping(
+                    result -> UUID.fromString((String) result[1]),
+                    Collectors.toList()
+                )
+            ));
+
+        // Then we flatten the ID list to be able to fetch related data in one request (what if this list is too big ?)
+        List<UUID> idList = treeIds.values().stream().flatMap(Collection::stream).toList();
+
+        // We do these 3 requests to load all data related to ReportNodeEntity thanks to JPA first-level of cache, and we just do a mapping to find fast an entity by its ID
+        Map<UUID, ReportNodeEntity> reportNodeEntityById = reportNodeRepository.findAllWithMessageTemplateByIdIn(idList).stream().collect(Collectors.toMap(
+            ReportNodeEntity::getId,
+            Function.identity()
+        ));
+        reportNodeRepository.findAllWithSeveritiesByIdIn(idList);
+        reportNodeRepository.findAllWithValuesByIdIn(idList);
+
+        return new OptimizedReportNodeEntities(treeIds, reportNodeEntityById);
     }
 
-    private static void mapper(ReportNode parentNode, ReportNodeEntity reportNodeEntity, Set<String> severityLevels) {
-        ReportNodeAdder adder = parentNode.newReportNode()
-            .withMessageTemplate(reportNodeEntity.getMessageTemplate().getKey(), reportNodeEntity.getMessageTemplate().getMessage());
-        for (ValueEntity valueEntity : reportNodeEntity.getValues()) {
-            addTypedValue(valueEntity, adder);
-        }
-        if (hasNoReportSeverity(reportNodeEntity)) {
-            adder.withTypedValue("id", reportNodeEntity.getId().toString(), "ID");
-            if (!reportNodeEntity.getChildren().isEmpty()) {
-                adder.withTypedValue(SEVERITY_LIST_KEY, reportNodeEntity.getSeverities().toString(), TypedValue.SEVERITY);
-            }
-        }
-        ReportNode newNode = adder.add();
-        reportNodeEntity.getChildren()
-            .stream()
-            .filter(hasOneOfSeverityLevels(severityLevels))
-            .forEach(child -> mapper(newNode, child, severityLevels));
-    }
-
-    private static void addTypedValue(ValueEntity value, ReportNodeAdderOrBuilder<?> adder) {
-        switch (value.getLocalValueType()) {
-            case DOUBLE -> adder.withTypedValue(value.getKey(), Double.parseDouble(value.getValue()), value.getValueType());
-            case INTEGER -> adder.withTypedValue(value.getKey(), Integer.parseInt(value.getValue()), value.getValueType());
-            default -> adder.withTypedValue(value.getKey(), value.getValue(), value.getValueType());
-        }
-    }
-
-    private static Predicate<ReportNodeEntity> hasOneOfSeverityLevels(Set<String> severityLevels) {
-        return reportNodeEntity -> severityLevels == null ||
-            hasNoReportSeverity(reportNodeEntity) ||
-            reportNodeEntity.getValues()
-                .stream()
-                .filter(v -> v.getKey().equals(ReportConstants.REPORT_SEVERITY_KEY))
-                .findFirst()
-                .map(ValueEntity::getValue)
-                .map(severityLevels::contains)
-                .orElse(false);
-    }
-
-    private static boolean hasNoReportSeverity(ReportNodeEntity reportNodeEntity) {
-        return reportNodeEntity.getValues().stream().noneMatch(v -> v.getKey().equals(ReportConstants.REPORT_SEVERITY_KEY));
-    }
-
-    public ReportNode getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
+    public static ReportNode getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
         ReportNode reportNode = ReportNode.newRootReportNode()
             .withMessageTemplate(id.toString(), id.toString())
             .build();
@@ -153,6 +112,18 @@ public class ReportService {
             .add();
 
         return reportNode;
+    }
+
+    @Transactional
+    public void createReport(UUID id, ReportNode reportNode) {
+        Optional<ReportNodeEntity> reportNodeEntity = reportNodeRepository.findById(id);
+        if (reportNodeEntity.isPresent()) {
+            LOGGER.debug("Reporter {} present, append ", reportNode.getMessage());
+            saveAllReportElements(reportNodeEntity.get(), reportNode);
+        } else {
+            LOGGER.debug("Reporter {} absent, create ", reportNode.getMessage());
+            toEntity(id, reportNode);
+        }
     }
 
     private void toEntity(UUID id, ReportNode reportElement) {
@@ -193,64 +164,6 @@ public class ReportService {
     }
 
     @Transactional
-    public void createReport(UUID id, ReportNode reportNode) {
-        Optional<ReportNodeEntity> reportNodeEntity = reportNodeRepository.findById(id);
-        if (reportNodeEntity.isPresent()) {
-            LOGGER.debug("Reporter {} present, append ", reportNode.getMessage());
-            saveAllReportElements(reportNodeEntity.get(), reportNode);
-        } else {
-            LOGGER.debug("Reporter {} absent, create ", reportNode.getMessage());
-            toEntity(id, reportNode);
-        }
-    }
-
-    /**
-     * delete all the report and tree report elements depending on a root tree report
-     */
-    private void deleteRoot(UUID rootTreeReportId) {
-        AtomicReference<Long> startTime = new AtomicReference<>();
-        startTime.set(System.nanoTime());
-//        /*
-//         * Groups tree report node IDs by level for batch deletion.
-//         * This is necessary otherwise H2 throws JdbcSQLIntegrityConstraintViolationException when issuing the delete query with 'where id in (x1,x2,...)' (we use h2 for unit tests).
-//         * For postgres, this is not necessary if all the ids are in the same delete query, but would be a problem
-//         * if we decided to partition the deletes in smaller batches in multiple transactions (in multiple deletes in one transaction we could defer the checks at the commit with 'SET CONSTRAINTS DEFERRED')
-//         */
-//        Map<Integer, List<UUID>> treeReportIdsByLevel = treeReportRepository.getSubReportsNodesWithLevel(rootTreeReportId)
-//            .stream()
-//            .collect(Collectors.groupingBy(
-//                result -> (Integer) result[1],
-//                Collectors.mapping(
-//                    result -> UUID.fromString((String) result[0]),
-//                    Collectors.toList()
-//                )
-//            ));
-//
-//        // Deleting the report elements in subsets because they can exceed the limit of 64k elements in the IN clause
-//        List<UUID> groupedTreeReportIds = treeReportIdsByLevel.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
-//        List<UUID> reportElementIds = reportElementRepository.findIdReportByParentReportIdNodeIn(groupedTreeReportIds)
-//            .stream()
-//            .map(ReportElementEntity.ProjectionIdReport::getIdReport)
-//            .toList();
-//        Lists.partition(reportElementIds, SQL_QUERY_MAX_PARAM_NUMBER)
-//            .forEach(ids -> {
-//                reportElementRepository.deleteAllReportElementValuesByIdReportIn(ids);
-//                reportElementRepository.deleteAllByIdReportIn(ids);
-//            });
-//
-//        // Delete all the report elements values and dictionaries since doesn't have any parent-child relationship
-//        treeReportRepository.deleteAllTreeReportValuesByIdNodeIn(groupedTreeReportIds);
-//        treeReportRepository.deleteAllTreeReportDictionaryByIdNodeIn(groupedTreeReportIds);
-//
-//        // Deleting the tree reports level by level, starting from the highest level
-//        treeReportIdsByLevel.entrySet().stream()
-//            .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
-//            .forEach(entry -> treeReportRepository.deleteAllByIdNodeIn(entry.getValue()));
-        reportNodeRepository.deleteById(rootTreeReportId);
-        LOGGER.info("The report and tree report elements of '{}' has been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
-    }
-
-    @Transactional
     public void deleteReport(UUID id, String reportType) {
         Objects.requireNonNull(id);
         ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(id).orElseThrow(() -> new EmptyResultDataAccessException("No element found", 1));
@@ -262,13 +175,8 @@ public class ReportService {
 
         if (filteredChildrenList.size() == reportNodeEntity.getChildren().size()) {
             // let's remove the whole Report only if we have removed all its treeReport
-            reportNodeRepository.deleteById(id);
+            reportNodeRepository.deleteByIdIn(List.of(id));
         }
-    }
-
-    // package private for tests
-    void deleteAll() {
-        reportNodeRepository.deleteAll();
     }
 
     @Transactional
@@ -281,5 +189,35 @@ public class ReportService {
         Objects.requireNonNull(reportId);
         List<ReportNodeEntity> reportNodeEntities = reportNodeRepository.findAllByParentIdAndMessageTemplateKey(reportId, reportName);
         reportNodeEntities.forEach(reportNodeEntity -> deleteRoot(reportNodeEntity.getId()));
+    }
+
+    /**
+     * delete all the report and tree report elements depending on a root tree report
+     */
+    private void deleteRoot(UUID rootTreeReportId) {
+        AtomicReference<Long> startTime = new AtomicReference<>();
+        startTime.set(System.nanoTime());
+
+        reportNodeRepository.findTreeFromRootReport(rootTreeReportId)
+            .stream()
+            .collect(Collectors.groupingBy(
+                result -> (Integer) result[0],
+                Collectors.mapping(
+                    result -> UUID.fromString((String) result[1]),
+                    Collectors.toList()
+                )
+            ))
+            .entrySet()
+            .stream()
+            .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
+            .forEach(entry ->
+                Lists.partition(entry.getValue(), SQL_QUERY_MAX_PARAM_NUMBER).forEach(reportNodeRepository::deleteByIdIn)
+            );
+        LOGGER.info("The report and tree report elements of '{}' has been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
+    }
+
+    // package private for tests
+    void deleteAll() {
+        reportNodeRepository.deleteAll();
     }
 }

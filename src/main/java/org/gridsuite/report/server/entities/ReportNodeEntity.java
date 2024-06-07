@@ -25,7 +25,7 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Id
     private UUID id;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
         name = "severity_level",
         joinColumns = {@JoinColumn(name = "report_node_id")},
@@ -38,10 +38,10 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Column
     long nanos;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private MessageTemplateEntity messageTemplate;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
         name = "report_node_values",
         joinColumns = {@JoinColumn(name = "report_node_id")},
@@ -53,7 +53,7 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @ManyToOne(fetch = FetchType.LAZY)
     private ReportNodeEntity parent;
 
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, orphanRemoval = true, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<ReportNodeEntity> children;
 
     public ReportNodeEntity(long nanos, MessageTemplateEntity messageTemplate, List<ValueEntity> values, ReportNodeEntity parent, Set<String> severities) {

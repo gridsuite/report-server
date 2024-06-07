@@ -65,7 +65,7 @@ public class ReportController {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(List.of(service.getSubReport(id, severityLevels)));
+                    .body(List.of(service.getReport(id, severityLevels, null, null)));
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }

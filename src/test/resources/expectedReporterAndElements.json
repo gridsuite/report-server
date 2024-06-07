@@ -4,10 +4,6 @@
     "reportRoot": {
       "messageKey": "UcteReading",
       "values": {
-        "severityList": {
-          "value": "[]",
-          "type": "SEVERITY"
-        },
         "id": {
           "value": "593a8546-bc05-4b53-b8d9-a2caf0e2f0f8",
           "type": "ID"
