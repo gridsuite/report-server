@@ -13,7 +13,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -22,8 +21,8 @@ import java.util.UUID;
 @Repository
 public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UUID> {
 
-    @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.children WHERE r.id = :id")
-    Optional<ReportNodeEntity> findByIdWithChildren(UUID id);
+    @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.children WHERE r.id IN :ids")
+    List<ReportNodeEntity> findAllWithChildrenByIdIn(List<UUID> ids);
 
     @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.values WHERE r.id IN :ids")
     List<ReportNodeEntity> findAllWithValuesByIdIn(List<UUID> ids);

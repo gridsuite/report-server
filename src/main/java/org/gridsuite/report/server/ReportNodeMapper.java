@@ -87,7 +87,7 @@ public final class ReportNodeMapper {
         }
         if (hasNoReportSeverity(rootReportNodeEntity)) {
             adderOrBuilder.withTypedValue("id", rootReportNodeEntity.getId().toString(), "ID");
-            if (!rootReportNodeEntity.getSeverities().isEmpty()) {
+            if (!rootReportNodeEntity.getChildren().isEmpty()) {
                 adderOrBuilder.withTypedValue(ReportService.SEVERITY_LIST_KEY, rootReportNodeEntity.getSeverities().toString(), TypedValue.SEVERITY);
             }
         }

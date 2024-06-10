@@ -62,11 +62,12 @@ public class ReportService {
     // To use only for tests to fetch an entity with all the relationships
     @Transactional(readOnly = true)
     public Optional<ReportNodeEntity> getReportNodeEntity(UUID id) {
-        return reportNodeRepository.findByIdWithChildren(id).map(reportNodeEntity -> {
-            reportNodeRepository.findAllWithValuesByIdIn(List.of(id));
-            reportNodeRepository.findAllWithSeveritiesByIdIn(List.of(id));
-            return reportNodeEntity;
-        });
+        return Optional.ofNullable(reportNodeRepository.findAllWithChildrenByIdIn(List.of(id)).get(0))
+            .map(reportNodeEntity -> {
+                reportNodeRepository.findAllWithValuesByIdIn(List.of(id));
+                reportNodeRepository.findAllWithSeveritiesByIdIn(List.of(id));
+                return reportNodeEntity;
+            });
     }
 
     @Transactional(readOnly = true)
@@ -95,6 +96,7 @@ public class ReportService {
         Lists.partition(idList, SQL_QUERY_MAX_PARAM_NUMBER).forEach(ids -> {
             // We do these 2 requests to load all data related to ReportNodeEntity thanks to JPA first-level of cache, and we just do a mapping to find fast an entity by its ID
             List<ReportNodeEntity> reportNodeEntities = reportNodeRepository.findAllWithSeveritiesByIdIn(ids);
+            reportNodeRepository.findAllWithChildrenByIdIn(ids);
             reportNodeRepository.findAllWithValuesByIdIn(ids);
             reportNodeEntities.forEach(reportNodeEntity -> reportNodeEntityById.put(reportNodeEntity.getId(), reportNodeEntity));
         });
