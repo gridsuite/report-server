@@ -7,6 +7,7 @@
 package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.ReportNodeEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,13 +22,13 @@ import java.util.UUID;
 @Repository
 public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UUID> {
 
-    @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.children WHERE r.id IN :ids")
+    @EntityGraph(attributePaths = {"children"}, type = EntityGraph.EntityGraphType.LOAD)
     List<ReportNodeEntity> findAllWithChildrenByIdIn(List<UUID> ids);
 
-    @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.values WHERE r.id IN :ids")
+    @EntityGraph(attributePaths = {"values"}, type = EntityGraph.EntityGraphType.LOAD)
     List<ReportNodeEntity> findAllWithValuesByIdIn(List<UUID> ids);
 
-    @Query(value = "SELECT r FROM ReportNodeEntity r LEFT JOIN FETCH r.severities WHERE r.id IN :ids")
+    @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
     List<ReportNodeEntity> findAllWithSeveritiesByIdIn(List<UUID> ids);
 
     List<ReportNodeEntity> findAllByMessageKey(String key);
