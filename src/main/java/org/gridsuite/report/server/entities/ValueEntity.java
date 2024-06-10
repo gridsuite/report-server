@@ -21,7 +21,7 @@ public class ValueEntity {
     @Column(name = "key_", nullable = false)
     private String key;
 
-    @Column(name = "value_", nullable = false)
+    @Column(name = "value_", nullable = false, columnDefinition = "TEXT")
     private String value;
 
     @Column(name = "value_type")

@@ -31,7 +31,7 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Column(name = "message_key")
     private String messageKey;
 
-    @Column(name = "message")
+    @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
     @ElementCollection(fetch = FetchType.LAZY)

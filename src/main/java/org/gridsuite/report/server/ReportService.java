@@ -7,10 +7,12 @@
 package org.gridsuite.report.server;
 
 import com.google.common.collect.Lists;
-import com.powsybl.commons.report.*;
+import com.powsybl.commons.report.ReportConstants;
+import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
-import org.gridsuite.report.server.entities.*;
+import org.gridsuite.report.server.entities.ReportNodeEntity;
+import org.gridsuite.report.server.entities.ValueEntity;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +24,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.gridsuite.report.server.ReportNodeMapper.mapper;
@@ -60,7 +61,7 @@ public class ReportService {
 
     // To use only for tests to fetch an entity with all the relationships
     @Transactional(readOnly = true)
-    Optional<ReportNodeEntity> getReportNodeEntity(UUID id) {
+    public Optional<ReportNodeEntity> getReportNodeEntity(UUID id) {
         return reportNodeRepository.findByIdWithChildren(id).map(reportNodeEntity -> {
             reportNodeRepository.findAllWithValuesByIdIn(List.of(id));
             reportNodeRepository.findAllWithSeveritiesByIdIn(List.of(id));
@@ -90,12 +91,13 @@ public class ReportService {
         // Then we flatten the ID list to be able to fetch related data in one request (what if this list is too big ?)
         List<UUID> idList = treeIds.values().stream().flatMap(Collection::stream).toList();
 
-        // We do these 2 requests to load all data related to ReportNodeEntity thanks to JPA first-level of cache, and we just do a mapping to find fast an entity by its ID
-        Map<UUID, ReportNodeEntity> reportNodeEntityById = reportNodeRepository.findAllWithSeveritiesByIdIn(idList).stream().collect(Collectors.toMap(
-            ReportNodeEntity::getId,
-            Function.identity()
-        ));
-        reportNodeRepository.findAllWithValuesByIdIn(idList);
+        Map<UUID, ReportNodeEntity> reportNodeEntityById = new HashMap<>();
+        Lists.partition(idList, SQL_QUERY_MAX_PARAM_NUMBER).forEach(ids -> {
+            // We do these 2 requests to load all data related to ReportNodeEntity thanks to JPA first-level of cache, and we just do a mapping to find fast an entity by its ID
+            List<ReportNodeEntity> reportNodeEntities = reportNodeRepository.findAllWithSeveritiesByIdIn(ids);
+            reportNodeRepository.findAllWithValuesByIdIn(ids);
+            reportNodeEntities.forEach(reportNodeEntity -> reportNodeEntityById.put(reportNodeEntity.getId(), reportNodeEntity));
+        });
 
         return new OptimizedReportNodeEntities(treeIds, reportNodeEntityById);
     }
