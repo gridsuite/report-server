@@ -84,14 +84,10 @@ public class ReportControllerTest {
     private static final String REPORT_TWO = "/reportTwo.json";
     private static final String REPORT_CONCAT = "/reportConcat.json";
     private static final String REPORT_CONCAT2 = "/reportConcat2.json";
-    private static final String EXPECTED_SINGLE_REPORT = "/expectedSingleReport.json";
-    private static final String EXPECTED_STRUCTURE_ONLY_REPORT1 = "/expectedStructureOnlyReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1 = "/expectedStructureAndElementsReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS = "/expectedStructureAndElementsReportOneWithOnlyErrors.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS = "/expectedStructureAndElementsReportOneWithOnlyInfos.json";
-    private static final String EXPECTED_STRUCTURE_AND_NO_REPORT_ELEMENT = "/expectedStructureAndNoElementReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1 = "/expectedReporterAndElements.json";
-    private static final String EXPECTED_STRUCTURE_AND_NO_REPORTER_ELEMENT = "/expectedReporterAndNoElement.json";
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
     private static final String REPORT_LOADFLOW = "/reportLoadflow.json";
@@ -112,7 +108,7 @@ public class ReportControllerTest {
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andReturn();
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_SINGLE_REPORT));
+        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
 
         insertReport(REPORT_UUID, toString(REPORT_TWO));
 
@@ -132,19 +128,16 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetReport() throws Exception {
+    public void testGetReportWithNoSeverityFilters() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        // expect 6 batched inserts of different tables and no updates
-        assertRequestsCount(2, 6, 0, 0);
         SQLStatementCountValidator.reset();
-
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andReturn();
 
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_ONLY_REPORT1));
+        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
         assertRequestsCount(4, 0, 0, 0);
     }
 
@@ -225,20 +218,6 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetReportWithNoSeverityFilters() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        SQLStatementCountValidator.reset();
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_NO_REPORT_ELEMENT));
-        assertRequestsCount(4, 0, 0, 0);
-    }
-
-    @Test
     public void testGetReportWithSeverityFiltersOnError() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
@@ -300,7 +279,7 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_NO_REPORTER_ELEMENT));
+        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
         assertRequestsCount(3, 0, 0, 0);
     }
 
