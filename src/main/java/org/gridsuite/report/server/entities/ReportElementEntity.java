@@ -60,7 +60,7 @@ public class ReportElementEntity {
 
     public boolean hasSeverity(@Nullable Set<String> severityLevels) {
         if (CollectionUtils.isEmpty(severityLevels)) {
-            return false;
+            return true;
         } else {
             return severityLevels.contains(values.stream()
                     .filter(value -> value.getValueType() == ValueType.STRING && SEVERITY.equalsIgnoreCase(value.getType()))
