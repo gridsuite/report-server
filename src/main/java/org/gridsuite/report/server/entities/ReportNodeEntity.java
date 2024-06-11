@@ -19,7 +19,9 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@Table(name = "report_node")
+@Table(name = "report_node", indexes = {
+    @Index(name = "report_node_parent_id_idx", columnList = "parent_id")
+})
 public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<UUID> {
 
     @Id

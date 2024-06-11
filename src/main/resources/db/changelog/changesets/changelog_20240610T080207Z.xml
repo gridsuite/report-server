@@ -89,4 +89,9 @@
     <changeSet author="mancinijor (generated)" id="1718006537607-20">
         <dropTable tableName="TREE_REPORT_ENTITY_VALUES"/>
     </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-21">
+        <createIndex tableName="report_node" indexName="report_node_parent_id_idx">
+            <column name="parent_id"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
