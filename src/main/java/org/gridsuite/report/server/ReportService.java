@@ -46,6 +46,8 @@ public class ReportService {
     // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
     private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
 
+    private static final String SUB_REPORT_ID = "subReportId";
+
     /**
      * @see TypedValue
      */
@@ -167,7 +169,7 @@ public class ReportService {
         }
 
         final Map<String, String> rootDictionnary = rootTreeReportEntity.getDictionary();
-        rootTreeReportEntity.getValues().add(new ReportValueEmbeddable("id", rootTreeReportEntity.getIdNode(), "ID"));
+        rootTreeReportEntity.getValues().add(new ReportValueEmbeddable(SUB_REPORT_ID, rootTreeReportEntity.getIdNode(), "ID"));
         ReportNodeAdder reportNodeAdder = rootReportNode.newReportNode()
                 .withMessageTemplate(rootTreeReportEntity.getName(), rootDictionnary.get(rootTreeReportEntity.getName()));
         rootTreeReportEntity.getValues().forEach(value -> addTypedValue(value, reportNodeAdder));
@@ -183,7 +185,7 @@ public class ReportService {
                 entity.getValues().forEach(value -> addTypedValue(value, reportElementAdder));
                 // reports without values are considered as subreports
                 if (entity.getValues().isEmpty()) {
-                    reportElementAdder.withUntypedValue("id", entity.getIdReport().toString());
+                    reportElementAdder.withUntypedValue(SUB_REPORT_ID, entity.getIdReport().toString());
                 }
                 reportElementAdder.add();
             }
@@ -198,7 +200,7 @@ public class ReportService {
         children.forEach(childEntity -> {
             ReportNodeAdder adder = parentNode.newReportNode().withMessageTemplate(childEntity.getName(), childEntity.getDictionary().get(childEntity.getName()));
             childEntity.getValues().forEach(value -> addTypedValue(value, adder));
-            adder.withUntypedValue("id", childEntity.getIdNode().toString());
+            adder.withUntypedValue(SUB_REPORT_ID, childEntity.getIdNode().toString());
             ReportNode childReportNode = adder.add();
             treeReportIdToReportNodes.put(childEntity.getIdNode(), childReportNode);
             if (reportNodeIdToChildren.containsKey(childEntity.getIdNode())) {

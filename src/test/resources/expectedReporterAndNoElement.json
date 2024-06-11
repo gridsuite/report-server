@@ -8,7 +8,7 @@
           "value": "[]",
           "type": "SEVERITY"
         },
-        "id": {
+        "subReportId": {
           "value": "e8a61121-771c-4da3-990c-6e9f6d1b49de",
           "type": "ID"
         }
@@ -21,7 +21,7 @@
               "value": "[ERROR]",
               "type": "SEVERITY"
             },
-            "id": {
+            "subReportId": {
               "value": "3208c766-c386-4f27-8bed-8dee491fed8a"
             }
           }
@@ -29,7 +29,7 @@
         {
           "messageKey": "fixUcteNodes",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "341f2b82-e5b1-4606-80d5-714996acee37"
             }
           }
@@ -37,7 +37,7 @@
         {
           "messageKey": "fixUcteTransformer",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "8f3fbb49-6b1c-4e34-acb0-22eb2faad5b3"
             }
           }
@@ -45,7 +45,7 @@
         {
           "messageKey": "fixUcteRegulations",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "e31a83ac-485e-482a-84bf-355718c09c6c"
             }
           }
