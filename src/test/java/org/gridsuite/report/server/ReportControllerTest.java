@@ -14,8 +14,8 @@ import com.jayway.jsonpath.Configuration;
 import com.powsybl.commons.report.ReportNode;
 import com.vladmihalcea.sql.SQLStatementCountValidator;
 import lombok.SneakyThrows;
-import org.gridsuite.report.server.entities.TreeReportEntity;
-import org.gridsuite.report.server.repositories.TreeReportRepository;
+import org.gridsuite.report.server.entities.ReportNodeEntity;
+import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +39,6 @@ import java.util.*;
 import static org.gridsuite.report.server.utils.TestUtils.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.Assert.*;
 
@@ -53,17 +52,17 @@ import static org.junit.Assert.*;
 public class ReportControllerTest {
 
     public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION;
-    @Autowired
-    private MockMvc mvc;
 
     @Autowired
-    private TreeReportRepository treeReportRepository;
+    private MockMvc mvc;
 
     @Autowired
     private ReportService reportService;
 
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    private ReportNodeRepository reportNodeRepository;
 
     @Before
     public void setUp() {
@@ -84,14 +83,10 @@ public class ReportControllerTest {
     private static final String REPORT_TWO = "/reportTwo.json";
     private static final String REPORT_CONCAT = "/reportConcat.json";
     private static final String REPORT_CONCAT2 = "/reportConcat2.json";
-    private static final String EXPECTED_SINGLE_REPORT = "/expectedSingleReport.json";
-    private static final String EXPECTED_STRUCTURE_ONLY_REPORT1 = "/expectedStructureOnlyReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1 = "/expectedStructureAndElementsReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS = "/expectedStructureAndElementsReportOneWithOnlyErrors.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS = "/expectedStructureAndElementsReportOneWithOnlyInfos.json";
-    private static final String EXPECTED_STRUCTURE_AND_NO_REPORT_ELEMENT = "/expectedStructureAndNoElementReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1 = "/expectedReporterAndElements.json";
-    private static final String EXPECTED_STRUCTURE_AND_NO_REPORTER_ELEMENT = "/expectedReporterAndNoElement.json";
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
     private static final String REPORT_LOADFLOW = "/reportLoadflow.json";
@@ -112,7 +107,7 @@ public class ReportControllerTest {
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andReturn();
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_SINGLE_REPORT));
+        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
 
         insertReport(REPORT_UUID, toString(REPORT_TWO));
 
@@ -132,20 +127,17 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetReport() throws Exception {
+    public void testGetReportWithNoSeverityFilters() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        // expect 6 batched inserts of different tables and no updates
-        assertRequestsCount(2, 6, 0, 0);
         SQLStatementCountValidator.reset();
-
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andReturn();
 
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_ONLY_REPORT1));
-        assertRequestsCount(4, 0, 0, 0);
+        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
+        assertRequestsCount(3, 0, 0, 0);
     }
 
     @Test
@@ -160,7 +152,7 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(4, 0, 0, 0);
+        assertRequestsCount(3, 0, 0, 0);
     }
 
     @Test
@@ -175,7 +167,7 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(4, 0, 0, 0);
+        assertRequestsCount(3, 0, 0, 0);
     }
 
     @Test
@@ -190,7 +182,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
-        assertRequestsCount(2, 0, 0, 0);
+        assertRequestsCount(3, 0, 0, 0);
     }
 
     @Test
@@ -205,7 +197,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(4, 0, 0, 0);
+        assertRequestsCount(3, 0, 0, 0);
     }
 
     @Test
@@ -221,21 +213,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetReportWithNoSeverityFilters() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        SQLStatementCountValidator.reset();
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_NO_REPORT_ELEMENT));
-        assertRequestsCount(4, 0, 0, 0);
+        assertRequestsCount(3, 0, 0, 0);
     }
 
     @Test
@@ -244,12 +222,12 @@ public class ReportControllerTest {
         insertReport(REPORT_UUID, testReport1);
 
         SQLStatementCountValidator.reset();
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=ERROR"))
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS));
-        assertRequestsCount(4, 0, 0, 0);
+        assertRequestsCount(3, 0, 0, 0);
     }
 
     @Test
@@ -258,12 +236,12 @@ public class ReportControllerTest {
         insertReport(REPORT_UUID, testReport1);
 
         SQLStatementCountValidator.reset();
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withElements=true&severityLevels=INFO"))
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO"))
             .andExpect(status().isOk())
             .andReturn();
 
         assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS));
-        assertRequestsCount(4, 0, 0, 0);
+        assertRequestsCount(3, 0, 0, 0);
     }
 
     @Test
@@ -271,9 +249,9 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        List<TreeReportEntity> reporters = treeReportRepository.findByName("UcteReading");
+        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessageKey("UcteReading");
         assertEquals(1, reporters.size());
-        String uuidReporter = reporters.get(0).getIdNode().toString();
+        String uuidReporter = reporters.get(0).getId().toString();
 
         SQLStatementCountValidator.reset();
 
@@ -290,9 +268,9 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        List<TreeReportEntity> reporters = treeReportRepository.findByName("UcteReading");
+        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessageKey("UcteReading");
         assertEquals(1, reporters.size());
-        String uuidReporter = reporters.get(0).getIdNode().toString();
+        String uuidReporter = reporters.get(0).getId().toString();
 
         SQLStatementCountValidator.reset();
 
@@ -300,7 +278,7 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_NO_REPORTER_ELEMENT));
+        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
         assertRequestsCount(3, 0, 0, 0);
     }
 
@@ -324,21 +302,21 @@ public class ReportControllerTest {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
 
-        // Expect 5 batched inserts only and no updates
-        assertRequestsCount(2, 5, 0, 0);
-
         Map<UUID, String> reportsKeys = new HashMap<>();
         reportsKeys.put(UUID.fromString(REPORT_UUID), "LoadFlow");
 
+        SQLStatementCountValidator.reset();
         mvc.perform(delete(URL_TEMPLATE + "/treereports")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reportsKeys)))
             .andExpect(status().isOk())
             .andReturn();
+        assertRequestsCount(1, 0, 0, 0);
 
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
-            .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
+            .andReturn();
+        assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
     }
 
     @Test
@@ -350,18 +328,17 @@ public class ReportControllerTest {
         reportsKeys.put(UUID.fromString(REPORT_UUID), reportType);
 
         SQLStatementCountValidator.reset();
-
         mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=" + reportType)
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reportsKeys)))
                 .andExpect(status().isOk())
                 .andReturn();
+        assertRequestsCount(2, 0, 0, 0);
 
-        assertRequestsCount(3, 0, 0, 8);
-
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
-                .andExpect(status().isOk())
-                .andExpect(content().json(toString(DEFAULT_EMPTY_REPORT1)));
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+            .andExpect(status().isOk())
+            .andReturn();
+        assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
     }
 
     @Test
@@ -373,15 +350,13 @@ public class ReportControllerTest {
         reportsKeys.put(UUID.fromString(REPORT_UUID), reportType);
 
         SQLStatementCountValidator.reset();
-
         mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=noMatchingFilter")
                         .contentType(APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(reportsKeys)))
                 .andExpect(status().isOk())
                 .andReturn();
-
         // no deletion here
-        assertRequestsCount(1, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
 
         mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
                 .andExpect(status().isOk());
