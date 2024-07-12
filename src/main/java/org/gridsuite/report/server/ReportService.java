@@ -45,6 +45,7 @@ public class ReportService {
 
     private final ReportNodeRepository reportNodeRepository;
 
+
     public enum ReportNameMatchingType {
         EXACT_MATCHING, ENDS_WITH
     }

@@ -48,7 +48,7 @@ public final class TestUtils {
             TypedValue expectedValue = expectedNode.getValues().getOrDefault(actualNodeEntry.getKey(), null);
             assertNotNull(expectedValue);
             assertEquals(expectedValue.getType(), actualNodeEntry.getValue().getType());
-            if (actualNodeEntry.getKey().equals("id")) {
+            if (actualNodeEntry.getKey().equals("subReportId")) {
                 continue;
             }
             if (actualNodeEntry.getKey().equals(ReportService.SEVERITY_LIST_KEY)) {

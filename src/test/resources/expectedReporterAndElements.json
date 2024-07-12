@@ -8,7 +8,7 @@
           "value": "[]",
           "type": "SEVERITY"
         },
-        "id": {
+        "subReportId": {
           "value": "593a8546-bc05-4b53-b8d9-a2caf0e2f0f8",
           "type": "ID"
         }
@@ -21,7 +21,7 @@
               "value": "[ERROR]",
               "type": "SEVERITY"
             },
-            "id": {
+            "subReportId": {
               "value": "641a7c9b-5ed3-47bd-9d58-6a248a1d7621",
               "type": "ID"
             }
@@ -96,7 +96,7 @@
         {
           "messageKey": "fixUcteNodes",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "8345715b-127a-4922-a84c-fdab7a0433ef",
               "type": "ID"
             }
@@ -105,7 +105,7 @@
         {
           "messageKey": "fixUcteTransformer",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "789de7bc-6228-4798-aaca-19e701548f53",
               "type": "ID"
             }
@@ -114,7 +114,7 @@
         {
           "messageKey": "fixUcteRegulations",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "c5798b8c-a1cc-4be7-ba45-e938c1c130a4",
               "type": "ID"
             }

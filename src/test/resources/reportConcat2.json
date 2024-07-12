@@ -4,7 +4,7 @@
     "reportRoot": {
       "messageKey": "roundTripReporterJsonTest",
       "values": {
-        "id": {
+        "subReportId": {
           "value": "e55e7e35-5294-47d8-99ba-7b8ddd9d38c1",
           "type": "ID"
         },
@@ -17,7 +17,7 @@
         {
           "messageKey": "UcteReading",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "b0c152d7-8334-4682-9ac2-fe4a6c81b804",
               "type": "ID"
             },
@@ -30,7 +30,7 @@
             {
               "messageKey": "fixUcteLines",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "911db7c1-6a1f-4804-afd8-e513f6e8ef25",
                   "type": "ID"
                 },
@@ -109,7 +109,7 @@
             {
               "messageKey": "fixUcteNodes",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "3553e349-c95d-4a07-ade5-edc76b634d2e",
                   "type": "ID"
                 }
@@ -118,7 +118,7 @@
             {
               "messageKey": "fixUcteTransformer",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "2e6fa2e1-ef8e-48ea-ab64-65326325f005",
                   "type": "ID"
                 }
@@ -127,7 +127,7 @@
             {
               "messageKey": "fixUcteRegulations",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "0b43631c-bd6c-4778-9c4a-5b262523cdf8",
                   "type": "ID"
                 }
@@ -138,7 +138,7 @@
         {
           "messageKey": "createBuses",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "d0b237a7-01e2-4726-890a-2952f1f81696",
               "type": "ID"
             },
@@ -154,7 +154,7 @@
                 "substation": {
                   "value": "FFFFFF"
                 },
-                "id": {
+                "subReportId": {
                   "value": "48941d15-9871-4e13-91d3-4295baead280",
                   "type": "ID"
                 },
@@ -221,7 +221,7 @@
         {
           "messageKey": "createLines",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "952e1cdc-3960-4af8-838f-2b669c8ba8e1",
               "type": "ID"
             },
@@ -342,7 +342,7 @@
     "reportRoot": {
       "messageKey": "testImport",
       "values": {
-        "id": {
+        "subReportId": {
           "value": "1a0eb81e-7c47-4d44-adf3-2556a5a00f74",
           "type": "ID"
         },
@@ -364,7 +364,7 @@
         {
           "messageKey": "testNewValue",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "e9950a73-c36d-4880-8eec-a36a1a7ac86a",
               "type": "ID"
             },
@@ -377,7 +377,7 @@
             {
               "messageKey": "fixUcteNodes",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "9e015a70-62c4-432a-bc1b-404a760d7bd8",
                   "type": "ID"
                 }
@@ -416,7 +416,7 @@
     "reportRoot": {
       "messageKey": "roundTripReporterJsonTest",
       "values": {
-        "id": {
+        "subReportId": {
           "value": "17f35628-3fdf-48b1-b841-60d4b4a8ce6c",
           "type": "ID"
         },
@@ -429,7 +429,7 @@
         {
           "messageKey": "UcteReading",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "97379263-2c9c-4a38-a1ad-9ac0927fdd44",
               "type": "ID"
             },
@@ -442,7 +442,7 @@
             {
               "messageKey": "fixUcteLines",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "c93f416b-3288-4558-9e05-abf701bed83f",
                   "type": "ID"
                 },
@@ -521,7 +521,7 @@
             {
               "messageKey": "fixUcteNodes",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "9f06de15-3020-4b40-ac77-b56110c146b6",
                   "type": "ID"
                 }
@@ -530,7 +530,7 @@
             {
               "messageKey": "fixUcteTransformer",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "d1dcce24-5564-43e1-acfd-df8cda9b366f",
                   "type": "ID"
                 }
@@ -539,7 +539,7 @@
             {
               "messageKey": "fixUcteRegulations",
               "values": {
-                "id": {
+                "subReportId": {
                   "value": "c3e32f36-9335-4da0-a4da-333f23f7bef0",
                   "type": "ID"
                 }
@@ -550,7 +550,7 @@
         {
           "messageKey": "createBuses",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "1df921e9-e9e4-4533-b7d1-975999cf4128",
               "type": "ID"
             },
@@ -566,7 +566,7 @@
                 "substation": {
                   "value": "FFFFFF"
                 },
-                "id": {
+                "subReportId": {
                   "value": "7e89cabe-fd7e-42aa-a19e-9a9fc711143d",
                   "type": "ID"
                 },
@@ -633,7 +633,7 @@
         {
           "messageKey": "createLines",
           "values": {
-            "id": {
+            "subReportId": {
               "value": "eaa0c975-6250-4c70-8602-51635889ef45",
               "type": "ID"
             },
