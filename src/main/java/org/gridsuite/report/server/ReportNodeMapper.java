@@ -21,6 +21,8 @@ import java.util.function.Predicate;
  */
 public final class ReportNodeMapper {
 
+    private static final String SUB_REPORT_ID = "subReportId";
+
     private ReportNodeMapper() {
         // Should not be instantiated
     }
@@ -86,7 +88,7 @@ public final class ReportNodeMapper {
             addTypedValue(valueEntity, adderOrBuilder);
         }
         if (hasNoReportSeverity(rootReportNodeEntity)) {
-            adderOrBuilder.withTypedValue("id", rootReportNodeEntity.getId().toString(), "ID");
+            adderOrBuilder.withTypedValue(SUB_REPORT_ID, rootReportNodeEntity.getId().toString(), "ID");
             if (!rootReportNodeEntity.getChildren().isEmpty()) {
                 adderOrBuilder.withTypedValue(ReportService.SEVERITY_LIST_KEY, rootReportNodeEntity.getSeverities().toString(), TypedValue.SEVERITY);
             }
