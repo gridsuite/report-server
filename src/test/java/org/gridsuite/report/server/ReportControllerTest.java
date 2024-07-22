@@ -11,7 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.Configuration;
-import com.powsybl.commons.report.ReportNode;
+import com.powsybl.commons.report.ReportNodeImpl;
 import com.vladmihalcea.sql.SQLStatementCountValidator;
 import lombok.SneakyThrows;
 import org.gridsuite.report.server.entities.TreeReportEntity;
@@ -34,14 +34,20 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
-import static org.gridsuite.report.server.utils.TestUtils.*;
+import static org.gridsuite.report.server.utils.TestUtils.assertRequestsCount;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.junit.Assert.*;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -316,7 +322,6 @@ public class ReportControllerTest {
             .andExpect(status().isOk())
             .andReturn();
         assertReportListsAreEqualIgnoringIds(result2, toString(DEFAULT_EMPTY_REPORT2));
-
     }
 
     @Test
@@ -402,8 +407,8 @@ public class ReportControllerTest {
     }
 
     private void assertReportListsAreEqualIgnoringIds(MvcResult result, String expectedContent) throws JsonProcessingException, UnsupportedEncodingException {
-        List<ReportNode> expectedReportNodeList = objectMapper.readValue(expectedContent, new TypeReference<>() { });
-        List<ReportNode> actualReportNodeList = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() { });
+        List<ReportNodeImpl> expectedReportNodeList = objectMapper.readValue(expectedContent, new TypeReference<>() { });
+        List<ReportNodeImpl> actualReportNodeList = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() { });
         TestUtils.assertReportListsAreEqualIgnoringIds(expectedReportNodeList, actualReportNodeList);
     }
 }

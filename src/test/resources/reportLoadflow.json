@@ -1,5 +1,12 @@
 {
-  "version": "2.0",
+  "version": "2.1",
+  "dictionaries": {
+    "default": {
+      "LoadFlow": "LoadFlow",
+      "randomSubReport": "randomSubReport",
+      "randomReport": "randomReport"
+    }
+  },
   "reportRoot":
     {
     "messageKey": "LoadFlow",
@@ -31,12 +38,5 @@
         ]
       }
     ]
-  },
-  "dictionaries": {
-    "default": {
-      "LoadFlow": "LoadFlow",
-      "randomSubReport": "randomSubReport",
-      "randomReport": "randomReport"
-    }
   }
 }

@@ -7,17 +7,25 @@
 package org.gridsuite.report.server;
 
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.commons.report.ReportNodeImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +49,7 @@ public class ReportController {
     @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    public ResponseEntity<List<ReportNode>> getReport(@PathVariable("id") UUID id,
+    public ResponseEntity<List<ReportNodeImpl>> getReport(@PathVariable("id") UUID id,
                                                       @Parameter(description = "Filter on a the report name. If provided, will only return elements matching this given name.") @RequestParam(name = "reportNameFilter", required = false, defaultValue = "") String reportNameFilter,
                                                       @Parameter(description = "Kind of matching filter to apply to the report name.") @RequestParam(name = "reportNameMatchingType", required = false) ReportService.ReportNameMatchingType reportNameMatchingType,
                                                       @Parameter(description = "Filter on severity levels. Will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
@@ -49,10 +57,10 @@ public class ReportController {
         try {
             List<ReportNode> subReporters = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType).getChildren();
             return subReporters.isEmpty() ?
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren()) :
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(subReporters);
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren().stream().map(r -> (ReportNodeImpl) r).toList()) :
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(subReporters.stream().map(r -> (ReportNodeImpl) r).toList());
         } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren());
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren().stream().map(r -> (ReportNodeImpl) r).toList());
         }
     }
 
@@ -60,13 +68,12 @@ public class ReportController {
     @Operation(summary = "Get the elements of a reporter and its subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
-    public ResponseEntity<List<ReportNode>> getSubReport(@PathVariable("id") UUID id,
+    public ResponseEntity<List<ReportNodeImpl>> getSubReport(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getSubReport(id, severityLevels)
-                            .getChildren());
+                    .body(service.getSubReport(id, severityLevels).getChildren().stream().map(r -> (ReportNodeImpl) r).toList());
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }
@@ -75,8 +82,7 @@ public class ReportController {
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
-    public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNode reportNode) {
-
+    public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNodeImpl reportNode) {
         service.createReport(id, reportNode);
     }
 

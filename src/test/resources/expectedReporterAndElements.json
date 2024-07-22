@@ -1,6 +1,17 @@
 [
   {
-    "version": "2.0",
+    "version": "2.1",
+    "dictionaries": {
+      "default": {
+        "593a8546-bc05-4b53-b8d9-a2caf0e2f0f8": "593a8546-bc05-4b53-b8d9-a2caf0e2f0f8",
+        "UcteReading": "Reading UCTE network file",
+        "fixUcteLines": "Fix UCTE lines",
+        "fixUcteNodes": "Fix UCTE nodes",
+        "fixUcteRegulations": "Fix UCTE regulations",
+        "fixUcteTransformer": "Fix UCTE transformers",
+        "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)"
+      }
+    },
     "reportRoot": {
       "messageKey": "UcteReading",
       "values": {
@@ -116,18 +127,7 @@
             }
           }
         }
-      ],
-      "dictionaries": {
-        "default": {
-          "593a8546-bc05-4b53-b8d9-a2caf0e2f0f8": "593a8546-bc05-4b53-b8d9-a2caf0e2f0f8",
-          "UcteReading": "Reading UCTE network file",
-          "fixUcteLines": "Fix UCTE lines",
-          "fixUcteNodes": "Fix UCTE nodes",
-          "fixUcteRegulations": "Fix UCTE regulations",
-          "fixUcteTransformer": "Fix UCTE transformers",
-          "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)"
-        }
-      }
+      ]
     }
   }
 ]
