@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.gridsuite.report.server.Severity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,5 +48,11 @@ public class Report {
         reportChild.setMessage(message);
         subReports.add(reportChild);
         return reportChild;
+    }
+
+    public Report addEmptyReport() {
+        Report subReport = new Report();
+        subReports.add(subReport);
+        return subReport;
     }
 }

@@ -12,7 +12,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.report.server.dto.Report;
-import org.gridsuite.report.server.dto.Severity;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.ReportValueEmbeddable;
@@ -51,21 +50,6 @@ public class ReportService {
     private static final String SEVERITY_LIST_VALUE_NAME = "severityList";
     private static final String REPORT_SEVERITY_VALUE_NAME = "reportSeverity";
 
-    /**
-     * @see TypedValue
-     */
-    public enum SeverityLevel {
-        UNKNOWN, TRACE, DEBUG, INFO, WARN, ERROR, FATAL;
-
-        public static SeverityLevel fromValue(String value) {
-            try {
-                return valueOf(value);
-            } catch (final IllegalArgumentException | NullPointerException e) {
-                return UNKNOWN;
-            }
-        }
-    }
-
     public enum ReportNameMatchingType {
         EXACT_MATCHING, ENDS_WITH
     }
@@ -87,14 +71,12 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public ReportNode getReport(UUID reportId, @Nullable Set<String> severityLevels, String reportNameFilter, @Nullable ReportNameMatchingType reportNameMatchingType) {
+    public List<Report> getReport(UUID reportId, @Nullable Set<String> severityLevels, String reportNameFilter, @Nullable ReportNameMatchingType reportNameMatchingType) {
         Objects.requireNonNull(reportId);
         ReportEntity reportEntity = reportRepository.findById(reportId).orElseThrow(EntityNotFoundException::new);
 
-        var rootReportNode = ReportNode.newRootReportNode()
-                .withMessageTemplate(reportId.toString(), reportId.toString())
-                .build();
-
+        // When matching is ENDS_WITH, we may have N modification node reports to collect: the node itself (reportId) and
+        // all its un-built parents (until the next built one). This is why we manage a list below.
         List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByReportIdOrderByNanos(reportEntity.getId())
             .stream()
                 .filter(tre -> StringUtils.isBlank(reportNameFilter)
@@ -102,9 +84,13 @@ public class ReportService {
                         || reportNameMatchingType == ReportNameMatchingType.EXACT_MATCHING && tre.getName().equals(reportNameFilter)
                         || reportNameMatchingType == ReportNameMatchingType.ENDS_WITH && tre.getName().endsWith(reportNameFilter)).toList();
 
-        //treeReportEntities.forEach(treeReportEntity -> addSubReportNode(rootReportNode, treeReportEntity, severityLevels));
-
-        return rootReportNode;
+        Report reportContainer = new Report();
+        treeReportEntities.forEach(treeReportEntity -> {
+            // Create a Report for each TreeReportEntity found
+            Report nodeReport = reportContainer.addEmptyReport();
+            addSubReportNode(nodeReport, treeReportEntity, severityLevels);
+        });
+        return reportContainer.getSubReports();
     }
 
     @Transactional(readOnly = true)
@@ -137,13 +123,13 @@ public class ReportService {
     }
 
     private Severity getElementSeverity(final ReportElementEntity reportElement) {
-        String severityValue = reportElement.getValues()
+        return reportElement.getValues()
                 .stream()
                 .filter(v -> v.getName().equalsIgnoreCase(REPORT_SEVERITY_VALUE_NAME))
                 .findFirst()
                 .map(ReportValueEmbeddable::getValue)
+                .map(Severity::fromValue)
                 .orElse(null);
-        return Severity.fromValue(severityValue);
     }
 
     private List<Severity> getReportSeverityList(final TreeReportEntity treeReport) {
@@ -152,7 +138,7 @@ public class ReportService {
                 .filter(v -> v.getName().equalsIgnoreCase(SEVERITY_LIST_VALUE_NAME) && v.getValue() != null && v.getValue().startsWith("[") && v.getValue().endsWith("]"))
                 .findFirst()
                 .map(v -> {
-                    // convert "[INFO, WARN]" string into² List.of(INFO, WARN)
+                    // convert "[INFO, WARN]" string into List.of(INFO, WARN)
                     List<String> values = Arrays.asList(v.getValue().substring(1, v.getValue().length() - 1).split(","));
                     return values.stream().map(String::trim).filter(s -> !s.isEmpty()).map(Severity::fromValue).toList();
                 })
@@ -191,8 +177,14 @@ public class ReportService {
             for (final ReportElementEntity entity : allReportElements) {
                 final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReport().getIdNode());
                 Report report = treeReportIdToReportNodes.get(entity.getParentReport().getIdNode());
-                // add a sub-report for each report element
-                report.addReportElement(getElementSeverity(entity), dict.get(entity.getName()));
+                String message = dict.get(entity.getName()); // TODO should build a full message here
+                if (entity.getValues().isEmpty()) {
+                    // reports without values are considered as subreports
+                    report.addReportChild(entity.getIdReport(), List.of(), message);
+                } else {
+                    // add a leaf sub-report for each report element
+                    report.addReportElement(getElementSeverity(entity), message);
+                }
             }
         }
     }
@@ -203,7 +195,7 @@ public class ReportService {
             return;
         }
         children.forEach(childEntity -> {
-            String childMessage = childEntity.getDictionary().get(childEntity.getName());
+            String childMessage = childEntity.getDictionary().get(childEntity.getName()); // TODO should build a full message here
             Report childReport = parentNode.addReportChild(childEntity.getIdNode(), getReportSeverityList(childEntity), childMessage);
             treeReportIdToReportNodes.put(childEntity.getIdNode(), childReport);
             if (reportNodeIdToChildren.containsKey(childEntity.getIdNode())) {
@@ -212,16 +204,10 @@ public class ReportService {
         });
     }
 
-    public ReportNode getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
-        ReportNode reportNode = ReportNode.newRootReportNode()
-                .withMessageTemplate(id.toString(), id.toString())
-                .build();
-
-        reportNode.newReportNode()
-                .withMessageTemplate(defaultName, defaultName)
-                .add();
-
-        return reportNode;
+    public Report getEmptyReport(@NonNull String defaultName) {
+        Report emptyReport = new Report();
+        emptyReport.setMessage(defaultName);
+        return emptyReport;
     }
 
     private ReportEntity toEntity(UUID id, ReportNode reportElement) {
@@ -263,7 +249,7 @@ public class ReportService {
                 .stream()
                 .filter(report -> report.getChildren().isEmpty() && !report.getValues().isEmpty()) // reports without values are considered as subreports so we don't want them in the severity list
                 .map(report -> report.getValues().get(REPORT_SEVERITY_VALUE_NAME))
-                .map(severity -> severity == null ? SeverityLevel.UNKNOWN.toString() : SeverityLevel.fromValue(Objects.toString(severity.getValue())).toString())
+                .map(severity -> severity == null ? Severity.UNKNOWN.toString() : Severity.fromValue(Objects.toString(severity.getValue())).toString())
                 .distinct().toList();
     }
 

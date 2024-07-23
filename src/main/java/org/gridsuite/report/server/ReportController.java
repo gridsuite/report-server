@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.persistence.EntityNotFoundException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,18 +43,18 @@ public class ReportController {
     @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
         @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    public ResponseEntity<List<ReportNode>> getReport(@PathVariable("id") UUID id,
-                                                      @Parameter(description = "Filter on a the report name. If provided, will only return elements matching this given name.") @RequestParam(name = "reportNameFilter", required = false, defaultValue = "") String reportNameFilter,
-                                                      @Parameter(description = "Kind of matching filter to apply to the report name.") @RequestParam(name = "reportNameMatchingType", required = false) ReportService.ReportNameMatchingType reportNameMatchingType,
-                                                      @Parameter(description = "Filter on severity levels. Will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
-                                                      @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+    public ResponseEntity<List<Report>> getReport(@PathVariable("id") UUID id,
+                                                  @Parameter(description = "Filter on a the report name. If provided, will only return elements matching this given name.") @RequestParam(name = "reportNameFilter", required = false, defaultValue = "") String reportNameFilter,
+                                                  @Parameter(description = "Kind of matching filter to apply to the report name.") @RequestParam(name = "reportNameMatchingType", required = false) ReportService.ReportNameMatchingType reportNameMatchingType,
+                                                  @Parameter(description = "Filter on severity levels. Will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
+                                                  @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
-            List<ReportNode> subReporters = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType).getChildren();
-            return subReporters.isEmpty() ?
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren()) :
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(subReporters);
+            List<Report> reports = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType);
+            return reports.isEmpty() ?
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(defaultName))) :
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(reports);
         } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren());
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(defaultName)));
         }
     }
 
@@ -62,7 +63,7 @@ public class ReportController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
     public ResponseEntity<Report> getSubReport(@PathVariable("id") UUID id,
-                                                  @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
+                                               @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
