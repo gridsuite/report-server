@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.gridsuite.report.server.dto.Report;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -60,13 +61,12 @@ public class ReportController {
     @Operation(summary = "Get the elements of a reporter and its subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
-    public ResponseEntity<List<ReportNode>> getSubReport(@PathVariable("id") UUID id,
-                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
+    public ResponseEntity<Report> getSubReport(@PathVariable("id") UUID id,
+                                                  @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getSubReport(id, severityLevels)
-                            .getChildren());
+                    .body(service.getSubReport(id, severityLevels));
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }

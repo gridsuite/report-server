@@ -11,6 +11,8 @@ import com.powsybl.commons.report.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
+import org.gridsuite.report.server.dto.Report;
+import org.gridsuite.report.server.dto.Severity;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.ReportValueEmbeddable;
@@ -46,7 +48,8 @@ public class ReportService {
     // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
     private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
 
-    private static final String SUB_REPORT_ID = "subReportId";
+    private static final String SEVERITY_LIST_VALUE_NAME = "severityList";
+    private static final String REPORT_SEVERITY_VALUE_NAME = "reportSeverity";
 
     /**
      * @see TypedValue
@@ -83,16 +86,6 @@ public class ReportService {
         this.reportElementRepository = reportElementRepository;
     }
 
-    private static void addTypedValue(ReportValueEmbeddable value, ReportNodeAdderOrBuilder<ReportNodeAdder> adder) {
-        switch (value.getValueType()) {
-            case DOUBLE: adder.withTypedValue(value.getName(), Double.valueOf(value.getValue()), value.getType());
-                break;
-            case INTEGER: adder.withTypedValue(value.getName(), Integer.valueOf(value.getValue()), value.getType());
-                break;
-            default: adder.withTypedValue(value.getName(), value.getValue(), value.getType());
-        }
-    }
-
     @Transactional(readOnly = true)
     public ReportNode getReport(UUID reportId, @Nullable Set<String> severityLevels, String reportNameFilter, @Nullable ReportNameMatchingType reportNameMatchingType) {
         Objects.requireNonNull(reportId);
@@ -109,26 +102,21 @@ public class ReportService {
                         || reportNameMatchingType == ReportNameMatchingType.EXACT_MATCHING && tre.getName().equals(reportNameFilter)
                         || reportNameMatchingType == ReportNameMatchingType.ENDS_WITH && tre.getName().endsWith(reportNameFilter)).toList();
 
-        treeReportEntities.forEach(treeReportEntity -> addSubReportNode(rootReportNode, treeReportEntity, severityLevels));
+        //treeReportEntities.forEach(treeReportEntity -> addSubReportNode(rootReportNode, treeReportEntity, severityLevels));
 
         return rootReportNode;
     }
 
     @Transactional(readOnly = true)
-    public ReportNode getSubReport(UUID reporterId, Set<String> severityLevels) {
+    public Report getSubReport(UUID reporterId, Set<String> severityLevels) {
         Objects.requireNonNull(reporterId);
         TreeReportEntity treeReportEntity = treeReportRepository.findById(reporterId).orElseThrow(EntityNotFoundException::new);
-
-        ReportNode report = ReportNode.newRootReportNode()
-                .withMessageTemplate(treeReportEntity.getIdNode().toString(), treeReportEntity.getIdNode().toString())
-                .build();
-
+        Report report = new Report();
         addSubReportNode(report, treeReportEntity, severityLevels);
-
         return report;
     }
 
-    private void addSubReportNode(ReportNode rootReportNdoe, TreeReportEntity subTreeReport, @Nullable Set<String> severityLevels) {
+    private void addSubReportNode(Report rootReportNode, TreeReportEntity subTreeReport, @Nullable Set<String> severityLevels) {
         // Let's find all the treeReportEntities ids that inherit from the parent treeReportEntity
         final List<UUID> treeReportEntitiesIds = treeReportRepository.findAllTreeReportIdsRecursivelyByParentTreeReport(subTreeReport.getIdNode())
                 .stream()
@@ -145,16 +133,39 @@ public class ReportService {
         List<TreeReportEntity> treeReportEntities = treeReportRepository.findAllByIdNodeInOrderByNanos(treeReportEntitiesIds);
 
         // Now we can rebuild the tree
-        addSubReportNode(rootReportNdoe, subTreeReport, treeReportEntities, allReportElements);
+        rebuildReportTree(rootReportNode, subTreeReport, treeReportEntities, allReportElements);
     }
 
-    private void addSubReportNode(final ReportNode rootReportNode, final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
+    private Severity getElementSeverity(final ReportElementEntity reportElement) {
+        String severityValue = reportElement.getValues()
+                .stream()
+                .filter(v -> v.getName().equalsIgnoreCase(REPORT_SEVERITY_VALUE_NAME))
+                .findFirst()
+                .map(ReportValueEmbeddable::getValue)
+                .orElse(null);
+        return Severity.fromValue(severityValue);
+    }
+
+    private List<Severity> getReportSeverityList(final TreeReportEntity treeReport) {
+        return treeReport.getValues()
+                .stream()
+                .filter(v -> v.getName().equalsIgnoreCase(SEVERITY_LIST_VALUE_NAME) && v.getValue() != null && v.getValue().startsWith("[") && v.getValue().endsWith("]"))
+                .findFirst()
+                .map(v -> {
+                    // convert "[INFO, WARN]" string into² List.of(INFO, WARN)
+                    List<String> values = Arrays.asList(v.getValue().substring(1, v.getValue().length() - 1).split(","));
+                    return values.stream().map(String::trim).filter(s -> !s.isEmpty()).map(Severity::fromValue).toList();
+                })
+                .orElse(null);
+    }
+
+    private void rebuildReportTree(final Report rootReportNode, final TreeReportEntity rootTreeReportEntity, final List<TreeReportEntity> allTreeReports,
                              @Nullable final List<ReportElementEntity> allReportElements) {
         // We convert our entities to PowSyBl Reporter
         Map<UUID, Map<String, String>> treeReportEntityDictionaries = new HashMap<>(allTreeReports.size());
 
         Map<UUID, List<TreeReportEntity>> reportNodeIdToChildTreeReports = new HashMap<>(allTreeReports.size());
-        Map<UUID, ReportNode> treeReportIdToReportNodes = new HashMap<>(allTreeReports.size());
+        Map<UUID, Report> treeReportIdToReportNodes = new HashMap<>(allTreeReports.size());
 
         for (final TreeReportEntity treeReportEntity : allTreeReports) {
             TreeReportEntity parentTreeReport = treeReportEntity.getParentReport();
@@ -169,42 +180,34 @@ public class ReportService {
         }
 
         final Map<String, String> rootDictionnary = rootTreeReportEntity.getDictionary();
-        rootTreeReportEntity.getValues().add(new ReportValueEmbeddable(SUB_REPORT_ID, rootTreeReportEntity.getIdNode(), "ID"));
-        ReportNodeAdder reportNodeAdder = rootReportNode.newReportNode()
-                .withMessageTemplate(rootTreeReportEntity.getName(), rootDictionnary.get(rootTreeReportEntity.getName()));
-        rootTreeReportEntity.getValues().forEach(value -> addTypedValue(value, reportNodeAdder));
-        ReportNode subReportNode = reportNodeAdder.add();
-        treeReportIdToReportNodes.put(rootTreeReportEntity.getIdNode(), subReportNode);
+        rootReportNode.setId(rootTreeReportEntity.getIdNode());
+        rootReportNode.setMessage(rootDictionnary.get(rootTreeReportEntity.getName()));
+        rootReportNode.setSubReportsSeverities(getReportSeverityList(rootTreeReportEntity));
+        treeReportIdToReportNodes.put(rootTreeReportEntity.getIdNode(), rootReportNode);
 
-        addChildNodes(subReportNode, rootTreeReportEntity.getIdNode(), reportNodeIdToChildTreeReports, treeReportIdToReportNodes);
+        addChildNodes(rootReportNode, rootTreeReportEntity.getIdNode(), reportNodeIdToChildTreeReports, treeReportIdToReportNodes);
 
         if (allReportElements != null) {
             for (final ReportElementEntity entity : allReportElements) {
                 final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReport().getIdNode());
-                ReportNodeAdder reportElementAdder = treeReportIdToReportNodes.get(entity.getParentReport().getIdNode()).newReportNode().withMessageTemplate(entity.getName(), dict.get(entity.getName()));
-                entity.getValues().forEach(value -> addTypedValue(value, reportElementAdder));
-                // reports without values are considered as subreports
-                if (entity.getValues().isEmpty()) {
-                    reportElementAdder.withUntypedValue(SUB_REPORT_ID, entity.getIdReport().toString());
-                }
-                reportElementAdder.add();
+                Report report = treeReportIdToReportNodes.get(entity.getParentReport().getIdNode());
+                // add a sub-report for each report element
+                report.addReportElement(getElementSeverity(entity), dict.get(entity.getName()));
             }
         }
     }
 
-    private static void addChildNodes(ReportNode parentNode, UUID reportNodeId, Map<UUID, List<TreeReportEntity>> reportNodeIdToChildren, Map<UUID, ReportNode> treeReportIdToReportNodes) {
+    private void addChildNodes(Report parentNode, UUID reportNodeId, Map<UUID, List<TreeReportEntity>> reportNodeIdToChildren, Map<UUID, Report> treeReportIdToReportNodes) {
         List<TreeReportEntity> children = reportNodeIdToChildren.get(reportNodeId);
         if (children == null) {
             return;
         }
         children.forEach(childEntity -> {
-            ReportNodeAdder adder = parentNode.newReportNode().withMessageTemplate(childEntity.getName(), childEntity.getDictionary().get(childEntity.getName()));
-            childEntity.getValues().forEach(value -> addTypedValue(value, adder));
-            adder.withUntypedValue(SUB_REPORT_ID, childEntity.getIdNode().toString());
-            ReportNode childReportNode = adder.add();
-            treeReportIdToReportNodes.put(childEntity.getIdNode(), childReportNode);
+            String childMessage = childEntity.getDictionary().get(childEntity.getName());
+            Report childReport = parentNode.addReportChild(childEntity.getIdNode(), getReportSeverityList(childEntity), childMessage);
+            treeReportIdToReportNodes.put(childEntity.getIdNode(), childReport);
             if (reportNodeIdToChildren.containsKey(childEntity.getIdNode())) {
-                addChildNodes(childReportNode, childEntity.getIdNode(), reportNodeIdToChildren, treeReportIdToReportNodes);
+                addChildNodes(childReport, childEntity.getIdNode(), reportNodeIdToChildren, treeReportIdToReportNodes);
             }
         });
     }
@@ -240,7 +243,7 @@ public class ReportService {
         dict.put(reportNode.getMessageKey(), reportNode.getMessageTemplate());
 
         List<ReportValueEmbeddable> reportValueEmbeddableList = toValueEntityList(reportNode.getValues());
-        reportValueEmbeddableList.add(new ReportValueEmbeddable("severityList", severityList(reportNode), TypedValue.SEVERITY));
+        reportValueEmbeddableList.add(new ReportValueEmbeddable(SEVERITY_LIST_VALUE_NAME, severityList(reportNode), TypedValue.SEVERITY));
 
         TreeReportEntity treeReportEntity = new TreeReportEntity(null, reportNode.getMessageKey(), persistedReport,
                 reportValueEmbeddableList, parentNode, dict,
@@ -259,7 +262,7 @@ public class ReportService {
         return reportNode.getChildren()
                 .stream()
                 .filter(report -> report.getChildren().isEmpty() && !report.getValues().isEmpty()) // reports without values are considered as subreports so we don't want them in the severity list
-                .map(report -> report.getValues().get("reportSeverity"))
+                .map(report -> report.getValues().get(REPORT_SEVERITY_VALUE_NAME))
                 .map(severity -> severity == null ? SeverityLevel.UNKNOWN.toString() : SeverityLevel.fromValue(Objects.toString(severity.getValue())).toString())
                 .distinct().toList();
     }

@@ -1,5 +1,5 @@
 server:
-  port: 5028
+  port: 5098
 
 powsybl-ws:
   database:
