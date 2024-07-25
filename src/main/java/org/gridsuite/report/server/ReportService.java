@@ -11,6 +11,7 @@ import com.powsybl.commons.report.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
@@ -184,12 +185,13 @@ public class ReportService {
             for (final ReportElementEntity entity : allReportElements) {
                 final Map<String, String> dict = treeReportEntityDictionaries.get(entity.getParentReport().getIdNode());
                 Report report = treeReportIdToReportNodes.get(entity.getParentReport().getIdNode());
-                String message = dict.get(entity.getName()); // TODO should build a full message here
+                String messageTemplate = dict.get(entity.getName());
                 if (entity.getValues().isEmpty()) {
                     // reports without values are considered as sub-reports
-                    report.addReportChild(entity.getIdReport(), List.of(), message);
+                    report.addReportChild(entity.getIdReport(), List.of(), messageTemplate);
                 } else {
                     // add a leaf sub-report for each report element
+                    String message = buildMessage(messageTemplate, entity.getValues());
                     report.addReportElement(getElementSeverity(entity), message);
                 }
             }
@@ -202,13 +204,20 @@ public class ReportService {
             return;
         }
         children.forEach(childEntity -> {
-            String childMessage = childEntity.getDictionary().get(childEntity.getName()); // TODO should build a full message here
-            Report childReport = parentNode.addReportChild(childEntity.getIdNode(), getReportSeverityList(childEntity), childMessage);
+            String messageTemplate = childEntity.getDictionary().get(childEntity.getName());
+            String message = buildMessage(messageTemplate, childEntity.getValues());
+            Report childReport = parentNode.addReportChild(childEntity.getIdNode(), getReportSeverityList(childEntity), message);
             treeReportIdToReportNodes.put(childEntity.getIdNode(), childReport);
             if (reportNodeIdToChildren.containsKey(childEntity.getIdNode())) {
                 addChildNodes(childReport, childEntity.getIdNode(), reportNodeIdToChildren, treeReportIdToReportNodes);
             }
         });
+    }
+
+    private String buildMessage(final String messageTemplate, final List<ReportValueEmbeddable> values) {
+        Map<String, String> parameters = values.stream().collect(Collectors.toMap(ReportValueEmbeddable::getName, ReportValueEmbeddable::getValue, (v1, v2) -> v1));
+        StringSubstitutor sub = new StringSubstitutor(parameters);
+        return sub.replace(messageTemplate);
     }
 
     public Report getEmptyReport(@NonNull String defaultName) {
