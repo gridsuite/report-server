@@ -27,7 +27,6 @@ import java.util.UUID;
 @Schema(description = "Report data")
 public class Report {
     private UUID id;
-    private UUID parentId;
     private String message;
     private Severity severity;
     private List<Severity> subReportsSeverities = new ArrayList<>();
@@ -35,7 +34,6 @@ public class Report {
 
     public void addReportElement(final Severity severity, final String message) {
         Report reportElement = new Report();
-        reportElement.setParentId(this.getId());
         reportElement.setSeverity(severity);
         reportElement.setMessage(message);
         subReports.add(reportElement);
