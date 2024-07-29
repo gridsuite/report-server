@@ -1,13 +1,13 @@
 [
   {
-    "version": "2.0",
-    "reportRoot": {
-      "messageKey": "test",
-      "dictionaries": {
-        "default": {
-          "test": "test"
-        }
+    "version": "2.1",
+    "dictionaries": {
+      "default": {
+        "test": "test"
       }
+    },
+    "reportRoot": {
+      "messageKey": "test"
     }
   }
 ]

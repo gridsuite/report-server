@@ -8,6 +8,7 @@
 package org.gridsuite.report.server.utils;
 
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.commons.report.ReportNodeImpl;
 import com.powsybl.commons.report.TypedValue;
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.TreeReportEntity;
@@ -68,7 +69,7 @@ public final class TestUtils {
         }
     }
 
-    public static void assertReportListsAreEqualIgnoringIds(List<ReportNode> expectedNodeList, List<ReportNode> actualNodeList) {
+    public static void assertReportListsAreEqualIgnoringIds(List<ReportNodeImpl> expectedNodeList, List<ReportNodeImpl> actualNodeList) {
         assertEquals(expectedNodeList.size(), actualNodeList.size());
         for (int i = 0; i < expectedNodeList.size(); i++) {
             assertReportsAreEqualIgnoringIds(expectedNodeList.get(i), actualNodeList.get(i));
