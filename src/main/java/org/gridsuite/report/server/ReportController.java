@@ -57,10 +57,10 @@ public class ReportController {
         try {
             List<ReportNode> subReporters = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType).getChildren();
             return subReporters.isEmpty() ?
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren().stream().map(r -> (ReportNodeImpl) r).toList()) :
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(subReporters.stream().map(r -> (ReportNodeImpl) r).toList());
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren().stream().map(ReportNodeImpl.class::cast).toList()) :
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(subReporters.stream().map(ReportNodeImpl.class::cast).toList());
         } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren().stream().map(r -> (ReportNodeImpl) r).toList());
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName).getChildren().stream().map(ReportNodeImpl.class::cast).toList());
         }
     }
 
@@ -73,7 +73,7 @@ public class ReportController {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getSubReport(id, severityLevels).getChildren().stream().map(r -> (ReportNodeImpl) r).toList());
+                    .body(service.getSubReport(id, severityLevels).getChildren().stream().map(ReportNodeImpl.class::cast).toList());
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }
