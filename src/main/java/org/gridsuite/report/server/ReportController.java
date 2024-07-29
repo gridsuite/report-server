@@ -51,10 +51,10 @@ public class ReportController {
         try {
             List<Report> reports = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType);
             return reports.isEmpty() ?
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(defaultName))) :
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(id, defaultName))) :
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(reports);
         } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(defaultName)));
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(id, defaultName)));
         }
     }
 

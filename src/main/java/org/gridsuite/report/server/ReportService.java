@@ -220,8 +220,9 @@ public class ReportService {
         return sub.replace(messageTemplate);
     }
 
-    public Report getEmptyReport(@NonNull String defaultName) {
+    public Report getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
         Report emptyReport = new Report();
+        emptyReport.setId(id);
         emptyReport.setMessage(defaultName);
         return emptyReport;
     }
