@@ -1,6 +1,27 @@
 [
   {
-    "version": "2.0",
+    "version": "2.1",
+    "dictionaries": {
+      "default": {
+        "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+        "UcteReading": "Reading UCTE network file",
+        "createBus": "Create bus ${bus}",
+        "createBuses": "Create buses",
+        "createBusesSubstation": "Create buses for substation ${substation}",
+        "createLines": "Create lines",
+        "createSubstation": "Create substation ${substationName}",
+        "createTransformers": "Create transformers",
+        "createVoltageLevel": "Create voltage level ${voltageLevelName}",
+        "danglingLineCreation": "Create dangling line '${ucteLine}' (Xnode='${xnodeCode}')",
+        "fixUcteLines": "Fix UCTE lines",
+        "fixUcteNodes": "Fix UCTE nodes",
+        "fixUcteRegulations": "Fix UCTE regulations",
+        "fixUcteTransformer": "Fix UCTE transformers",
+        "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)",
+        "novalueReport": "No value report",
+        "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
+      }
+    },
     "reportRoot": {
       "messageKey": "roundTripReporterJsonTest",
       "values": {
@@ -303,28 +324,7 @@
             }
           }
         }
-      ],
-      "dictionaries": {
-        "default": {
-          "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-          "UcteReading": "Reading UCTE network file",
-          "createBus": "Create bus ${bus}",
-          "createBuses": "Create buses",
-          "createBusesSubstation": "Create buses for substation ${substation}",
-          "createLines": "Create lines",
-          "createSubstation": "Create substation ${substationName}",
-          "createTransformers": "Create transformers",
-          "createVoltageLevel": "Create voltage level ${voltageLevelName}",
-          "danglingLineCreation": "Create dangling line '${ucteLine}' (Xnode='${xnodeCode}')",
-          "fixUcteLines": "Fix UCTE lines",
-          "fixUcteNodes": "Fix UCTE nodes",
-          "fixUcteRegulations": "Fix UCTE regulations",
-          "fixUcteTransformer": "Fix UCTE transformers",
-          "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)",
-          "novalueReport": "No value report",
-          "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
-        }
-      }
+      ]
     }
   }
 ]

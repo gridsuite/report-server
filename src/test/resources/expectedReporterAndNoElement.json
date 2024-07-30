@@ -1,6 +1,16 @@
 [
   {
-    "version": "2.0",
+    "version": "2.1",
+    "dictionaries": {
+      "default": {
+        "UcteReading": "Reading UCTE network file",
+        "e8a61121-771c-4da3-990c-6e9f6d1b49de": "e8a61121-771c-4da3-990c-6e9f6d1b49de",
+        "fixUcteLines": "Fix UCTE lines",
+        "fixUcteNodes": "Fix UCTE nodes",
+        "fixUcteRegulations": "Fix UCTE regulations",
+        "fixUcteTransformer": "Fix UCTE transformers"
+      }
+    },
     "reportRoot": {
       "messageKey": "UcteReading",
       "values": {
@@ -50,17 +60,7 @@
             }
           }
         }
-      ],
-      "dictionaries": {
-        "default": {
-          "UcteReading": "Reading UCTE network file",
-          "e8a61121-771c-4da3-990c-6e9f6d1b49de": "e8a61121-771c-4da3-990c-6e9f6d1b49de",
-          "fixUcteLines": "Fix UCTE lines",
-          "fixUcteNodes": "Fix UCTE nodes",
-          "fixUcteRegulations": "Fix UCTE regulations",
-          "fixUcteTransformer": "Fix UCTE transformers"
-        }
-      }
+      ]
     }
   }
 ]

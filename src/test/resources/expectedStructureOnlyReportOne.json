@@ -1,6 +1,20 @@
 [
   {
-    "version": "2.0",
+    "version": "2.1",
+    "dictionaries": {
+      "default": {
+        "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+        "UcteReading": "Reading UCTE network file",
+        "createBuses": "Create buses",
+        "createBusesSubstation": "Create buses for substation ${substation}",
+        "createLines": "Create lines",
+        "fixUcteLines": "Fix UCTE lines",
+        "fixUcteNodes": "Fix UCTE nodes",
+        "fixUcteRegulations": "Fix UCTE regulations",
+        "fixUcteTransformer": "Fix UCTE transformers",
+        "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
+      }
+    },
     "reportRoot": {
       "messageKey": "roundTripReporterJsonTest",
       "values": {
@@ -105,21 +119,7 @@
             }
           }
         }
-      ],
-      "dictionaries": {
-        "default": {
-          "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-          "UcteReading": "Reading UCTE network file",
-          "createBuses": "Create buses",
-          "createBusesSubstation": "Create buses for substation ${substation}",
-          "createLines": "Create lines",
-          "fixUcteLines": "Fix UCTE lines",
-          "fixUcteNodes": "Fix UCTE nodes",
-          "fixUcteRegulations": "Fix UCTE regulations",
-          "fixUcteTransformer": "Fix UCTE transformers",
-          "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
-        }
-      }
+      ]
     }
   }
 ]

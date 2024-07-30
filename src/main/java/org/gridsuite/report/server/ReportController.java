@@ -7,18 +7,18 @@
 package org.gridsuite.report.server;
 
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.commons.report.ReportNodeImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import org.gridsuite.report.server.dto.Report;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 import java.util.Map;
@@ -76,8 +76,7 @@ public class ReportController {
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
-    public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNode reportNode) {
-
+    public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNodeImpl reportNode) {
         service.createReport(id, reportNode);
     }
 
