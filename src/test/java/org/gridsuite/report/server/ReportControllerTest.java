@@ -82,6 +82,7 @@ public class ReportControllerTest {
 
     private static final String REPORT_ONE = "/reportOne.json";
     private static final String REPORT_TWO = "/reportTwo.json";
+    private static final String REPORT_THREE = "/reportThree.json";
     private static final String REPORT_CONCAT = "/reportConcat.json";
     private static final String REPORT_CONCAT2 = "/reportConcat2.json";
     private static final String EXPECTED_SINGLE_REPORT = "/expectedSingleReport.json";
@@ -121,8 +122,8 @@ public class ReportControllerTest {
         testImported(REPORT_UUID, REPORT_CONCAT);
 
         // idem with a 3rd Report
-        insertReport(REPORT_UUID, toString(REPORT_ONE));
-        // TODO testImported(REPORT_UUID, REPORT_CONCAT2);
+        insertReport(REPORT_UUID, toString(REPORT_THREE));
+        testImported(REPORT_UUID, REPORT_CONCAT2);
 
         mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID)).andExpect(status().isOk());
 
