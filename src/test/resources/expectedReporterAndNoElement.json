@@ -1,66 +1,38 @@
-[
-  {
-    "version": "2.1",
-    "dictionaries": {
-      "default": {
-        "UcteReading": "Reading UCTE network file",
-        "e8a61121-771c-4da3-990c-6e9f6d1b49de": "e8a61121-771c-4da3-990c-6e9f6d1b49de",
-        "fixUcteLines": "Fix UCTE lines",
-        "fixUcteNodes": "Fix UCTE nodes",
-        "fixUcteRegulations": "Fix UCTE regulations",
-        "fixUcteTransformer": "Fix UCTE transformers"
-      }
+{
+  "id": "bd958dfe-bccf-4843-a0ef-c8f356af9477",
+  "message": "UcteReading",
+  "severity": null,
+  "subReportsSeverities": [],
+  "subReports": [
+    {
+      "id": "2ef97969-1427-4289-b22d-b9ef679066d1",
+      "message": "Fix UCTE lines",
+      "severity": null,
+      "subReportsSeverities": [
+        "ERROR"
+      ],
+      "subReports": []
     },
-    "reportRoot": {
-      "messageKey": "UcteReading",
-      "values": {
-        "severityList": {
-          "value": "[]",
-          "type": "SEVERITY"
-        },
-        "subReportId": {
-          "value": "e8a61121-771c-4da3-990c-6e9f6d1b49de",
-          "type": "ID"
-        }
-      },
-      "children": [
-        {
-          "messageKey": "fixUcteLines",
-          "values": {
-            "severityList": {
-              "value": "[ERROR]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "3208c766-c386-4f27-8bed-8dee491fed8a"
-            }
-          }
-        },
-        {
-          "messageKey": "fixUcteNodes",
-          "values": {
-            "subReportId": {
-              "value": "341f2b82-e5b1-4606-80d5-714996acee37"
-            }
-          }
-        },
-        {
-          "messageKey": "fixUcteTransformer",
-          "values": {
-            "subReportId": {
-              "value": "8f3fbb49-6b1c-4e34-acb0-22eb2faad5b3"
-            }
-          }
-        },
-        {
-          "messageKey": "fixUcteRegulations",
-          "values": {
-            "subReportId": {
-              "value": "e31a83ac-485e-482a-84bf-355718c09c6c"
-            }
-          }
-        }
-      ]
+    {
+      "id": "2d00066f-083a-40a2-b82e-be86dc6387a7",
+      "message": "Fix UCTE nodes",
+      "severity": null,
+      "subReportsSeverities": [],
+      "subReports": []
+    },
+    {
+      "id": "8344a254-0e95-4fe1-b077-d1d407a3b643",
+      "message": "Fix UCTE transformers",
+      "severity": null,
+      "subReportsSeverities": [],
+      "subReports": []
+    },
+    {
+      "id": "76f3660d-05fa-45e5-92dc-c3f07a08a3b7",
+      "message": "Fix UCTE regulations",
+      "severity": null,
+      "subReportsSeverities": [],
+      "subReports": []
     }
-  }
-]
+  ]
+}

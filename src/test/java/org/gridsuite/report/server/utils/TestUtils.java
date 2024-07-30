@@ -7,11 +7,10 @@
 
 package org.gridsuite.report.server.utils;
 
-import com.powsybl.commons.report.ReportNode;
-import com.powsybl.commons.report.ReportNodeImpl;
-import com.powsybl.commons.report.TypedValue;
+import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.TreeReportEntity;
+import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,6 @@ import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertUpdateCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public final class TestUtils {
 
@@ -50,26 +48,17 @@ public final class TestUtils {
         return entity;
     }
 
-    public static void assertReportsAreEqualIgnoringIds(ReportNode expectedNode, ReportNode actualNode) {
-        assertEquals(expectedNode.getMessageKey(), actualNode.getMessageKey());
-        assertEquals(expectedNode.getMessageTemplate(), actualNode.getMessageTemplate());
-        assertEquals(expectedNode.getValues().size(), actualNode.getValues().size());
-        for (var actualNodeEntry : actualNode.getValues().entrySet()) {
-            TypedValue expectedValue = expectedNode.getValues().getOrDefault(actualNodeEntry.getKey(), null);
-            assertNotNull(expectedValue);
-            assertEquals(expectedValue.getType(), actualNodeEntry.getValue().getType());
-            if (actualNodeEntry.getKey().equals("subReportId")) {
-                continue;
-            }
-            assertEquals(expectedValue.getValue(), actualNodeEntry.getValue().getValue());
-        }
-        assertEquals(expectedNode.getChildren().size(), actualNode.getChildren().size());
-        for (int i = 0; i < expectedNode.getChildren().size(); i++) {
-            assertReportsAreEqualIgnoringIds(expectedNode.getChildren().get(i), actualNode.getChildren().get(i));
+    public static void assertReportsAreEqualIgnoringIds(Report expectedNode, Report actualNode) {
+        assertEquals(expectedNode.getMessage(), actualNode.getMessage());
+        assertEquals(expectedNode.getSeverity(), actualNode.getSeverity());
+        Assertions.assertIterableEquals(expectedNode.getSubReportsSeverities(), actualNode.getSubReportsSeverities());
+        assertEquals(expectedNode.getSubReports().size(), actualNode.getSubReports().size());
+        for (int i = 0; i < expectedNode.getSubReports().size(); i++) {
+            assertReportsAreEqualIgnoringIds(expectedNode.getSubReports().get(i), actualNode.getSubReports().get(i));
         }
     }
 
-    public static void assertReportListsAreEqualIgnoringIds(List<ReportNodeImpl> expectedNodeList, List<ReportNodeImpl> actualNodeList) {
+    public static void assertReportListsAreEqualIgnoringIds(List<Report> expectedNodeList, List<Report> actualNodeList) {
         assertEquals(expectedNodeList.size(), actualNodeList.size());
         for (int i = 0; i < expectedNodeList.size(); i++) {
             assertReportsAreEqualIgnoringIds(expectedNodeList.get(i), actualNodeList.get(i));

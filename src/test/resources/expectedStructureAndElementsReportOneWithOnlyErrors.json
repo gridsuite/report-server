@@ -1,192 +1,103 @@
 [
   {
-    "version": "2.1",
-    "dictionaries": {
-      "default": {
-        "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-        "UcteReading": "Reading UCTE network file",
-        "createBuses": "Create buses",
-        "createBusesSubstation": "Create buses for substation ${substation}",
-        "createLines": "Create lines",
-        "fixUcteLines": "Fix UCTE lines",
-        "fixUcteNodes": "Fix UCTE nodes",
-        "fixUcteRegulations": "Fix UCTE regulations",
-        "fixUcteTransformer": "Fix UCTE transformers",
-        "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)",
-        "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
-      }
-    },
-    "reportRoot": {
-      "messageKey": "roundTripReporterJsonTest",
-      "values": {
-        "severityList": {
-          "value": "[INFO, TRACE]",
-          "type": "SEVERITY"
-        },
-        "subReportId": {
-          "value": "3a165bbd-c845-4742-8915-49ded235bd05",
-          "type": "ID"
-        }
-      },
-      "children": [
-        {
-          "messageKey": "UcteReading",
-          "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "658d5510-d1b8-48ae-8f86-b87228ce7668"
-            }
-          },
-          "children": [
-            {
-              "messageKey": "fixUcteLines",
-              "values": {
-                "severityList": {
-                  "value": "[ERROR]",
-                  "type": "SEVERITY"
-                },
-                "subReportId": {
-                  "value": "1ec670d8-f026-43bf-8f6f-2b3dcee5ac8c"
-                }
+    "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+    "message": "roundTripReporterJsonTest",
+    "severity": null,
+    "subReportsSeverities": [],
+    "subReports": [
+      {
+        "id": "dc4b350a-c769-4d29-a24e-5504c1fed875",
+        "message": "Reading UCTE network file",
+        "severity": null,
+        "subReportsSeverities": [],
+        "subReports": [
+          {
+            "id": "6b355456-ecfb-488a-bd5f-aa1f9967d6dd",
+            "message": "Fix UCTE lines",
+            "severity": null,
+            "subReportsSeverities": [
+              "ERROR"
+            ],
+            "subReports": [
+              {
+                "id": null,
+                "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
+                "severity": "ERROR",
+                "subReportsSeverities": [],
+                "subReports": []
               },
-              "children": [
-                {
-                  "messageKey": "negativeLineResistance",
-                  "values": {
-                    "reportSeverity": {
-                      "value": "ERROR",
-                      "type": "SEVERITY"
-                    },
-                    "lineId": {
-                      "value": "FFFFFF11 XXXXXX11 1"
-                    },
-                    "resistance": {
-                      "value": 0,
-                      "type": "RESISTANCE"
-                    }
-                  }
-                },
-                {
-                  "messageKey": "negativeLineResistance",
-                  "values": {
-                    "reportSeverity": {
-                      "value": "ERROR",
-                      "type": "SEVERITY"
-                    },
-                    "lineId": {
-                      "value": "FFFFFF11 XXXXXX12 1"
-                    },
-                    "resistance": {
-                      "value": 0,
-                      "type": "RESISTANCE"
-                    }
-                  }
-                },
-                {
-                  "messageKey": "negativeLineResistance",
-                  "values": {
-                    "reportSeverity": {
-                      "value": "ERROR",
-                      "type": "SEVERITY"
-                    },
-                    "lineId": {
-                      "value": "FFFFFF13 XXXXXX13 1"
-                    },
-                    "resistance": {
-                      "value": 0,
-                      "type": "RESISTANCE"
-                    }
-                  }
-                },
-                {
-                  "messageKey": "negativeLineResistance",
-                  "values": {
-                    "reportSeverity": {
-                      "value": "ERROR",
-                      "type": "SEVERITY"
-                    },
-                    "lineId": {
-                      "value": "FFFFFF13 XXXXXX14 1"
-                    },
-                    "resistance": {
-                      "value": 0,
-                      "type": "RESISTANCE"
-                    }
-                  }
-                }
-              ]
-            },
-            {
-              "messageKey": "fixUcteNodes",
-              "values": {
-                "subReportId": {
-                  "value": "82c9b067-321c-4beb-a0bb-0a226a716831"
-                }
+              {
+                "id": null,
+                "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
+                "severity": "ERROR",
+                "subReportsSeverities": [],
+                "subReports": []
+              },
+              {
+                "id": null,
+                "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
+                "severity": "ERROR",
+                "subReportsSeverities": [],
+                "subReports": []
+              },
+              {
+                "id": null,
+                "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
+                "severity": "ERROR",
+                "subReportsSeverities": [],
+                "subReports": []
               }
-            },
-            {
-              "messageKey": "fixUcteTransformer",
-              "values": {
-                "subReportId": {
-                  "value": "268efec9-d536-42b0-86ba-a17045d1615b"
-                }
-              }
-            },
-            {
-              "messageKey": "fixUcteRegulations",
-              "values": {
-                "subReportId": {
-                  "value": "6a3abde5-75c1-46e0-9444-a9f6ed408439"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "messageKey": "createBuses",
-          "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "47ea1569-6365-4c39-ad4d-62f2c92d2ce8"
-            }
+            ]
           },
-          "children": [
-            {
-              "messageKey": "createBusesSubstation",
-              "values": {
-                "substation": {
-                  "value": "FFFFFF"
-                },
-                "severityList": {
-                  "value": "[TRACE]",
-                  "type": "SEVERITY"
-                },
-                "subReportId": {
-                  "value": "614f7652-4b1b-45c9-b556-3b161632462d"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "messageKey": "createLines",
-          "values": {
-            "severityList": {
-              "value": "[TRACE]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "530cdb90-8add-4681-bd7a-d62f50ca2800"
-            }
+          {
+            "id": "985452be-516d-4be7-a16e-1489b0dd54cb",
+            "message": "Fix UCTE nodes",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
+          },
+          {
+            "id": "3210bd31-4612-4a45-8442-867999516a9a",
+            "message": "Fix UCTE transformers",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
+          },
+          {
+            "id": "919cdfa2-fb62-40aa-9c18-7960e9fa57c7",
+            "message": "Fix UCTE regulations",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
           }
-        }
-      ]
-    }
+        ]
+      },
+      {
+        "id": "8b4575ef-ed02-4519-b35e-b1ee9d466c28",
+        "message": "Create buses",
+        "severity": null,
+        "subReportsSeverities": [],
+        "subReports": [
+          {
+            "id": "a7f80db5-32d5-4b3b-b460-9fa93774565c",
+            "message": "Create buses for substation FFFFFF",
+            "severity": null,
+            "subReportsSeverities": [
+              "TRACE"
+            ],
+            "subReports": []
+          }
+        ]
+      },
+      {
+        "id": "e023d37a-b331-4f38-a694-f84bffb2a94a",
+        "message": "Create lines",
+        "severity": null,
+        "subReportsSeverities": [
+          "TRACE"
+        ],
+        "subReports": []
+      }
+    ]
   }
 ]

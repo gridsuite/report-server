@@ -1,125 +1,74 @@
 [
   {
-    "version": "2.1",
-    "dictionaries": {
-      "default": {
-        "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-        "UcteReading": "Reading UCTE network file",
-        "createBuses": "Create buses",
-        "createBusesSubstation": "Create buses for substation ${substation}",
-        "createLines": "Create lines",
-        "fixUcteLines": "Fix UCTE lines",
-        "fixUcteNodes": "Fix UCTE nodes",
-        "fixUcteRegulations": "Fix UCTE regulations",
-        "fixUcteTransformer": "Fix UCTE transformers",
-        "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
-      }
-    },
-    "reportRoot": {
-      "messageKey": "roundTripReporterJsonTest",
-      "values": {
-        "severityList": {
-          "value": "[INFO, TRACE]",
-          "type": "SEVERITY"
-        },
-        "subReportId": {
-          "value": "bacffc28-3a79-4dea-a260-a9eaf1888c95",
-          "type": "ID"
-        }
-      },
-      "children": [
-        {
-          "messageKey": "UcteReading",
-          "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "1e3c954f-ec11-4a0c-8631-18b75b2b8b54"
-            }
+    "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+    "message": "roundTripReporterJsonTest",
+    "severity": null,
+    "subReportsSeverities": [],
+    "subReports": [
+      {
+        "id": "67ae452c-af68-4b92-bc66-5c6f6d3df666",
+        "message": "Reading UCTE network file",
+        "severity": null,
+        "subReportsSeverities": [],
+        "subReports": [
+          {
+            "id": "eb7533d1-579a-436d-a5a8-bc0a90ea0508",
+            "message": "Fix UCTE lines",
+            "severity": null,
+            "subReportsSeverities": [
+              "ERROR"
+            ],
+            "subReports": []
           },
-          "children": [
-            {
-              "messageKey": "fixUcteLines",
-              "values": {
-                "severityList": {
-                  "value": "[ERROR]",
-                  "type": "SEVERITY"
-                },
-                "subReportId": {
-                  "value": "22b6d7b3-74a5-4a95-999c-289700b98665"
-                }
-              }
-            },
-            {
-              "messageKey": "fixUcteNodes",
-              "values": {
-                "subReportId": {
-                  "value": "2a945bb4-2ac7-4f02-9996-020c32007ad4"
-                }
-              }
-            },
-            {
-              "messageKey": "fixUcteTransformer",
-              "values": {
-                "subReportId": {
-                  "value": "accfc943-8b7a-4d27-ab2c-d751af954bde"
-                }
-              }
-            },
-            {
-              "messageKey": "fixUcteRegulations",
-              "values": {
-                "subReportId": {
-                  "value": "fa07cdb6-90cc-400e-8a17-1a276644b6f4"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "messageKey": "createBuses",
-          "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "577662d7-161b-4372-a5f7-2bb8b80f0e6b"
-            }
+          {
+            "id": "78f26508-089d-4ffa-9146-259c7575eedf",
+            "message": "Fix UCTE nodes",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
           },
-          "children": [
-            {
-              "messageKey": "createBusesSubstation",
-              "values": {
-                "substation": {
-                  "value": "FFFFFF"
-                },
-                "severityList": {
-                  "value": "[TRACE]",
-                  "type": "SEVERITY"
-                },
-                "subReportId": {
-                  "value": "3f93df06-6268-47c5-b571-8726de0b33bd"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "messageKey": "createLines",
-          "values": {
-            "severityList": {
-              "value": "[TRACE]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "6b0fb43b-2068-47d8-9b14-2a73160adab4"
-            }
+          {
+            "id": "e6d699fe-ccc8-44d3-ba06-d0334fb96f46",
+            "message": "Fix UCTE transformers",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
+          },
+          {
+            "id": "121ec482-f11d-4ae5-91cb-0bcd821aa680",
+            "message": "Fix UCTE regulations",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
           }
-        }
-      ]
-    }
+        ]
+      },
+      {
+        "id": "c16d6aa6-3a7f-40e7-900e-ed67fcb05110",
+        "message": "Create buses",
+        "severity": null,
+        "subReportsSeverities": [],
+        "subReports": [
+          {
+            "id": "af49239c-7590-4ec7-aa64-0570da2e149a",
+            "message": "Create buses for substation FFFFFF",
+            "severity": null,
+            "subReportsSeverities": [
+              "TRACE"
+            ],
+            "subReports": []
+          }
+        ]
+      },
+      {
+        "id": "a87ad393-d9b1-446c-8bb9-5255bd416de5",
+        "message": "Create lines",
+        "severity": null,
+        "subReportsSeverities": [
+          "TRACE"
+        ],
+        "subReports": []
+      }
+    ]
   }
 ]

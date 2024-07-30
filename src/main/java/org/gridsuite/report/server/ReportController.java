@@ -6,7 +6,6 @@
  */
 package org.gridsuite.report.server;
 
-import com.powsybl.commons.report.ReportNode;
 import com.powsybl.commons.report.ReportNodeImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

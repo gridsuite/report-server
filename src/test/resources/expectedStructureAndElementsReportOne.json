@@ -1,330 +1,175 @@
 [
   {
-    "version": "2.1",
-    "dictionaries": {
-      "default": {
-        "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-        "UcteReading": "Reading UCTE network file",
-        "createBus": "Create bus ${bus}",
-        "createBuses": "Create buses",
-        "createBusesSubstation": "Create buses for substation ${substation}",
-        "createLines": "Create lines",
-        "createSubstation": "Create substation ${substationName}",
-        "createTransformers": "Create transformers",
-        "createVoltageLevel": "Create voltage level ${voltageLevelName}",
-        "danglingLineCreation": "Create dangling line '${ucteLine}' (Xnode='${xnodeCode}')",
-        "fixUcteLines": "Fix UCTE lines",
-        "fixUcteNodes": "Fix UCTE nodes",
-        "fixUcteRegulations": "Fix UCTE regulations",
-        "fixUcteTransformer": "Fix UCTE transformers",
-        "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)",
-        "novalueReport": "No value report",
-        "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
-      }
-    },
-    "reportRoot": {
-      "messageKey": "roundTripReporterJsonTest",
-      "values": {
-        "severityList": {
-          "value": "[INFO, TRACE]",
-          "type": "SEVERITY"
-        },
-        "subReportId": {
-          "value": "b4b9829e-f004-4632-ac84-4a18fd18a460",
-          "type": "ID"
-        }
+    "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+    "message": "roundTripReporterJsonTest",
+    "severity": null,
+    "subReportsSeverities": [],
+    "subReports": [
+      {
+        "id": "bdb8ad58-862b-447f-924b-1fa3fc04950e",
+        "message": "Reading UCTE network file",
+        "severity": null,
+        "subReportsSeverities": [],
+        "subReports": [
+          {
+            "id": "ae1999cd-fe2e-4941-936f-1207f1b2bccc",
+            "message": "Fix UCTE lines",
+            "severity": null,
+            "subReportsSeverities": [
+              "ERROR"
+            ],
+            "subReports": [
+              {
+                "id": null,
+                "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
+                "severity": "ERROR",
+                "subReportsSeverities": [],
+                "subReports": []
+              },
+              {
+                "id": null,
+                "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
+                "severity": "ERROR",
+                "subReportsSeverities": [],
+                "subReports": []
+              },
+              {
+                "id": null,
+                "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
+                "severity": "ERROR",
+                "subReportsSeverities": [],
+                "subReports": []
+              },
+              {
+                "id": null,
+                "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
+                "severity": "ERROR",
+                "subReportsSeverities": [],
+                "subReports": []
+              }
+            ]
+          },
+          {
+            "id": "e5d1d6af-31e9-4427-bb3f-8c9fa3fb0013",
+            "message": "Fix UCTE nodes",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
+          },
+          {
+            "id": "ef66ba40-0d65-4c2e-a740-e8036ec11359",
+            "message": "Fix UCTE transformers",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
+          },
+          {
+            "id": "bab9a6f9-0acb-4ba6-a027-9a0e71faa8ba",
+            "message": "Fix UCTE regulations",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
+          }
+        ]
       },
-      "children": [
-        {
-          "messageKey": "UcteReading",
-          "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "dff542a7-f6ce-489b-b57f-87bde3c7f810"
-            }
-          },
-          "children": [
-            {
-              "messageKey": "fixUcteLines",
-              "values": {
-                "severityList": {
-                  "value": "[ERROR]",
-                  "type": "SEVERITY"
-                },
-                "subReportId": {
-                  "value": "47921c4c-e8a3-4bb1-9200-865fc9272b38"
-                }
+      {
+        "id": "1fbbe203-2b3a-4c0e-8e3e-8550072ec945",
+        "message": "Create buses",
+        "severity": null,
+        "subReportsSeverities": [],
+        "subReports": [
+          {
+            "id": "ca52969c-1f80-44ac-ae00-595deadff5e9",
+            "message": "Create buses for substation FFFFFF",
+            "severity": null,
+            "subReportsSeverities": [
+              "TRACE"
+            ],
+            "subReports": [
+              {
+                "id": null,
+                "message": "Create substation FFFFFF",
+                "severity": "TRACE",
+                "subReportsSeverities": [],
+                "subReports": []
               },
-              "children": [
-                {
-                  "messageKey": "negativeLineResistance",
-                  "values": {
-                    "reportSeverity": {
-                      "value": "ERROR",
-                      "type": "SEVERITY"
-                    },
-                    "lineId": {
-                      "value": "FFFFFF11 XXXXXX11 1"
-                    },
-                    "resistance": {
-                      "value": 0,
-                      "type": "RESISTANCE"
-                    }
-                  }
-                },
-                {
-                  "messageKey": "negativeLineResistance",
-                  "values": {
-                    "reportSeverity": {
-                      "value": "ERROR",
-                      "type": "SEVERITY"
-                    },
-                    "lineId": {
-                      "value": "FFFFFF11 XXXXXX12 1"
-                    },
-                    "resistance": {
-                      "value": 0,
-                      "type": "RESISTANCE"
-                    }
-                  }
-                },
-                {
-                  "messageKey": "negativeLineResistance",
-                  "values": {
-                    "reportSeverity": {
-                      "value": "ERROR",
-                      "type": "SEVERITY"
-                    },
-                    "lineId": {
-                      "value": "FFFFFF13 XXXXXX13 1"
-                    },
-                    "resistance": {
-                      "value": 0,
-                      "type": "RESISTANCE"
-                    }
-                  }
-                },
-                {
-                  "messageKey": "negativeLineResistance",
-                  "values": {
-                    "reportSeverity": {
-                      "value": "ERROR",
-                      "type": "SEVERITY"
-                    },
-                    "lineId": {
-                      "value": "FFFFFF13 XXXXXX14 1"
-                    },
-                    "resistance": {
-                      "value": 0,
-                      "type": "RESISTANCE"
-                    }
-                  }
-                }
-              ]
-            },
-            {
-              "messageKey": "fixUcteNodes",
-              "values": {
-                "subReportId": {
-                  "value": "0b6297da-6f24-45fb-b591-a0e3e071e3e0"
-                }
-              }
-            },
-            {
-              "messageKey": "fixUcteTransformer",
-              "values": {
-                "subReportId": {
-                  "value": "7dc6307a-3954-496a-a16b-7ddb57a9c8a6"
-                }
-              }
-            },
-            {
-              "messageKey": "fixUcteRegulations",
-              "values": {
-                "subReportId": {
-                  "value": "f3268d48-4345-43f3-9bdc-d633ad8bcb77"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "messageKey": "createBuses",
-          "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "42056d2c-d056-47a4-8375-45fb302d5698"
-            }
-          },
-          "children": [
-            {
-              "messageKey": "createBusesSubstation",
-              "values": {
-                "substation": {
-                  "value": "FFFFFF"
-                },
-                "severityList": {
-                  "value": "[TRACE]",
-                  "type": "SEVERITY"
-                },
-                "subReportId": {
-                  "value": "816a0019-3d41-48bf-9b40-414733380c45"
-                }
+              {
+                "id": null,
+                "message": "Create voltage level FFFFFF1",
+                "severity": "TRACE",
+                "subReportsSeverities": [],
+                "subReports": []
               },
-              "children": [
-                {
-                  "messageKey": "createSubstation",
-                  "values": {
-                    "reportSeverity": {
-                      "value": "TRACE",
-                      "type": "SEVERITY"
-                    },
-                    "substationName": {
-                      "value": "FFFFFF",
-                      "type": "SUBSTATION"
-                    }
-                  }
-                },
-                {
-                  "messageKey": "createVoltageLevel",
-                  "values": {
-                    "voltageLevelName": {
-                      "value": "FFFFFF1",
-                      "type": "VOLTAGE_LEVEL"
-                    },
-                    "reportSeverity": {
-                      "value": "TRACE",
-                      "type": "SEVERITY"
-                    }
-                  }
-                },
-                {
-                  "messageKey": "createBus",
-                  "values": {
-                    "bus": {
-                      "value": "FFFFFF11"
-                    },
-                    "reportSeverity": {
-                      "value": "TRACE",
-                      "type": "SEVERITY"
-                    }
-                  }
-                },
-                {
-                  "messageKey": "createBus",
-                  "values": {
-                    "bus": {
-                      "value": "FFFFFF13"
-                    },
-                    "reportSeverity": {
-                      "value": "TRACE",
-                      "type": "SEVERITY"
-                    }
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "messageKey": "createLines",
-          "values": {
-            "severityList": {
-              "value": "[TRACE]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "295b5fee-d9cb-4a6a-904e-e58fdba1dbd4"
-            }
+              {
+                "id": null,
+                "message": "Create bus FFFFFF11",
+                "severity": "TRACE",
+                "subReportsSeverities": [],
+                "subReports": []
+              },
+              {
+                "id": null,
+                "message": "Create bus FFFFFF13",
+                "severity": "TRACE",
+                "subReportsSeverities": [],
+                "subReports": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "74a0796a-3aff-4a0a-a3be-4a361698a74e",
+        "message": "Create lines",
+        "severity": null,
+        "subReportsSeverities": [
+          "TRACE"
+        ],
+        "subReports": [
+          {
+            "id": null,
+            "message": "Create dangling line 'FFFFFF11 XXXXXX11 1' (Xnode='XXXXXX11')",
+            "severity": "TRACE",
+            "subReportsSeverities": [],
+            "subReports": []
           },
-          "children": [
-            {
-              "messageKey": "danglingLineCreation",
-              "values": {
-                "ucteLine": {
-                  "value": "FFFFFF11 XXXXXX11 1"
-                },
-                "reportSeverity": {
-                  "value": "TRACE",
-                  "type": "SEVERITY"
-                },
-                "xnodeCode": {
-                  "value": "XXXXXX11"
-                }
-              }
-            },
-            {
-              "messageKey": "danglingLineCreation",
-              "values": {
-                "ucteLine": {
-                  "value": "FFFFFF11 XXXXXX12 1"
-                },
-                "reportSeverity": {
-                  "value": "TRACE",
-                  "type": "SEVERITY"
-                },
-                "xnodeCode": {
-                  "value": "XXXXXX12"
-                }
-              }
-            },
-            {
-              "messageKey": "danglingLineCreation",
-              "values": {
-                "ucteLine": {
-                  "value": "FFFFFF13 XXXXXX13 1"
-                },
-                "reportSeverity": {
-                  "value": "TRACE",
-                  "type": "SEVERITY"
-                },
-                "xnodeCode": {
-                  "value": "XXXXXX13"
-                }
-              }
-            },
-            {
-              "messageKey": "danglingLineCreation",
-              "values": {
-                "ucteLine": {
-                  "value": "FFFFFF13 XXXXXX14 1"
-                },
-                "reportSeverity": {
-                  "value": "TRACE",
-                  "type": "SEVERITY"
-                },
-                "xnodeCode": {
-                  "value": "XXXXXX14"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "messageKey": "novalueReport",
-          "values": {
-            "reportSeverity": {
-              "value": "INFO",
-              "type": "SEVERITY"
-            }
+          {
+            "id": null,
+            "message": "Create dangling line 'FFFFFF11 XXXXXX12 1' (Xnode='XXXXXX12')",
+            "severity": "TRACE",
+            "subReportsSeverities": [],
+            "subReports": []
+          },
+          {
+            "id": null,
+            "message": "Create dangling line 'FFFFFF13 XXXXXX13 1' (Xnode='XXXXXX13')",
+            "severity": "TRACE",
+            "subReportsSeverities": [],
+            "subReports": []
+          },
+          {
+            "id": null,
+            "message": "Create dangling line 'FFFFFF13 XXXXXX14 1' (Xnode='XXXXXX14')",
+            "severity": "TRACE",
+            "subReportsSeverities": [],
+            "subReports": []
           }
-        },
-        {
-          "messageKey": "createTransformers",
-          "values": {
-            "reportSeverity": {
-              "value": "TRACE",
-              "type": "SEVERITY"
-            }
-          }
-        }
-      ]
-    }
+        ]
+      },
+      {
+        "id": null,
+        "message": "No value report",
+        "severity": "INFO",
+        "subReportsSeverities": [],
+        "subReports": []
+      },
+      {
+        "id": null,
+        "message": "Create transformers",
+        "severity": "TRACE",
+        "subReportsSeverities": [],
+        "subReports": []
+      }
+    ]
   }
 ]
