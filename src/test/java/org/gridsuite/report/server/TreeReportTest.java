@@ -6,7 +6,7 @@
  */
 package org.gridsuite.report.server;
 
-import com.powsybl.commons.report.ReportNode;
+import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.entities.ReportElementEntity;
 import org.gridsuite.report.server.entities.ReportEntity;
 import org.gridsuite.report.server.entities.ReportValueEmbeddable;
@@ -73,8 +73,8 @@ class TreeReportTest {
         TreeReportEntity treeReportEntity3 = createTreeReport("log3", reportEntity, null, 1000);
         treeReportRepository.saveAll(List.of(treeReportEntity1, treeReportEntity2, treeReportEntity3));
 
-        ReportNode report = reportService.getReport(idReport, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
-        assertEquals(List.of("log3", "log1", "log2"), report.getChildren().stream().map(ReportNode::getMessageKey).toList());
+        List<Report> reports = reportService.getReport(idReport, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
+        assertEquals(List.of("log3", "log1", "log2"), reports.stream().map(Report::getMessage).toList());
     }
 
     @Test
@@ -89,9 +89,12 @@ class TreeReportTest {
         TreeReportEntity treeReportEntity3 = createTreeReport("log3", null, treeReportEntity, 1000);
         treeReportRepository.saveAll(List.of(treeReportEntity1, treeReportEntity2, treeReportEntity3));
 
-        ReportNode report = reportService.getReport(idReport, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
-        ReportNode reporter = report.getChildren().get(0);
-        assertEquals(List.of("log3", "log1", "log2"), reporter.getChildren().stream().map(ReportNode::getMessageKey).toList());
+        List<Report> testReports = reportService.getReport(idReport, null, "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
+        assertEquals(1, testReports.size());
+        assertEquals(List.of("test"), testReports.stream().map(Report::getMessage).toList());
+
+        Report subReport = testReports.get(0);
+        assertEquals(List.of("log3", "log1", "log2"), subReport.getSubReports().stream().map(Report::getMessage).toList());
     }
 
     @Test
@@ -106,9 +109,11 @@ class TreeReportTest {
         ReportElementEntity reportElement3 = createReportElement("log3", treeReportEntity, 1000, "TRACE");
         reportElementRepository.saveAll(List.of(reportElement1, reportElement2, reportElement3));
 
-        ReportNode report = reportService.getReport(idReport, Set.of("INFO", "TRACE", "ERROR"), "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
-        ReportNode reporter = report.getChildren().get(0);
+        List<Report> testReports = reportService.getReport(idReport, Set.of("INFO", "TRACE", "ERROR"), "", ReportService.ReportNameMatchingType.EXACT_MATCHING);
+        assertEquals(1, testReports.size());
+        assertEquals(List.of("test"), testReports.stream().map(Report::getMessage).toList());
 
-        assertEquals(List.of("log3", "log1", "log2"), reporter.getChildren().stream().map(ReportNode::getMessageKey).toList());
+        Report subReport = testReports.get(0);
+        assertEquals(List.of("log3", "log1", "log2"), subReport.getSubReports().stream().map(Report::getMessage).toList());
     }
 }

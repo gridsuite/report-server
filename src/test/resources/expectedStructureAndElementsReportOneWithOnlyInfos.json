@@ -1,135 +1,81 @@
 [
   {
-    "version": "2.1",
-    "dictionaries": {
-      "default": {
-        "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-        "UcteReading": "Reading UCTE network file",
-        "createBuses": "Create buses",
-        "createBusesSubstation": "Create buses for substation ${substation}",
-        "createLines": "Create lines",
-        "fixUcteLines": "Fix UCTE lines",
-        "fixUcteNodes": "Fix UCTE nodes",
-        "fixUcteRegulations": "Fix UCTE regulations",
-        "fixUcteTransformer": "Fix UCTE transformers",
-        "novalueReport": "No value report",
-        "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
-      }
-    },
-    "reportRoot": {
-      "messageKey": "roundTripReporterJsonTest",
-      "values": {
-        "severityList": {
-          "value": "[INFO, TRACE]",
-          "type": "SEVERITY"
-        },
-        "subReportId": {
-          "value": "ed562a2a-11a6-4eaf-ab81-4d67b02625f2",
-          "type": "ID"
-        }
+    "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+    "message": "roundTripReporterJsonTest",
+    "severity": null,
+    "subReportsSeverities": [],
+    "subReports": [
+      {
+        "id": "f5d450e1-db84-47c6-a950-08cc0afc2c40",
+        "message": "Reading UCTE network file",
+        "severity": null,
+        "subReportsSeverities": [],
+        "subReports": [
+          {
+            "id": "6d75619f-91fc-4aa0-a1a1-0146b30bdf81",
+            "message": "Fix UCTE lines",
+            "severity": null,
+            "subReportsSeverities": [
+              "ERROR"
+            ],
+            "subReports": []
+          },
+          {
+            "id": "b66bf960-9b33-4c0e-8541-0842a6751995",
+            "message": "Fix UCTE nodes",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
+          },
+          {
+            "id": "73901739-42dc-4aa9-8f31-327075b5fbdc",
+            "message": "Fix UCTE transformers",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
+          },
+          {
+            "id": "6233d43d-01c2-4740-b0ba-d5b6f69a08bf",
+            "message": "Fix UCTE regulations",
+            "severity": null,
+            "subReportsSeverities": [],
+            "subReports": []
+          }
+        ]
       },
-      "children": [
-        {
-          "messageKey": "UcteReading",
-          "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "2abe3075-fdc7-471a-9e0f-d66836eb55a6"
-            }
-          },
-          "children": [
-            {
-              "messageKey": "fixUcteLines",
-              "values": {
-                "severityList": {
-                  "value": "[ERROR]",
-                  "type": "SEVERITY"
-                },
-                "subReportId": {
-                  "value": "934ec990-a56e-437b-8ac1-cc74099b3e8e"
-                }
-              }
-            },
-            {
-              "messageKey": "fixUcteNodes",
-              "values": {
-                "subReportId": {
-                  "value": "7c5b8153-329f-43ef-b46b-78cc74131cd7"
-                }
-              }
-            },
-            {
-              "messageKey": "fixUcteTransformer",
-              "values": {
-                "subReportId": {
-                  "value": "7bc239e8-9b25-4cd6-8f6f-3918107a1519"
-                }
-              }
-            },
-            {
-              "messageKey": "fixUcteRegulations",
-              "values": {
-                "subReportId": {
-                  "value": "888f19d4-db62-4e6f-b476-1b6c703e2b00"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "messageKey": "createBuses",
-          "values": {
-            "severityList": {
-              "value": "[]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "6d4ba099-ff52-4cbc-ace9-bb685c9a9374"
-            }
-          },
-          "children": [
-            {
-              "messageKey": "createBusesSubstation",
-              "values": {
-                "substation": {
-                  "value": "FFFFFF"
-                },
-                "severityList": {
-                  "value": "[TRACE]",
-                  "type": "SEVERITY"
-                },
-                "subReportId": {
-                  "value": "4fd914fa-4b40-497e-afa3-e11246dc7914"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "messageKey": "createLines",
-          "values": {
-            "severityList": {
-              "value": "[TRACE]",
-              "type": "SEVERITY"
-            },
-            "subReportId": {
-              "value": "1d6a5592-9b40-4025-a957-4ea79de37614"
-            }
+      {
+        "id": "e51a911c-71f6-45a0-a9de-537cb1edf1c9",
+        "message": "Create buses",
+        "severity": null,
+        "subReportsSeverities": [],
+        "subReports": [
+          {
+            "id": "2a75e30f-3a69-4810-a5c9-e46de23d85e0",
+            "message": "Create buses for substation FFFFFF",
+            "severity": null,
+            "subReportsSeverities": [
+              "TRACE"
+            ],
+            "subReports": []
           }
-        },
-        {
-          "messageKey": "novalueReport",
-          "values": {
-            "reportSeverity": {
-              "value": "INFO",
-              "type": "SEVERITY"
-            }
-          }
-        }
-      ]
-    }
+        ]
+      },
+      {
+        "id": "da5d2f8c-b0c3-4aee-8236-bd34528ec1c9",
+        "message": "Create lines",
+        "severity": null,
+        "subReportsSeverities": [
+          "TRACE"
+        ],
+        "subReports": []
+      },
+      {
+        "id": null,
+        "message": "No value report",
+        "severity": "INFO",
+        "subReportsSeverities": [],
+        "subReports": []
+      }
+    ]
   }
 ]

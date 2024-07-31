@@ -1,0 +1,33 @@
+{
+  "version": "2.1",
+  "dictionaries": {
+    "default": {
+      "fixUcteNodes": "Fix UCTE nodes",
+      "testImport3": "test Third import",
+      "novalueReport": "No value report",
+      "testNewValue": "test on more"
+    }
+  },
+  "reportRoot": {
+    "messageKey": "testImport3",
+    "children": [
+      {
+        "messageKey": "novalueReport",
+        "values": {
+          "reportSeverity": {
+            "value": "INFO",
+            "type": "SEVERITY"
+          }
+        }
+      },
+      {
+        "messageKey": "testNewValue",
+        "children": [
+          {
+            "messageKey": "fixUcteNodes"
+          }
+        ]
+      }
+    ]
+  }
+}

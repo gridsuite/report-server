@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.gridsuite.report.server.ReportService;
+import org.gridsuite.report.server.Severity;
 import org.gridsuite.report.server.entities.ReportValueEmbeddable.ValueType;
 import org.springframework.util.CollectionUtils;
 
@@ -66,7 +66,7 @@ public class ReportElementEntity {
                     .filter(value -> value.getValueType() == ValueType.STRING && SEVERITY.equalsIgnoreCase(value.getType()))
                     .findAny()
                     .map(ReportValueEmbeddable::getValue)
-                    .orElse(ReportService.SeverityLevel.UNKNOWN.name()));
+                    .orElse(Severity.UNKNOWN.name()));
         }
     }
 }
