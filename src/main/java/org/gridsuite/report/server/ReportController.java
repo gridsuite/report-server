@@ -48,12 +48,12 @@ public class ReportController {
                                                   @Parameter(description = "Filter on severity levels. Will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
-            List<Report> reports = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType);
+            List<Report> reports = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType).getSubReports();
             return reports.isEmpty() ?
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(id, defaultName))) :
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(ReportService.getEmptyReport(id, defaultName))) :
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(reports);
         } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(id, defaultName)));
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(ReportService.getEmptyReport(id, defaultName)));
         }
     }
 
@@ -66,7 +66,7 @@ public class ReportController {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getSubReport(id, severityLevels));
+                    .body(service.getReport(id, severityLevels, null, null));
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }

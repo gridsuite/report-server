@@ -1,0 +1,73 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="mancinijor (generated)" id="1718006537607-1">
+        <createTable tableName="report_node">
+            <column name="id" type="UUID">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="report_nodePK"/>
+            </column>
+            <column name="message" type="VARCHAR(500)"/>
+            <column name="nanos" type="BIGINT"/>
+            <column name="parent_id" type="UUID"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-3">
+        <createTable tableName="severity">
+            <column name="report_node_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="severity" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-4">
+        <createIndex indexName="report_node_severity_idx" tableName="severity">
+            <column name="report_node_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-6">
+        <addForeignKeyConstraint baseColumnNames="parent_id" baseTableName="report_node" constraintName="parent_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="report_node" validate="true"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-7">
+        <addForeignKeyConstraint baseColumnNames="report_node_id" baseTableName="severity" constraintName="report_node_severity_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="report_node" validate="true"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-9">
+        <dropForeignKeyConstraint baseTableName="TREE_REPORT" constraintName="report_id_fk_constraint"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-10">
+        <dropForeignKeyConstraint baseTableName="REPORT_ELEMENT" constraintName="treeReportElement_id_fk_constraint"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-11">
+        <dropForeignKeyConstraint baseTableName="TREE_REPORT_ENTITY_VALUES" constraintName="treeReportEmbeddable_name_fk"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-12">
+        <dropForeignKeyConstraint baseTableName="REPORT_ELEMENT_ENTITY_VALUES" constraintName="treeReportEmbeddable_subReports_fk"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-13">
+        <dropForeignKeyConstraint baseTableName="TREE_REPORT_ENTITY_DICTIONARY" constraintName="treeReportEntity_dictionary_fk"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-14">
+        <dropForeignKeyConstraint baseTableName="TREE_REPORT" constraintName="treeReport_id_fk_constraint"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-15">
+        <dropTable tableName="REPORT"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-16">
+        <dropTable tableName="REPORT_ELEMENT"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-17">
+        <dropTable tableName="REPORT_ELEMENT_ENTITY_VALUES"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-18">
+        <dropTable tableName="TREE_REPORT"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-19">
+        <dropTable tableName="TREE_REPORT_ENTITY_DICTIONARY"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-20">
+        <dropTable tableName="TREE_REPORT_ENTITY_VALUES"/>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1718006537607-21">
+        <createIndex tableName="report_node" indexName="report_node_parent_id_idx">
+            <column name="parent_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
