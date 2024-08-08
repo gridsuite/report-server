@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.Configuration;
-import com.powsybl.commons.report.ReportNode;
 import com.vladmihalcea.sql.SQLStatementCountValidator;
 import lombok.SneakyThrows;
 
