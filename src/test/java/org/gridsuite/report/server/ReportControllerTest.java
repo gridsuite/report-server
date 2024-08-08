@@ -88,6 +88,7 @@ public class ReportControllerTest {
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS = "/expectedStructureAndElementsReportOneWithOnlyErrors.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS = "/expectedStructureAndElementsReportOneWithOnlyInfos.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1 = "/expectedReporterAndElements.json";
+    private static final String EXPECTED_MESSAGE_BASED_FILTRED_REPORT = "/expectedMessageBasedFiltredReport.json";
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
     private static final String REPORT_LOADFLOW = "/reportLoadflow.json";
@@ -280,6 +281,25 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
+        assertRequestsCount(2, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetSubReportWithMessageContaining() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessageContaining("Real");
+        assertEquals(4, reporters.size());
+        String uuidReporter = reporters.get(0).getId().toString();
+
+        SQLStatementCountValidator.reset();
+
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_MESSAGE_BASED_FILTRED_REPORT));
         assertRequestsCount(2, 0, 0, 0);
     }
 

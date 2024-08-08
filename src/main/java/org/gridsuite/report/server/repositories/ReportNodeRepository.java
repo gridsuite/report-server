@@ -28,7 +28,9 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
     List<ReportNodeEntity> findAllWithSeveritiesByIdIn(List<UUID> ids);
 
-    List<ReportNodeEntity> findAllByMessage(String key);
+    List<ReportNodeEntity> findAllByMessage(String message);
+
+    List<ReportNodeEntity> findAllByMessageContaining(String filter);
 
     List<ReportNodeEntity> findAllByParentIdAndMessage(UUID parentId, String messageKey);
 
