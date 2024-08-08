@@ -1,79 +1,13 @@
 [
   {
     "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-    "message": "roundTripReporterJsonTest",
-    "severity": null,
-    "subReportsSeverities": [],
+    "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+    "severities": ["TRACE", "ERROR", "INFO"],
     "subReports": [
-      {
-        "id": "f5d450e1-db84-47c6-a950-08cc0afc2c40",
-        "message": "Reading UCTE network file",
-        "severity": null,
-        "subReportsSeverities": [],
-        "subReports": [
-          {
-            "id": "6d75619f-91fc-4aa0-a1a1-0146b30bdf81",
-            "message": "Fix UCTE lines",
-            "severity": null,
-            "subReportsSeverities": [
-              "ERROR"
-            ],
-            "subReports": []
-          },
-          {
-            "id": "b66bf960-9b33-4c0e-8541-0842a6751995",
-            "message": "Fix UCTE nodes",
-            "severity": null,
-            "subReportsSeverities": [],
-            "subReports": []
-          },
-          {
-            "id": "73901739-42dc-4aa9-8f31-327075b5fbdc",
-            "message": "Fix UCTE transformers",
-            "severity": null,
-            "subReportsSeverities": [],
-            "subReports": []
-          },
-          {
-            "id": "6233d43d-01c2-4740-b0ba-d5b6f69a08bf",
-            "message": "Fix UCTE regulations",
-            "severity": null,
-            "subReportsSeverities": [],
-            "subReports": []
-          }
-        ]
-      },
-      {
-        "id": "e51a911c-71f6-45a0-a9de-537cb1edf1c9",
-        "message": "Create buses",
-        "severity": null,
-        "subReportsSeverities": [],
-        "subReports": [
-          {
-            "id": "2a75e30f-3a69-4810-a5c9-e46de23d85e0",
-            "message": "Create buses for substation FFFFFF",
-            "severity": null,
-            "subReportsSeverities": [
-              "TRACE"
-            ],
-            "subReports": []
-          }
-        ]
-      },
-      {
-        "id": "da5d2f8c-b0c3-4aee-8236-bd34528ec1c9",
-        "message": "Create lines",
-        "severity": null,
-        "subReportsSeverities": [
-          "TRACE"
-        ],
-        "subReports": []
-      },
       {
         "id": null,
         "message": "No value report",
-        "severity": "INFO",
-        "subReportsSeverities": [],
+        "severities": ["INFO"],
         "subReports": []
       }
     ]

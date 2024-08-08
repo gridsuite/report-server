@@ -1,50 +1,41 @@
 [
   {
     "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-    "message": "roundTripReporterJsonTest",
-    "severity": null,
-    "subReportsSeverities": [],
+    "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+    "severities": ["TRACE", "ERROR", "INFO"],
     "subReports": [
       {
         "id": "bdb8ad58-862b-447f-924b-1fa3fc04950e",
         "message": "Reading UCTE network file",
-        "severity": null,
-        "subReportsSeverities": [],
+        "severities": ["ERROR"],
         "subReports": [
           {
             "id": "ae1999cd-fe2e-4941-936f-1207f1b2bccc",
             "message": "Fix UCTE lines",
-            "severity": null,
-            "subReportsSeverities": [
-              "ERROR"
-            ],
+            "severities": ["ERROR"],
             "subReports": [
               {
                 "id": null,
                 "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
-                "severity": "ERROR",
-                "subReportsSeverities": [],
+                "severities": ["ERROR"],
                 "subReports": []
               },
               {
                 "id": null,
                 "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
-                "severity": "ERROR",
-                "subReportsSeverities": [],
+                "severities": ["ERROR"],
                 "subReports": []
               },
               {
                 "id": null,
                 "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
-                "severity": "ERROR",
-                "subReportsSeverities": [],
+                "severities": ["ERROR"],
                 "subReports": []
               },
               {
                 "id": null,
                 "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
-                "severity": "ERROR",
-                "subReportsSeverities": [],
+                "severities": ["ERROR"],
                 "subReports": []
               }
             ]
@@ -52,22 +43,19 @@
           {
             "id": "e5d1d6af-31e9-4427-bb3f-8c9fa3fb0013",
             "message": "Fix UCTE nodes",
-            "severity": null,
-            "subReportsSeverities": [],
+            "severities": [],
             "subReports": []
           },
           {
             "id": "ef66ba40-0d65-4c2e-a740-e8036ec11359",
             "message": "Fix UCTE transformers",
-            "severity": null,
-            "subReportsSeverities": [],
+            "severities": [],
             "subReports": []
           },
           {
             "id": "bab9a6f9-0acb-4ba6-a027-9a0e71faa8ba",
             "message": "Fix UCTE regulations",
-            "severity": null,
-            "subReportsSeverities": [],
+            "severities": [],
             "subReports": []
           }
         ]
@@ -75,43 +63,35 @@
       {
         "id": "1fbbe203-2b3a-4c0e-8e3e-8550072ec945",
         "message": "Create buses",
-        "severity": null,
-        "subReportsSeverities": [],
+        "severities": ["TRACE"],
         "subReports": [
           {
             "id": "ca52969c-1f80-44ac-ae00-595deadff5e9",
             "message": "Create buses for substation FFFFFF",
-            "severity": null,
-            "subReportsSeverities": [
-              "TRACE"
-            ],
+            "severities": ["TRACE"],
             "subReports": [
               {
                 "id": null,
                 "message": "Create substation FFFFFF",
-                "severity": "TRACE",
-                "subReportsSeverities": [],
+                "severities": ["TRACE"],
                 "subReports": []
               },
               {
                 "id": null,
                 "message": "Create voltage level FFFFFF1",
-                "severity": "TRACE",
-                "subReportsSeverities": [],
+                "severities": ["TRACE"],
                 "subReports": []
               },
               {
                 "id": null,
                 "message": "Create bus FFFFFF11",
-                "severity": "TRACE",
-                "subReportsSeverities": [],
+                "severities": ["TRACE"],
                 "subReports": []
               },
               {
                 "id": null,
                 "message": "Create bus FFFFFF13",
-                "severity": "TRACE",
-                "subReportsSeverities": [],
+                "severities": ["TRACE"],
                 "subReports": []
               }
             ]
@@ -121,37 +101,30 @@
       {
         "id": "74a0796a-3aff-4a0a-a3be-4a361698a74e",
         "message": "Create lines",
-        "severity": null,
-        "subReportsSeverities": [
-          "TRACE"
-        ],
+        "severities": ["TRACE"],
         "subReports": [
           {
             "id": null,
             "message": "Create dangling line 'FFFFFF11 XXXXXX11 1' (Xnode='XXXXXX11')",
-            "severity": "TRACE",
-            "subReportsSeverities": [],
+            "severities": ["TRACE"],
             "subReports": []
           },
           {
             "id": null,
             "message": "Create dangling line 'FFFFFF11 XXXXXX12 1' (Xnode='XXXXXX12')",
-            "severity": "TRACE",
-            "subReportsSeverities": [],
+            "severities": ["TRACE"],
             "subReports": []
           },
           {
             "id": null,
             "message": "Create dangling line 'FFFFFF13 XXXXXX13 1' (Xnode='XXXXXX13')",
-            "severity": "TRACE",
-            "subReportsSeverities": [],
+            "severities": ["TRACE"],
             "subReports": []
           },
           {
             "id": null,
             "message": "Create dangling line 'FFFFFF13 XXXXXX14 1' (Xnode='XXXXXX14')",
-            "severity": "TRACE",
-            "subReportsSeverities": [],
+            "severities": ["TRACE"],
             "subReports": []
           }
         ]
@@ -159,15 +132,13 @@
       {
         "id": null,
         "message": "No value report",
-        "severity": "INFO",
-        "subReportsSeverities": [],
+        "severities": ["INFO"],
         "subReports": []
       },
       {
         "id": null,
         "message": "Create transformers",
-        "severity": "TRACE",
-        "subReportsSeverities": [],
+        "severities": ["TRACE"],
         "subReports": []
       }
     ]
