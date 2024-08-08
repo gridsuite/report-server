@@ -162,7 +162,8 @@ public class ReportControllerTest {
         insertReport(REPORT_UUID, testReport1);
 
         SQLStatementCountValidator.reset();
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
+        final String filterValue = "Test importing UCTE file frVoltageRegulatingXnode.uct";
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR&reportNameFilter=" + filterValue + "&reportNameMatchingType=EXACT_MATCHING"))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -191,7 +192,8 @@ public class ReportControllerTest {
         insertReport(REPORT_UUID, testReport1);
 
         SQLStatementCountValidator.reset();
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
+        final String filterEndsWithValue = "frVoltageRegulatingXnode.uct";
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR&reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -293,7 +295,6 @@ public class ReportControllerTest {
             .andExpect(status().isOk())
             .andReturn();
         assertReportListsAreEqualIgnoringIds(result2, toString(DEFAULT_EMPTY_REPORT2));
-
     }
 
     @Test
