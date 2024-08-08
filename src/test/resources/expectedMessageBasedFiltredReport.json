@@ -1,0 +1,6 @@
+{
+  "id": null,
+  "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
+  "severities": ["ERROR"],
+  "subReports": []
+}

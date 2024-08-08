@@ -2,8 +2,7 @@
   {
     "id": null,
     "message": "test",
-    "severity": null,
-    "subReportsSeverities": [],
+    "severities": [],
     "subReports": []
   }
 ]
