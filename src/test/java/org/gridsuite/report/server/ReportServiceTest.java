@@ -127,7 +127,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(1, 1, 0, 0);
+        assertRequestsCount(2, 1, 0, 0);
 
         assertEquals(3, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -135,6 +135,35 @@ class ReportServiceTest {
         assertEquals(2, parentReportEntity.get().getChildren().size());
         var anotherChildReportEntity = reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(1).getId()).orElseThrow();
         assertReportsAreEqual(anotherChildReportEntity, anotherReport, Set.of());
+    }
+
+    @Test
+    void appendIncermentalModificationReportToExistingReport() {
+        var reportNode = ReportNode.newRootReportNode()
+            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54@NetworkModification")
+            .build();
+        reportNode.newReportNode()
+            .withMessageTemplate("genMod", "GENERATOR_MODIFICATION")
+            .add();
+        var parentReportId = UUID.randomUUID();
+        reportService.createReport(parentReportId, reportNode);
+
+        var anotherReport = ReportNode.newRootReportNode()
+            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54@NetworkModification")
+            .build();
+        anotherReport.newReportNode()
+            .withMessageTemplate("twtMod", "TWO_WINDINGS_TRANSFORMER_MODIFICATION")
+            .add();
+        SQLStatementCountValidator.reset();
+        reportService.createReport(parentReportId, anotherReport);
+        assertRequestsCount(2, 1, 0, 0);
+
+        assertEquals(4, reportNodeRepository.findAll().size());
+        var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
+        assertTrue(parentReportEntity.isPresent());
+        // the two subreports "GENERATOR_MODIFICATION" and "TWO_WINDINGS_TRANSFORMER_MODIFICATION" are added to the same the parent report
+        assertEquals(1, parentReportEntity.get().getChildren().size());
+        assertEquals(2, reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId()).orElseThrow().getChildren().size());
     }
 
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, Set<String> severityList) {

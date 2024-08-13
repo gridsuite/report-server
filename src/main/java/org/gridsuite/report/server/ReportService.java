@@ -113,11 +113,23 @@ public class ReportService {
         Optional<ReportNodeEntity> reportNodeEntity = reportNodeRepository.findById(id);
         if (reportNodeEntity.isPresent()) {
             LOGGER.debug("Reporter {} present, append ", reportNode.getMessage());
-            saveAllReportElements(reportNodeEntity.get(), reportNode);
+            ReportNodeEntity reportEntity = reportNodeEntity.get();
+            // for incremental network modifications, we need to append the new report elements to the existing network modification report
+            reportEntity.getChildren().stream()
+                .filter(child -> child.getMessage().equals(reportNode.getMessage()) && child.getMessage().contains("@"))
+                .findFirst()
+                .ifPresentOrElse(
+                    child -> saveReportChildren(child, reportNode),
+                    () -> saveAllReportElements(reportEntity, reportNode)
+            );
         } else {
             LOGGER.debug("Reporter {} absent, create ", reportNode.getMessage());
             toEntity(id, reportNode);
         }
+    }
+
+    private void saveReportChildren(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
+        reportNode.getChildren().forEach(child -> traverseReportModel(parentReportNodeEntity, child));
     }
 
     private void toEntity(UUID id, ReportNode reportElement) {
