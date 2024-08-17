@@ -96,19 +96,19 @@ class ReportServiceTest {
 
         assertEquals(1, parentReportEntity.get().getChildren().size());
         var childReportEntity = reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId()).orElseThrow();
-        assertReportsAreEqual(childReportEntity, reportNode, Set.of(ReportSeverity.ERROR.toString(), ReportSeverity.INFO.toString()));
+        assertReportsAreEqual(childReportEntity, reportNode, Set.of(Severity.ERROR.toString(), Severity.INFO.toString()));
 
         childReportEntity = reportService.getReportNodeEntity(childReportEntity.getId()).orElseThrow();
         assertEquals(2, childReportEntity.getChildren().size());
         var subChildReportNode1 = reportService.getReportNodeEntity(childReportEntity.getChildren().get(0).getId()).orElseThrow();
-        assertReportsAreEqual(subChildReportNode1, subReportNode1, Set.of(ReportSeverity.INFO.toString()));
+        assertReportsAreEqual(subChildReportNode1, subReportNode1, Set.of(Severity.INFO.toString()));
         var subChildReportNode2 = reportService.getReportNodeEntity(childReportEntity.getChildren().get(1).getId()).orElseThrow();
-        assertReportsAreEqual(subChildReportNode2, subReportNode2, Set.of(ReportSeverity.ERROR.toString()));
+        assertReportsAreEqual(subChildReportNode2, subReportNode2, Set.of(Severity.ERROR.toString()));
 
         subChildReportNode1 = reportService.getReportNodeEntity(subChildReportNode1.getId()).orElseThrow();
         assertEquals(1, subChildReportNode1.getChildren().size());
         var subSubChildReportNode = reportService.getReportNodeEntity(subChildReportNode1.getChildren().get(0).getId()).orElseThrow();
-        assertReportsAreEqual(subSubChildReportNode, subSubReportNode1, Set.of(ReportSeverity.INFO.toString()));
+        assertReportsAreEqual(subSubChildReportNode, subSubReportNode1, Set.of(Severity.INFO.toString()));
     }
 
     @Test

@@ -50,10 +50,10 @@ public class ReportController {
         try {
             List<Report> reports = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType).getSubReports();
             return reports.isEmpty() ?
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(ReportService.getEmptyReport(id, defaultName))) :
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(id, defaultName))) :
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(reports);
         } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(ReportService.getEmptyReport(id, defaultName)));
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(id, defaultName)));
         }
     }
 
@@ -97,7 +97,7 @@ public class ReportController {
     @Operation(summary = "delete treereports from a list of parent reports based on a key")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been deleted")})
     public ResponseEntity<Void> deleteTreeReports(@Parameter(description = "parent reports to parse and their associated tree report key to identify which to delete") @RequestBody Map<UUID, String> identifiers) {
-        service.deleteTreeReports(identifiers);
+        service.deleteReports(identifiers);
         return ResponseEntity.ok().build();
     }
 }

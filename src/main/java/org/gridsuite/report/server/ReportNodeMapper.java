@@ -24,7 +24,7 @@ public final class ReportNodeMapper {
         // Should not be instantiated
     }
 
-    public static Report mapper(OptimizedReportNodeEntities optimizedReportNodeEntities, @Nullable Set<String> severityLevels, @Nullable String reportNameFilter, @Nullable ReportService.ReportNameMatchingType reportNameMatchingType) {
+    public static Report map(OptimizedReportNodeEntities optimizedReportNodeEntities, @Nullable Set<String> severityLevels, @Nullable String reportNameFilter, @Nullable ReportService.ReportNameMatchingType reportNameMatchingType) {
         UUID rootId = getRootId(optimizedReportNodeEntities);
 
         Map<UUID, Report> reportsMap = new HashMap<>();

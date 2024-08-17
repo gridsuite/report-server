@@ -30,8 +30,6 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
 
     List<ReportNodeEntity> findAllByMessage(String message);
 
-    List<ReportNodeEntity> findAllByMessageContaining(String filter);
-
     List<ReportNodeEntity> findAllByParentIdAndMessage(UUID parentId, String messageKey);
 
     @Modifying

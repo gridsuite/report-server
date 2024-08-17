@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static org.gridsuite.report.server.ReportNodeMapper.mapper;
+import static org.gridsuite.report.server.ReportNodeMapper.map;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -72,7 +72,7 @@ public class ReportService {
     public Report getReport(UUID reportId, Set<String> severityLevels, String reportNameFilter, ReportNameMatchingType reportNameMatchingType) {
         Objects.requireNonNull(reportId);
         OptimizedReportNodeEntities optimizedReportNodeEntities = getOptimizedReportNodeEntities(reportId);
-        return mapper(optimizedReportNodeEntities, severityLevels, reportNameFilter, reportNameMatchingType);
+        return map(optimizedReportNodeEntities, severityLevels, reportNameFilter, reportNameMatchingType);
     }
 
     private OptimizedReportNodeEntities getOptimizedReportNodeEntities(UUID rootReportNodeId) {
@@ -101,7 +101,7 @@ public class ReportService {
         return new OptimizedReportNodeEntities(treeIds, reportNodeEntityById);
     }
 
-    public static Report getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
+    public Report getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
         Report emptyReport = new Report();
         emptyReport.setId(id);
         emptyReport.setMessage(defaultName);
@@ -110,39 +110,44 @@ public class ReportService {
 
     @Transactional
     public void createReport(UUID id, ReportNode reportNode) {
-        Optional<ReportNodeEntity> reportNodeEntity = reportNodeRepository.findById(id);
-        if (reportNodeEntity.isPresent()) {
-            LOGGER.debug("Reporter {} present, append ", reportNode.getMessage());
-            ReportNodeEntity reportEntity = reportNodeEntity.get();
-            // for incremental network modifications, we need to append the new report elements to the existing network modification report
-            reportEntity.getChildren().stream()
-                .filter(child -> child.getMessage().equals(reportNode.getMessage()) && child.getMessage().contains("@"))
-                .findFirst()
-                .ifPresentOrElse(
-                    child -> saveReportChildren(child, reportNode),
-                    () -> saveAllReportElements(reportEntity, reportNode)
-            );
-        } else {
-            LOGGER.debug("Reporter {} absent, create ", reportNode.getMessage());
-            toEntity(id, reportNode);
-        }
+        reportNodeRepository.findById(id).ifPresentOrElse(
+            reportEntity -> {
+                LOGGER.debug("Reporter {} present, append ", reportNode.getMessage());
+                appendReportElements(reportEntity, reportNode);
+            },
+            () -> {
+                LOGGER.debug("Reporter {} absent, create ", reportNode.getMessage());
+                createNewReport(id, reportNode);
+            }
+        );
+    }
+
+    private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
+        // for incremental network modifications, we need to append the new report elements to the existing network modification report
+        reportEntity.getChildren().stream()
+            .filter(child -> child.getMessage().equals(reportNode.getMessage()) && child.getMessage().contains("@"))
+            .findFirst()
+            .ifPresentOrElse(
+                child -> saveReportChildren(child, reportNode),
+                () -> saveAllReportElements(reportEntity, reportNode)
+        );
+    }
+
+    private void createNewReport(UUID id, ReportNode reportNode) {
+        var persistedReport = reportNodeRepository.save(new ReportNodeEntity(id, System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
+        saveAllReportElements(persistedReport, reportNode);
     }
 
     private void saveReportChildren(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
-        reportNode.getChildren().forEach(child -> traverseReportModel(parentReportNodeEntity, child));
-    }
-
-    private void toEntity(UUID id, ReportNode reportElement) {
-        var persistedReport = reportNodeRepository.save(new ReportNodeEntity(id, System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
-        saveAllReportElements(persistedReport, reportElement);
+        reportNode.getChildren().forEach(child -> saveReportNodeRecursively(parentReportNodeEntity, child));
     }
 
     private void saveAllReportElements(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
-        traverseReportModel(parentReportNodeEntity, reportNode);
+        saveReportNodeRecursively(parentReportNodeEntity, reportNode);
         reportNodeRepository.save(parentReportNodeEntity);
     }
 
-    private void traverseReportModel(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
+    private void saveReportNodeRecursively(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
         var reportNodeEntity = new ReportNodeEntity(
             reportNode.getMessage(),
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
@@ -151,7 +156,7 @@ public class ReportService {
         );
 
         reportNodeRepository.save(reportNodeEntity);
-        reportNode.getChildren().forEach(child -> traverseReportModel(reportNodeEntity, child));
+        reportNode.getChildren().forEach(child -> saveReportNodeRecursively(reportNodeEntity, child));
     }
 
     private static Set<String> severities(ReportNode reportNode) {
@@ -159,7 +164,7 @@ public class ReportService {
         if (reportNode.getChildren().isEmpty() && reportNode.getValues().containsKey(ReportConstants.SEVERITY_KEY)) {
             severities.add(reportNode.getValues().get(ReportConstants.SEVERITY_KEY).getValue().toString());
         } else {
-            reportNode.getChildren().forEach(child -> Optional.ofNullable(severities(child)).ifPresent(severities::addAll));
+            reportNode.getChildren().forEach(child -> severities.addAll(severities(child)));
         }
         return severities;
     }
@@ -175,25 +180,25 @@ public class ReportService {
         filteredChildrenList.forEach(child -> deleteRoot(child.getId()));
 
         if (filteredChildrenList.size() == reportNodeEntity.getChildren().size()) {
-            // let's remove the whole Report only if we have removed all its treeReport
+            // let's remove the whole Report only if we have removed all its children
             reportNodeRepository.deleteByIdIn(List.of(id));
         }
     }
 
     @Transactional
-    public void deleteTreeReports(Map<UUID, String> identifiers) {
+    public void deleteReports(Map<UUID, String> identifiers) {
         Objects.requireNonNull(identifiers);
-        identifiers.forEach(this::deleteTreeReport);
+        identifiers.forEach(this::deleteReportByMessage);
     }
 
-    private void deleteTreeReport(UUID reportId, String reportName) {
+    private void deleteReportByMessage(UUID reportId, String reportMessage) {
         Objects.requireNonNull(reportId);
-        List<ReportNodeEntity> reportNodeEntities = reportNodeRepository.findAllByParentIdAndMessage(reportId, reportName);
+        List<ReportNodeEntity> reportNodeEntities = reportNodeRepository.findAllByParentIdAndMessage(reportId, reportMessage);
         reportNodeEntities.forEach(reportNodeEntity -> deleteRoot(reportNodeEntity.getId()));
     }
 
     /**
-     * delete all the report and tree report elements depending on a root tree report
+     * delete all the reports depending on a root report
      */
     private void deleteRoot(UUID rootTreeReportId) {
         AtomicReference<Long> startTime = new AtomicReference<>();
@@ -214,7 +219,7 @@ public class ReportService {
             .forEach(entry ->
                 Lists.partition(entry.getValue(), SQL_QUERY_MAX_PARAM_NUMBER).forEach(reportNodeRepository::deleteByIdIn)
             );
-        LOGGER.info("The report and tree report elements of '{}' has been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
+        LOGGER.info("All the reports of '{}' have been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
     }
 
     // package private for tests
