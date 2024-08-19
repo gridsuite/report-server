@@ -29,12 +29,7 @@ public final class ReportNodeMapper {
 
         Map<UUID, Report> reportsMap = new HashMap<>();
         mapRootNode(optimizedReportNodeEntities.reportNodeEntityById().get(rootId), reportsMap);
-        if (optimizedReportNodeEntities.treeDepth() > 1) {
-            mapLevel(optimizedReportNodeEntities, reportsMap, 1, reportMessageKeyMatches(reportNameFilter, reportNameMatchingType).and(hasOneOfSeverityLevels(severityLevels)));
-        }
-        for (int i = 2; i < optimizedReportNodeEntities.treeDepth(); i++) {
-            mapLevel(optimizedReportNodeEntities, reportsMap, i, hasOneOfSeverityLevels(severityLevels));
-        }
+        mapLevels(optimizedReportNodeEntities, reportsMap, severityLevels, reportNameFilter, reportNameMatchingType);
 
         return reportsMap.get(rootId);
     }
@@ -48,44 +43,53 @@ public final class ReportNodeMapper {
     }
 
     private static void mapRootNode(ReportNodeEntity rootReportNodeEntity, Map<UUID, Report> reportsMap) {
-        Report rootReport = new Report();
-        if (!Objects.isNull(rootReportNodeEntity.getMessage())) {
-            rootReport.setMessage(rootReportNodeEntity.getMessage());
-        } else {
-            rootReport.setMessage(rootReportNodeEntity.getId().toString());
-        }
-        mapValues(rootReportNodeEntity, rootReport);
+        Report rootReport = createReportFromNode(rootReportNodeEntity);
         reportsMap.put(rootReportNodeEntity.getId(), rootReport);
     }
 
-    private static void mapLevel(OptimizedReportNodeEntities optimizedReportNodeEntities, Map<UUID, Report> reportNodesById, int level, Predicate<ReportNodeEntity> filter) {
+    private static Report createReportFromNode(ReportNodeEntity reportNodeEntity) {
+        Report report = new Report();
+        report.setMessage(Optional.ofNullable(reportNodeEntity.getMessage()).orElse(reportNodeEntity.getId().toString()));
+        mapValues(reportNodeEntity, report);
+        return report;
+    }
+
+    private static void mapLevels(OptimizedReportNodeEntities optimizedReportNodeEntities, Map<UUID, Report> reportsMap, @Nullable Set<String> severityLevels, @Nullable String reportNameFilter, @Nullable ReportService.ReportNameMatchingType reportNameMatchingType) {
+        Predicate<ReportNodeEntity> filter = reportMessageKeyMatches(reportNameFilter, reportNameMatchingType).and(hasOneOfSeverityLevels(severityLevels));
+        for (int level = 1; level < optimizedReportNodeEntities.treeDepth(); level++) {
+            mapLevel(optimizedReportNodeEntities, reportsMap, level, filter);
+            filter = hasOneOfSeverityLevels(severityLevels);
+        }
+    }
+
+    private static void mapLevel(OptimizedReportNodeEntities optimizedReportNodeEntities, Map<UUID, Report> reportsMap, int level, Predicate<ReportNodeEntity> filter) {
         List<UUID> nodeIdsToMap = optimizedReportNodeEntities.treeIds().get(level).stream()
             .map(optimizedReportNodeEntities.reportNodeEntityById()::get)
             .sorted(Comparator.comparing(ReportNodeEntity::getNanos))
             .filter(filter)
             .map(ReportNodeEntity::getId)
             .toList();
-        nodeIdsToMap.forEach(id -> mapReportNodesEntity(id, optimizedReportNodeEntities.reportNodeEntityById(), reportNodesById));
+        nodeIdsToMap.forEach(id -> mapReportNodeEntity(id, optimizedReportNodeEntities.reportNodeEntityById(), reportsMap));
     }
 
-    private static void mapReportNodesEntity(UUID id, Map<UUID, ReportNodeEntity> reportEntities, Map<UUID, Report> reports) {
+    private static void mapReportNodeEntity(UUID id, Map<UUID, ReportNodeEntity> reportEntities, Map<UUID, Report> reports) {
         ReportNodeEntity reportNodeEntity = reportEntities.get(id);
         Optional.ofNullable(reports.get(reportNodeEntity.getParent().getId())).ifPresent(parentReport -> {
             Report report = parentReport.addEmptyReport();
-            if (reportNodeEntity.getMessage().contains("@")) {
-                report.setMessage(reportNodeEntity.getMessage().split("@")[0]);
-            } else {
-                report.setMessage(reportNodeEntity.getMessage());
-            }
+            report.setMessage(extractMessage(reportNodeEntity));
             mapValues(reportNodeEntity, report);
             reports.put(id, report);
         });
     }
 
-    private static void mapValues(ReportNodeEntity rootReportNodeEntity, Report report) {
-        report.setSeverities(rootReportNodeEntity.getSeverities().stream().map(Severity::valueOf).toList());
-        if (!rootReportNodeEntity.getChildren().isEmpty() || rootReportNodeEntity.getSeverities().isEmpty()) {
-            report.setId(rootReportNodeEntity.getId());
+    private static String extractMessage(ReportNodeEntity reportNodeEntity) {
+        return reportNodeEntity.getMessage().contains("@") ? reportNodeEntity.getMessage().split("@")[0] : reportNodeEntity.getMessage();
+    }
+
+    private static void mapValues(ReportNodeEntity reportNodeEntity, Report report) {
+        report.setSeverities(reportNodeEntity.getSeverities().stream().map(Severity::valueOf).toList());
+        if (!reportNodeEntity.getChildren().isEmpty() || reportNodeEntity.getSeverities().isEmpty()) {
+            report.setId(reportNodeEntity.getId());
         }
     }
 
