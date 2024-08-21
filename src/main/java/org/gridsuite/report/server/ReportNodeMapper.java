@@ -55,10 +55,11 @@ public final class ReportNodeMapper {
     }
 
     private static void mapLevels(OptimizedReportNodeEntities optimizedReportNodeEntities, Map<UUID, Report> reportsMap, @Nullable Set<String> severityLevels, @Nullable String reportNameFilter, @Nullable ReportService.ReportNameMatchingType reportNameMatchingType) {
-        Predicate<ReportNodeEntity> filter = reportMessageKeyMatches(reportNameFilter, reportNameMatchingType).and(hasOneOfSeverityLevels(severityLevels));
-        for (int level = 1; level < optimizedReportNodeEntities.treeDepth(); level++) {
-            mapLevel(optimizedReportNodeEntities, reportsMap, level, filter);
-            filter = hasOneOfSeverityLevels(severityLevels);
+        if (optimizedReportNodeEntities.treeDepth() > 1) {
+            mapLevel(optimizedReportNodeEntities, reportsMap, 1, reportMessageKeyMatches(reportNameFilter, reportNameMatchingType).and(hasOneOfSeverityLevels(severityLevels)));
+        }
+        for (int i = 2; i < optimizedReportNodeEntities.treeDepth(); i++) {
+            mapLevel(optimizedReportNodeEntities, reportsMap, i, hasOneOfSeverityLevels(severityLevels));
         }
     }
 
