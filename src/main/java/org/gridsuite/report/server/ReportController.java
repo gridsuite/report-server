@@ -48,7 +48,7 @@ public class ReportController {
                                                   @Parameter(description = "Filter on severity levels. Will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
-            List<Report> reports = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType);
+            List<Report> reports = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType).getSubReports();
             return reports.isEmpty() ?
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(id, defaultName))) :
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(reports);
@@ -66,7 +66,7 @@ public class ReportController {
         try {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getSubReport(id, severityLevels));
+                    .body(service.getReport(id, severityLevels, null, null));
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }
@@ -97,7 +97,7 @@ public class ReportController {
     @Operation(summary = "delete treereports from a list of parent reports based on a key")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been deleted")})
     public ResponseEntity<Void> deleteTreeReports(@Parameter(description = "parent reports to parse and their associated tree report key to identify which to delete") @RequestBody Map<UUID, String> identifiers) {
-        service.deleteTreeReports(identifiers);
+        service.deleteReports(identifiers);
         return ResponseEntity.ok().build();
     }
 }

@@ -28,25 +28,8 @@ import java.util.UUID;
 public class Report {
     private UUID id;
     private String message;
-    private Severity severity;
-    private List<Severity> subReportsSeverities = new ArrayList<>();
+    private List<Severity> severities = new ArrayList<>();
     private List<Report> subReports = new ArrayList<>();
-
-    public void addReportElement(final Severity severity, final String message) {
-        Report reportElement = new Report();
-        reportElement.setSeverity(severity);
-        reportElement.setMessage(message);
-        subReports.add(reportElement);
-    }
-
-    public Report addReportChild(final UUID id, final List<Severity> severityList, final String message) {
-        Report reportChild = new Report();
-        reportChild.setId(id);
-        reportChild.setSubReportsSeverities(severityList);
-        reportChild.setMessage(message);
-        subReports.add(reportChild);
-        return reportChild;
-    }
 
     public Report addEmptyReport() {
         Report subReport = new Report();
