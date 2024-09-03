@@ -92,6 +92,7 @@ public final class ReportNodeMapper {
         if (!reportNodeEntity.getChildren().isEmpty() || reportNodeEntity.getSeverities().isEmpty()) {
             report.setId(reportNodeEntity.getId());
         }
+        report.setParentId(Optional.ofNullable(reportNodeEntity.getParent()).map(ReportNodeEntity::getId).orElse(null));
     }
 
     private static Predicate<ReportNodeEntity> hasOneOfSeverityLevels(Set<String> severityLevels) {

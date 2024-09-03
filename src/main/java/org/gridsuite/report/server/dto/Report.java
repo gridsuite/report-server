@@ -27,6 +27,7 @@ import java.util.UUID;
 @Schema(description = "Report data")
 public class Report {
     private UUID id;
+    private UUID parentId;
     private String message;
     private List<Severity> severities = new ArrayList<>();
     private List<Report> subReports = new ArrayList<>();
