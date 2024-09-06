@@ -1,8 +1,6 @@
-[
-  {
-    "id": null,
-    "message": "test",
-    "severities": [],
-    "subReports": []
-  }
-]
+{
+  "id": null,
+  "message": "test",
+  "severities": [],
+  "subReports": []
+}

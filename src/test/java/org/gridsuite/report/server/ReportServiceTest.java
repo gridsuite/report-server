@@ -58,12 +58,10 @@ class ReportServiceTest {
         reportService.createReport(parentReportId, reportNode);
         assertRequestsCount(1, 1, 0, 0);
 
-        assertEquals(2, reportNodeRepository.findAll().size());
+        assertEquals(1, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
         assertTrue(parentReportEntity.isPresent());
-        assertEquals(1, parentReportEntity.get().getChildren().size());
-        var childReportEntity = reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId());
-        assertReportsAreEqual(childReportEntity.orElseThrow(), reportNode, Set.of());
+        assertReportsAreEqual(parentReportEntity.orElseThrow(), reportNode, Set.of());
     }
 
     @Test
@@ -90,25 +88,21 @@ class ReportServiceTest {
         reportService.createReport(parentReportId, reportNode);
         assertRequestsCount(1, 2, 0, 0);
 
-        assertEquals(5, reportNodeRepository.findAll().size());
+        assertEquals(4, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
         assertTrue(parentReportEntity.isPresent());
 
-        assertEquals(1, parentReportEntity.get().getChildren().size());
+        assertEquals(2, parentReportEntity.get().getChildren().size());
         var childReportEntity = reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId()).orElseThrow();
-        assertReportsAreEqual(childReportEntity, reportNode, Set.of(Severity.ERROR.toString(), Severity.INFO.toString()));
+        assertReportsAreEqual(childReportEntity, subReportNode1, Set.of(Severity.INFO.toString()));
+        assertReportsAreEqual(parentReportEntity.get(), reportNode, Set.of(Severity.ERROR.toString(), Severity.INFO.toString()));
 
         childReportEntity = reportService.getReportNodeEntity(childReportEntity.getId()).orElseThrow();
-        assertEquals(2, childReportEntity.getChildren().size());
+        assertEquals(1, childReportEntity.getChildren().size());
         var subChildReportNode1 = reportService.getReportNodeEntity(childReportEntity.getChildren().get(0).getId()).orElseThrow();
-        assertReportsAreEqual(subChildReportNode1, subReportNode1, Set.of(Severity.INFO.toString()));
-        var subChildReportNode2 = reportService.getReportNodeEntity(childReportEntity.getChildren().get(1).getId()).orElseThrow();
+        assertReportsAreEqual(subChildReportNode1, subSubReportNode1, Set.of(Severity.INFO.toString()));
+        var subChildReportNode2 = reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(1).getId()).orElseThrow();
         assertReportsAreEqual(subChildReportNode2, subReportNode2, Set.of(Severity.ERROR.toString()));
-
-        subChildReportNode1 = reportService.getReportNodeEntity(subChildReportNode1.getId()).orElseThrow();
-        assertEquals(1, subChildReportNode1.getChildren().size());
-        var subSubChildReportNode = reportService.getReportNodeEntity(subChildReportNode1.getChildren().get(0).getId()).orElseThrow();
-        assertReportsAreEqual(subSubChildReportNode, subSubReportNode1, Set.of(Severity.INFO.toString()));
     }
 
     @Test
@@ -124,17 +118,21 @@ class ReportServiceTest {
             .withMessageTemplate("test2", "template test2 ${test}")
             .withTypedValue("test", "hello", TypedValue.UNTYPED)
             .build();
+        anotherReport.newReportNode()
+            .withMessageTemplate("test3", "template test3 ${test}")
+            .withTypedValue("test", "hello", TypedValue.UNTYPED)
+            .add();
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(2, 1, 0, 0);
+        assertRequestsCount(1, 1, 0, 0);
 
-        assertEquals(3, reportNodeRepository.findAll().size());
+        assertEquals(2, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
         assertTrue(parentReportEntity.isPresent());
-        assertEquals(2, parentReportEntity.get().getChildren().size());
-        var anotherChildReportEntity = reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(1).getId()).orElseThrow();
-        assertReportsAreEqual(anotherChildReportEntity, anotherReport, Set.of());
+        assertEquals(1, parentReportEntity.get().getChildren().size());
+        var anotherChildReportEntity = reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId()).orElseThrow();
+        assertReportsAreEqual(anotherChildReportEntity, anotherReport.getChildren().get(0), Set.of());
     }
 
     @Test
@@ -156,14 +154,14 @@ class ReportServiceTest {
             .add();
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(2, 1, 0, 0);
+        assertRequestsCount(1, 1, 0, 0);
 
-        assertEquals(4, reportNodeRepository.findAll().size());
+        assertEquals(3, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
         assertTrue(parentReportEntity.isPresent());
         // the two subreports "GENERATOR_MODIFICATION" and "TWO_WINDINGS_TRANSFORMER_MODIFICATION" are added to the same the parent report
-        assertEquals(1, parentReportEntity.get().getChildren().size());
-        assertEquals(2, reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId()).orElseThrow().getChildren().size());
+        assertEquals(2, parentReportEntity.get().getChildren().size());
+        assertEquals(0, reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId()).orElseThrow().getChildren().size());
     }
 
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, Set<String> severityList) {

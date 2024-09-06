@@ -7,7 +7,6 @@
 package org.gridsuite.report.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.Configuration;
@@ -101,14 +100,14 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void test() throws Exception {
+    public void testAppendReports() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andReturn();
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
+        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
 
         insertReport(REPORT_UUID, toString(REPORT_TWO));
 
@@ -124,7 +123,7 @@ public class ReportControllerTest {
         MvcResult resultAfterDeletion = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertReportListsAreEqualIgnoringIds(resultAfterDeletion, toString(DEFAULT_EMPTY_REPORT1));
+        assertReportsAreEqualIgnoringIds(resultAfterDeletion, toString(DEFAULT_EMPTY_REPORT1));
     }
 
     @Test
@@ -137,7 +136,7 @@ public class ReportControllerTest {
             .andExpect(status().isOk())
             .andReturn();
 
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
+        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
         assertRequestsCount(2, 0, 0, 0);
     }
 
@@ -152,68 +151,7 @@ public class ReportControllerTest {
             .andExpect(status().isOk())
             .andReturn();
 
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetReportWithExactMatchingTrue() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        SQLStatementCountValidator.reset();
-        final String filterValue = "Test importing UCTE file frVoltageRegulatingXnode.uct";
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR&reportNameFilter=" + filterValue + "&reportNameMatchingType=EXACT_MATCHING"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetReportWithExactMatchingFalse() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        SQLStatementCountValidator.reset();
-        final String filterValue = "__noMatchingValue__";
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportNameFilter=" + filterValue + "&reportNameMatchingType=EXACT_MATCHING"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetReportWithEndsWithTrue() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        SQLStatementCountValidator.reset();
-        final String filterEndsWithValue = "frVoltageRegulatingXnode.uct";
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR&reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetReportWithEndsWithFalse() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        SQLStatementCountValidator.reset();
-        final String filterEndsWithValue = "__noMatchingValue__";
-
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportNameFilter=" + filterEndsWithValue + "&reportNameMatchingType=ENDS_WITH"))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
+        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
         assertRequestsCount(2, 0, 0, 0);
     }
 
@@ -227,7 +165,7 @@ public class ReportControllerTest {
             .andExpect(status().isOk())
             .andReturn();
 
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS));
+        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS));
         assertRequestsCount(2, 0, 0, 0);
     }
 
@@ -241,7 +179,7 @@ public class ReportControllerTest {
             .andExpect(status().isOk())
             .andReturn();
 
-        assertReportListsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS));
+        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS));
         assertRequestsCount(2, 0, 0, 0);
     }
 
@@ -289,12 +227,12 @@ public class ReportControllerTest {
         MvcResult result1 = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andReturn();
-        assertReportListsAreEqualIgnoringIds(result1, toString(DEFAULT_EMPTY_REPORT1));
+        assertReportsAreEqualIgnoringIds(result1, toString(DEFAULT_EMPTY_REPORT1));
 
         MvcResult result2 = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?defaultName=test"))
             .andExpect(status().isOk())
             .andReturn();
-        assertReportListsAreEqualIgnoringIds(result2, toString(DEFAULT_EMPTY_REPORT2));
+        assertReportsAreEqualIgnoringIds(result2, toString(DEFAULT_EMPTY_REPORT2));
     }
 
     @Test
@@ -302,71 +240,28 @@ public class ReportControllerTest {
         String testReportLoadflow = toString(REPORT_LOADFLOW);
         insertReport(REPORT_UUID, testReportLoadflow);
 
-        Map<UUID, String> reportsKeys = new HashMap<>();
-        reportsKeys.put(UUID.fromString(REPORT_UUID), "LoadFlow");
+        List<UUID> reportsIds = new ArrayList<>();
+        reportsIds.add(UUID.fromString(REPORT_UUID));
 
         SQLStatementCountValidator.reset();
-        mvc.perform(delete(URL_TEMPLATE + "/treereports")
+        mvc.perform(delete(URL_TEMPLATE + "/reports")
                 .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(reportsKeys)))
+                .content(objectMapper.writeValueAsString(reportsIds)))
             .andExpect(status().isOk())
             .andReturn();
-        assertRequestsCount(1, 0, 0, 0);
-
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
-            .andExpect(status().isOk())
-            .andReturn();
-        assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
-    }
-
-    @Test
-    public void testDeleteReportWithFilter() throws Exception {
-        String testReportLoadflow = toString(REPORT_LOADFLOW);
-        insertReport(REPORT_UUID, testReportLoadflow);
-        Map<UUID, String> reportsKeys = new HashMap<>();
-        final String reportType = "LoadFlow";
-        reportsKeys.put(UUID.fromString(REPORT_UUID), reportType);
-
-        SQLStatementCountValidator.reset();
-        mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=" + reportType)
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(reportsKeys)))
-                .andExpect(status().isOk())
-                .andReturn();
         assertRequestsCount(2, 0, 0, 0);
 
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andReturn();
-        assertReportListsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
-    }
-
-    @Test
-    public void testDeleteReportWithBadFilter() throws Exception {
-        String testReportLoadflow = toString(REPORT_LOADFLOW);
-        insertReport(REPORT_UUID, testReportLoadflow);
-        Map<UUID, String> reportsKeys = new HashMap<>();
-        final String reportType = "LoadFlow";
-        reportsKeys.put(UUID.fromString(REPORT_UUID), reportType);
-
-        SQLStatementCountValidator.reset();
-        mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?reportTypeFilter=noMatchingFilter")
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(reportsKeys)))
-                .andExpect(status().isOk())
-                .andReturn();
-        // no deletion here
-        assertRequestsCount(2, 0, 0, 0);
-
-        mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
-                .andExpect(status().isOk());
+        assertReportsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
             .andReturn();
-        assertReportListsAreEqualIgnoringIds(result, toString(reportConcat2));
+        assertReportsAreEqualIgnoringIds(result, toString(reportConcat2));
     }
 
     private void insertReport(String reportsId, String content) throws Exception {
@@ -374,12 +269,6 @@ public class ReportControllerTest {
             .content(content)
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
-    }
-
-    private void assertReportListsAreEqualIgnoringIds(MvcResult result, String expectedContent) throws JsonProcessingException, UnsupportedEncodingException {
-        List<Report> expectedReportNodeList = objectMapper.readValue(expectedContent, new TypeReference<>() { });
-        List<Report> actualReportNodeList = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() { });
-        TestUtils.assertReportListsAreEqualIgnoringIds(expectedReportNodeList, actualReportNodeList);
     }
 
     private void assertReportsAreEqualIgnoringIds(MvcResult result, String expectedContent) throws JsonProcessingException, UnsupportedEncodingException {

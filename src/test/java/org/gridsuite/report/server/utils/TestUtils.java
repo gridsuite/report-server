@@ -29,13 +29,6 @@ public final class TestUtils {
         assertDeleteCount(delete);
     }
 
-    public static void assertReportListsAreEqualIgnoringIds(List<Report> expectedNodeList, List<Report> actualNodeList) {
-        assertEquals(expectedNodeList.size(), actualNodeList.size());
-        for (int i = 0; i < expectedNodeList.size(); i++) {
-            assertReportsAreEqualIgnoringIds(expectedNodeList.get(i), actualNodeList.get(i));
-        }
-    }
-
     public static void assertReportsAreEqualIgnoringIds(Report expectedNode, Report actualNode) {
         assertEquals(expectedNode.getMessage(), actualNode.getMessage());
         assertEquals(expectedNode.getSeverities().toString(), actualNode.getSeverities().toString());
