@@ -9,8 +9,6 @@ package org.gridsuite.report.server.utils;
 
 import org.gridsuite.report.server.dto.Report;
 
-import java.util.*;
-
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertDeleteCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
