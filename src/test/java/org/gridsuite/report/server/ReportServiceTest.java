@@ -138,7 +138,7 @@ class ReportServiceTest {
     @Test
     void appendIncermentalModificationReportToExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54@NetworkModification")
+            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
             .build();
         reportNode.newReportNode()
             .withMessageTemplate("genMod", "GENERATOR_MODIFICATION")
@@ -147,7 +147,7 @@ class ReportServiceTest {
         reportService.createReport(parentReportId, reportNode);
 
         var anotherReport = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54@NetworkModification")
+            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
             .build();
         anotherReport.newReportNode()
             .withMessageTemplate("twtMod", "TWO_WINDINGS_TRANSFORMER_MODIFICATION")
