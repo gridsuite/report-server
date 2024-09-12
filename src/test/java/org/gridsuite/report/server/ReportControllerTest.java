@@ -14,6 +14,8 @@ import com.vladmihalcea.sql.SQLStatementCountValidator;
 import lombok.SneakyThrows;
 
 import org.gridsuite.report.server.dto.Report;
+import org.gridsuite.report.server.dto.ReportLog;
+import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.TestUtils;
 import org.junit.After;
@@ -79,11 +81,17 @@ public class ReportControllerTest {
 
     private static final String REPORT_ONE = "/reportOne.json";
     private static final String REPORT_TWO = "/reportTwo.json";
+    private static final String REPORT_FOUR = "/reportFour.json";
     private static final String REPORT_CONCAT = "/reportConcat.json";
     private static final String REPORT_CONCAT2 = "/reportConcat2.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1 = "/expectedStructureAndElementsReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS = "/expectedStructureAndElementsReportOneWithOnlyErrors.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS = "/expectedStructureAndElementsReportOneWithOnlyInfos.json";
+    private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1 = "/expectedReporterAndElements.json";
+    private static final String EXPECTED_REPORT_MESSAGE_WITH_MESSAGE_FILTER = "/expectedReportMessagesWithMessageFilter.json";
+    private static final String EXPECTED_REPORT_MESSAGE_WITHOUT_FILTERS = "/expectedReportMessagesWithoutFilters.json";
+    private static final String EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_FILTERS = "/expectedReportMessagesWithSeverityFilter.json";
+    private static final String EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_AND_MESSAGE_FILTERS = "/expectedReportMessagesWithSeverityAndMessageFilter.json";
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
 
@@ -179,6 +187,114 @@ public class ReportControllerTest {
         assertRequestsCount(2, 0, 0, 0);
     }
 
+    @Test
+    public void testGetSubReport() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessage("Reading UCTE network file");
+        assertEquals(1, reporters.size());
+        String uuidReporter = reporters.get(0).getId().toString();
+
+        SQLStatementCountValidator.reset();
+
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
+        assertRequestsCount(2, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetReportMessages() throws Exception {
+        String testReport4 = toString(REPORT_FOUR);
+        insertReport(REPORT_UUID, testReport4);
+
+        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessage("Reading UCTE network file");
+        assertEquals(1, reporters.size());
+        String uuidReporter = reporters.get(0).getId().toString();
+
+        SQLStatementCountValidator.reset();
+
+        //Test without filters
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertReportMessagesAreEqual(result, toString(EXPECTED_REPORT_MESSAGE_WITHOUT_FILTERS));
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        //Test with a filter on the message that will return results
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?message=line"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertReportMessagesAreEqual(result, toString(EXPECTED_REPORT_MESSAGE_WITH_MESSAGE_FILTER));
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        //Test with a filter on the message that won't return results
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?message=thisfilterwontbematched"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TypeReference<List<ReportLog>> listTypeReference = new TypeReference<>() { };
+        List<ReportLog> response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(0, response.size());
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        //Test with a filter on the severity that will return results
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?severityLevels=INFO"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertReportMessagesAreEqual(result, toString(EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_FILTERS));
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        //Test with a filter on the severity that won't return results
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?severityLevels=NO"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(0, response.size());
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        //Test with both filters on and expect some results
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?severityLevels=INFO&message=line"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertReportMessagesAreEqual(result, toString(EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_AND_MESSAGE_FILTERS));
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+    }
+
+    @Test
+    public void testGetSubReportWithNoSeverityFilters() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessage("Reading UCTE network file");
+        assertEquals(1, reporters.size());
+        String uuidReporter = reporters.get(0).getId().toString();
+
+        SQLStatementCountValidator.reset();
+
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
+        assertRequestsCount(2, 0, 0, 0);
+    }
+
     @SneakyThrows
     @Test
     public void testDefaultEmptyReport() {
@@ -224,5 +340,12 @@ public class ReportControllerTest {
         Report expectedReportNode = objectMapper.readValue(expectedContent, Report.class);
         Report actualReportNode = objectMapper.readValue(result.getResponse().getContentAsString(), Report.class);
         TestUtils.assertReportsAreEqualIgnoringIds(expectedReportNode, actualReportNode);
+    }
+
+    private void assertReportMessagesAreEqual(MvcResult result, String expectedContent) throws JsonProcessingException, UnsupportedEncodingException {
+        TypeReference<List<ReportLog>> listTypeReference = new TypeReference<>() { };
+        List<ReportLog> expectedReportLogs = objectMapper.readValue(expectedContent, listTypeReference);
+        List<ReportLog> actualReportLogs = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        TestUtils.assertReportMessagesAreEqual(expectedReportLogs, actualReportLogs);
     }
 }

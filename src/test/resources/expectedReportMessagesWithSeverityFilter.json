@@ -1,0 +1,40 @@
+[
+  {
+    "message": "Create buses",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "Create lines",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "Reading UCTE network file",
+    "severity": [
+      "INFO",
+      "ERROR"
+    ]
+  },
+  {
+    "message": "Create buses",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "Fix UCTE transformers",
+    "severity": [
+      "INFO",
+      "ERROR"
+    ]
+  },
+  {
+    "message": "Create lines",
+    "severity": [
+      "INFO"
+    ]
+  }
+]

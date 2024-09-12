@@ -11,7 +11,10 @@ import com.powsybl.commons.report.ReportConstants;
 import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
 import org.gridsuite.report.server.dto.Report;
+import org.gridsuite.report.server.dto.ReportLog;
+import org.gridsuite.report.server.entities.ReportLogEntity;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
+import org.gridsuite.report.server.repositories.ReportLogRepository;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +22,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -42,14 +46,17 @@ public class ReportService {
 
     private final ReportNodeRepository reportNodeRepository;
 
+    private final ReportLogRepository reportLogRepository;
+
     static {
         long nanoNow = System.nanoTime();
         long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
         NANOS_FROM_EPOCH_TO_START = nanoNow - nanoViaMillis;
     }
 
-    public ReportService(ReportNodeRepository reportNodeRepository) {
+    public ReportService(ReportNodeRepository reportNodeRepository, ReportLogRepository reportLogRepository) {
         this.reportNodeRepository = reportNodeRepository;
+        this.reportLogRepository = reportLogRepository;
     }
 
     // To use only for tests to fetch an entity with all the relationships
@@ -67,6 +74,34 @@ public class ReportService {
         Objects.requireNonNull(reportId);
         OptimizedReportNodeEntities optimizedReportNodeEntities = getOptimizedReportNodeEntities(reportId);
         return map(optimizedReportNodeEntities, severityLevels);
+    }
+
+    public List<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter) {
+        // We first do a recursive find from the root node to aggregate all the IDs of the tree by their tree depth
+        Map<Integer, List<UUID>> treeIds = reportNodeRepository.findTreeFromRootReport(rootReportNodeId)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        result -> (Integer) result[0],
+                        Collectors.mapping(
+                                result -> UUID.fromString((String) result[1]),
+                                Collectors.toList()
+                        )
+                ));
+
+        // Then we flatten the ID list to be able to fetch related data in one request (what if this list is too big ?)
+        List<UUID> idList = treeIds.values().stream().flatMap(Collection::stream).toList();
+
+        List<ReportLog> reportLogs = new ArrayList<>();
+        Lists.partition(idList, SQL_QUERY_MAX_PARAM_NUMBER).forEach(ids -> {
+            List<ReportLogEntity> reportMessageEntities;
+            if (severityLevelsFilter == null) {
+                reportMessageEntities = reportLogRepository.findAllByIdInAndMessageContainingIgnoreCase(ids, messageFilter == null ? "" : messageFilter);
+            } else {
+                reportMessageEntities = reportLogRepository.findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesIn(ids, messageFilter == null ? "" : messageFilter, severityLevelsFilter);
+            }
+            reportLogs.addAll(reportMessageEntities.stream().map(ReportService::toReportLog).toList());
+        });
+        return reportLogs;
     }
 
     private OptimizedReportNodeEntities getOptimizedReportNodeEntities(UUID rootReportNodeId) {
@@ -194,5 +229,9 @@ public class ReportService {
     // package private for tests
     void deleteAll() {
         reportNodeRepository.deleteAll();
+    }
+
+    private static ReportLog toReportLog(ReportLogEntity entity) {
+        return new ReportLog(entity.getMessage(), entity.getSeverities().stream().map(Severity::valueOf).collect(Collectors.toSet()), entity.getParentId());
     }
 }
