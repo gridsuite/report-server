@@ -6,6 +6,7 @@
  */
 package org.gridsuite.report.server.repositories;
 
+import org.gridsuite.report.server.entities.LogProjection;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -31,6 +33,12 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     List<ReportNodeEntity> findAllByMessage(String message);
 
     List<ReportNodeEntity> findAllByParentIdAndMessage(UUID parentId, String messageKey);
+
+    @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
+    List<LogProjection> findAllByIdInAndMessageContainingIgnoreCase(List<UUID> ids, String message);
+
+    @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
+    List<LogProjection> findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesIn(List<UUID> ids, String message, Set<String> severities);
 
     @Modifying
     @Query(value = """
