@@ -136,7 +136,7 @@ class ReportServiceTest {
     }
 
     @Test
-    void appendIncermentalModificationReportToExistingReport() {
+    void appendIncrementalModificationReportToExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
             .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
             .build();
@@ -162,6 +162,52 @@ class ReportServiceTest {
         // the two subreports "GENERATOR_MODIFICATION" and "TWO_WINDINGS_TRANSFORMER_MODIFICATION" are added to the same the parent report
         assertEquals(2, parentReportEntity.get().getChildren().size());
         assertEquals(0, reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId()).orElseThrow().getChildren().size());
+    }
+
+    @Test
+    void testParentReportsSeverityListIsUpdatedAfterAppendingNewReport() {
+        var reportNode = ReportNode.newRootReportNode()
+            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
+            .build();
+        reportNode.newReportNode()
+            .withMessageTemplate("okok", "test")
+            .withSeverity(TypedValue.WARN_SEVERITY)
+            .add();
+        reportNode.newReportNode()
+            .withMessageTemplate("okok", "test")
+            .withSeverity(TypedValue.INFO_SEVERITY)
+            .add();
+        var subReportNode = reportNode.newReportNode()
+            .withMessageTemplate("genMod", "GENERATOR_MODIFICATION")
+            .add();
+        subReportNode.newReportNode()
+            .withMessageTemplate("hehe", "stuff")
+            .withSeverity(TypedValue.WARN_SEVERITY)
+            .add();
+        var parentReportId = UUID.randomUUID();
+        reportService.createReport(parentReportId, reportNode);
+        var rootReportNodeEntity = reportService.getReportNodeEntity(parentReportId).orElseThrow();
+        var reportNodeEntity = reportService.getReportNodeEntity(rootReportNodeEntity.getChildren().get(2).getId()).orElseThrow();
+        assertEquals(Set.of("INFO", "WARN"), rootReportNodeEntity.getSeverities());
+        var subReportNodeEntity = reportService.getReportNodeEntity(reportNodeEntity.getChildren().get(0).getId()).orElseThrow();
+        assertEquals(Set.of("WARN"), subReportNodeEntity.getSeverities());
+
+        var anotherReport = ReportNode.newRootReportNode()
+            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
+            .build();
+        anotherReport.newReportNode()
+            .withMessageTemplate("twtMod", "TWO_WINDINGS_TRANSFORMER_MODIFICATION")
+            .withSeverity(TypedValue.ERROR_SEVERITY)
+            .add();
+        SQLStatementCountValidator.reset();
+        reportService.createReport(parentReportId, anotherReport);
+        assertRequestsCount(2, 3, 0, 0);
+
+        var rootReportNodeEntityBis = reportService.getReportNodeEntity(parentReportId).orElseThrow();
+        var reportNodeEntityBis = reportService.getReportNodeEntity(rootReportNodeEntityBis.getChildren().get(3).getId()).orElseThrow();
+        assertEquals(Set.of("INFO", "WARN", "ERROR"), rootReportNodeEntityBis.getSeverities());
+        assertEquals(4, rootReportNodeEntityBis.getChildren().size());
+        assertEquals(Set.of("ERROR"), reportNodeEntityBis.getSeverities());
     }
 
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, Set<String> severityList) {

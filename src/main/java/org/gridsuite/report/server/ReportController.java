@@ -39,8 +39,7 @@ public class ReportController {
 
     @GetMapping(value = "/reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
-        @ApiResponse(responseCode = "404", description = "The report does not exists")})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters")})
     public ResponseEntity<Report> getReport(@PathVariable("id") UUID id,
                                                   @Parameter(description = "Filter on severity levels. Will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
@@ -51,21 +50,6 @@ public class ReportController {
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName));
-        }
-    }
-
-    @GetMapping(value = "/subreports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get the elements of a reporter and its subreporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
-        @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
-    public ResponseEntity<Report> getSubReport(@PathVariable("id") UUID id,
-                                               @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
-        try {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getReport(id, severityLevels));
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
         }
     }
 

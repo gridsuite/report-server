@@ -14,7 +14,6 @@ import com.vladmihalcea.sql.SQLStatementCountValidator;
 import lombok.SneakyThrows;
 
 import org.gridsuite.report.server.dto.Report;
-import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.TestUtils;
 import org.junit.After;
@@ -180,44 +179,6 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetSubReport() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessage("Reading UCTE network file");
-        assertEquals(1, reporters.size());
-        String uuidReporter = reporters.get(0).getId().toString();
-
-        SQLStatementCountValidator.reset();
-
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetSubReportWithNoSeverityFilters() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessage("Reading UCTE network file");
-        assertEquals(1, reporters.size());
-        String uuidReporter = reporters.get(0).getId().toString();
-
-        SQLStatementCountValidator.reset();
-
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
         assertRequestsCount(2, 0, 0, 0);
     }
 
