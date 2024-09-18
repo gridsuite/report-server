@@ -127,7 +127,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(2, 1, 0, 0);
+        assertRequestsCount(1, 1, 0, 0);
 
         assertEquals(3, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -138,7 +138,7 @@ class ReportServiceTest {
     }
 
     @Test
-    void appendIncermentalModificationReportToExistingReport() {
+    void appendIncrementalModificationReportToExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
             .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54@NetworkModification")
             .build();
@@ -156,7 +156,7 @@ class ReportServiceTest {
             .add();
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(2, 1, 0, 0);
+        assertRequestsCount(1, 1, 0, 0);
 
         assertEquals(4, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -164,6 +164,53 @@ class ReportServiceTest {
         // the two subreports "GENERATOR_MODIFICATION" and "TWO_WINDINGS_TRANSFORMER_MODIFICATION" are added to the same the parent report
         assertEquals(1, parentReportEntity.get().getChildren().size());
         assertEquals(2, reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId()).orElseThrow().getChildren().size());
+    }
+
+    @Test
+    void testParentReportsSeverityListIsUpdatedAfterAppendingNewReport() {
+        var reportNode = ReportNode.newRootReportNode()
+            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54@NetworkModification")
+            .build();
+        reportNode.newReportNode()
+            .withMessageTemplate("okok", "test")
+            .withSeverity(TypedValue.WARN_SEVERITY)
+            .add();
+        reportNode.newReportNode()
+            .withMessageTemplate("okok", "test")
+            .withSeverity(TypedValue.INFO_SEVERITY)
+            .add();
+        var subReportNode = reportNode.newReportNode()
+            .withMessageTemplate("genMod", "GENERATOR_MODIFICATION")
+            .add();
+        subReportNode.newReportNode()
+            .withMessageTemplate("hehe", "stuff")
+            .withSeverity(TypedValue.WARN_SEVERITY)
+            .add();
+        var parentReportId = UUID.randomUUID();
+        reportService.createReport(parentReportId, reportNode);
+        var rootReportNodeEntity = reportService.getReportNodeEntity(parentReportId).orElseThrow();
+        var reportNodeEntity = reportService.getReportNodeEntity(rootReportNodeEntity.getChildren().get(0).getId()).orElseThrow();
+        assertEquals(Set.of("INFO", "WARN"), reportNodeEntity.getSeverities());
+        var subReportNodeEntity = reportService.getReportNodeEntity(reportNodeEntity.getChildren().get(2).getId()).orElseThrow();
+        assertEquals(Set.of("WARN"), subReportNodeEntity.getSeverities());
+
+        var anotherReport = ReportNode.newRootReportNode()
+            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54@NetworkModification")
+            .build();
+        anotherReport.newReportNode()
+            .withMessageTemplate("twtMod", "TWO_WINDINGS_TRANSFORMER_MODIFICATION")
+            .withSeverity(TypedValue.ERROR_SEVERITY)
+            .add();
+        SQLStatementCountValidator.reset();
+        reportService.createReport(parentReportId, anotherReport);
+        assertRequestsCount(2, 3, 0, 0);
+
+        var rootReportNodeEntityBis = reportService.getReportNodeEntity(parentReportId).orElseThrow();
+        var reportNodeEntityBis = reportService.getReportNodeEntity(rootReportNodeEntityBis.getChildren().get(0).getId()).orElseThrow();
+        assertEquals(Set.of("INFO", "WARN", "ERROR"), reportNodeEntityBis.getSeverities());
+        assertEquals(4, reportNodeEntityBis.getChildren().size());
+        var subReportNodeEntityBis = reportService.getReportNodeEntity(reportNodeEntityBis.getChildren().get(2).getId()).orElseThrow();
+        assertEquals(Set.of("WARN"), subReportNodeEntityBis.getSeverities());
     }
 
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, Set<String> severityList) {

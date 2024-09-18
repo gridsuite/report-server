@@ -110,7 +110,7 @@ public class ReportService {
 
     @Transactional
     public void createReport(UUID id, ReportNode reportNode) {
-        reportNodeRepository.findById(id).ifPresentOrElse(
+        reportNodeRepository.findAllWithChildrenByIdIn(List.of(id)).stream().findFirst().ifPresentOrElse(
             reportEntity -> {
                 LOGGER.debug("Reporter {} present, append ", reportNode.getMessage());
                 appendReportElements(reportEntity, reportNode);
@@ -128,7 +128,13 @@ public class ReportService {
             .filter(child -> child.getMessage().equals(reportNode.getMessage()) && child.getMessage().contains("@"))
             .findFirst()
             .ifPresentOrElse(
-                child -> saveReportChildren(child, reportNode),
+                child -> {
+                    // We don't have to update more ancestors because we only append at root level, and we know it
+                    // But if we want to generalize appending to any report we should update the severity list of all
+                    // the ancestors recursively
+                    child.addSeverities(reportNode.getChildren().stream().map(ReportService::severities).flatMap(Collection::stream).collect(Collectors.toSet()));
+                    reportNode.getChildren().forEach(c -> saveReportNodeRecursively(child, c));
+                },
                 () -> saveAllReportElements(reportEntity, reportNode)
         );
     }
@@ -136,10 +142,6 @@ public class ReportService {
     private void createNewReport(UUID id, ReportNode reportNode) {
         var persistedReport = reportNodeRepository.save(new ReportNodeEntity(id, System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
         saveAllReportElements(persistedReport, reportNode);
-    }
-
-    private void saveReportChildren(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
-        reportNode.getChildren().forEach(child -> saveReportNodeRecursively(parentReportNodeEntity, child));
     }
 
     private void saveAllReportElements(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {

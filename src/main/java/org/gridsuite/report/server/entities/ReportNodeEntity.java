@@ -62,4 +62,8 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
         this.id = id;
         this.nanos = nanos;
     }
+
+    public void addSeverities(Set<String> severities) {
+        this.severities.addAll(severities);
+    }
 }
