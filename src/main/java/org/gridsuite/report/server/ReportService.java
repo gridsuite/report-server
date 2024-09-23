@@ -42,11 +42,6 @@ public class ReportService {
 
     private final ReportNodeRepository reportNodeRepository;
 
-
-    public enum ReportNameMatchingType {
-        EXACT_MATCHING, ENDS_WITH
-    }
-
     static {
         long nanoNow = System.nanoTime();
         long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
@@ -160,22 +155,15 @@ public class ReportService {
     }
 
     @Transactional
-    public void deleteReport(UUID id) {
-        Objects.requireNonNull(id);
-        ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(id).orElseThrow(() -> new EmptyResultDataAccessException("No element found", 1));
-        List<ReportNodeEntity> filteredChildrenList = reportNodeEntity.getChildren();
-        filteredChildrenList.forEach(child -> deleteRoot(child.getId()));
-
-        if (filteredChildrenList.size() == reportNodeEntity.getChildren().size()) {
-            // let's remove the whole Report only if we have removed all its children
-            reportNodeRepository.deleteByIdIn(List.of(id));
-        }
+    public void deleteReport(UUID reportUuid) {
+        ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(reportUuid).orElseThrow(() -> new EmptyResultDataAccessException("No element found", 1));
+        deleteRoot(reportNodeEntity.getId());
     }
 
     @Transactional
     public void deleteReports(List<UUID> reportUuids) {
         Objects.requireNonNull(reportUuids);
-        reportUuids.forEach(this::deleteReport);
+        reportUuids.forEach(this::deleteRoot);
     }
 
     /**

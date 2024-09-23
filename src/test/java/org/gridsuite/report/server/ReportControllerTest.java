@@ -86,7 +86,6 @@ public class ReportControllerTest {
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS = "/expectedStructureAndElementsReportOneWithOnlyInfos.json";
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
-    private static final String REPORT_LOADFLOW = "/reportLoadflow.json";
 
     public String toString(String resourceName) {
         try {
@@ -195,21 +194,12 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testDeleteSubreports() throws Exception {
-        String testReportLoadflow = toString(REPORT_LOADFLOW);
-        insertReport(REPORT_UUID, testReportLoadflow);
-
-        List<UUID> reportsIds = new ArrayList<>();
-        reportsIds.add(UUID.fromString(REPORT_UUID));
-
-        SQLStatementCountValidator.reset();
-        mvc.perform(delete(URL_TEMPLATE + "/reports")
-                .contentType(APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(reportsIds)))
-            .andExpect(status().isOk())
-            .andReturn();
-        assertRequestsCount(2, 0, 0, 0);
-
+    public void testDeleteReport() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+        List<UUID> reportUuids = Arrays.asList(UUID.fromString(REPORT_UUID));
+        String jsonContent = new ObjectMapper().writeValueAsString(reportUuids);
+        mvc.perform(delete(URL_TEMPLATE + "/reports").content(jsonContent).contentType(APPLICATION_JSON)).andExpect(status().isOk());
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andReturn();
