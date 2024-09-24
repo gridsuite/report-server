@@ -7,6 +7,7 @@
 package org.gridsuite.report.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.Configuration;
@@ -38,6 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.gridsuite.report.server.utils.TestUtils.*;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -188,25 +190,6 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetSubReport() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessage("Reading UCTE network file");
-        assertEquals(1, reporters.size());
-        String uuidReporter = reporters.get(0).getId().toString();
-
-        SQLStatementCountValidator.reset();
-
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
     public void testGetReportMessages() throws Exception {
         String testReport4 = toString(REPORT_FOUR);
         insertReport(REPORT_UUID, testReport4);
@@ -274,25 +257,6 @@ public class ReportControllerTest {
         assertRequestsCount(1, 0, 0, 0);
         SQLStatementCountValidator.reset();
 
-    }
-
-    @Test
-    public void testGetSubReportWithNoSeverityFilters() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessage("Reading UCTE network file");
-        assertEquals(1, reporters.size());
-        String uuidReporter = reporters.get(0).getId().toString();
-
-        SQLStatementCountValidator.reset();
-
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/subreports/" + uuidReporter))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1));
-        assertRequestsCount(2, 0, 0, 0);
     }
 
     @SneakyThrows

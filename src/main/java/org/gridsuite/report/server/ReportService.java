@@ -45,8 +45,6 @@ public class ReportService {
 
     private final ReportNodeRepository reportNodeRepository;
 
-    private final ReportLogRepository reportLogRepository;
-
     static {
         long nanoNow = System.nanoTime();
         long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
