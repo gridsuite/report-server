@@ -35,10 +35,10 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     List<ReportNodeEntity> findAllByParentIdAndMessage(UUID parentId, String messageKey);
 
     @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<LogProjection> findAllByIdInAndMessageContainingIgnoreCase(List<UUID> ids, String message);
+    List<LogProjection> findAllByIdInAndMessageContainingIgnoreCaseOrderByNanos(List<UUID> ids, String message);
 
     @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<LogProjection> findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesIn(List<UUID> ids, String message, Set<String> severities);
+    List<LogProjection> findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesInOrderByNanos(List<UUID> ids, String message, Set<String> severities);
 
     @Modifying
     @Query(value = """

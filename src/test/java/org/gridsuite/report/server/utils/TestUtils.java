@@ -10,11 +10,14 @@ package org.gridsuite.report.server.utils;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 
+import java.util.*;
+import java.util.stream.IntStream;
+
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertDeleteCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertUpdateCount;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class TestUtils {
@@ -39,12 +42,24 @@ public final class TestUtils {
     }
 
     public static void assertReportMessagesAreEqual(List<ReportLog> expectedReportLogs, List<ReportLog> actualReportLogs) {
-        assertEquals(expectedReportLogs.size(), actualReportLogs.size());
-        expectedReportLogs.forEach(expectedReportLog -> {
-            List<ReportLog> messages = actualReportLogs.stream().filter(reportLog -> reportLog.message().equals(expectedReportLog.message())).toList();
-            assertFalse(messages.isEmpty());
-            //because we can have the same msg multiple times we can't just check the message value
-            assertEquals(messages.size(), expectedReportLogs.stream().filter(reportLog -> reportLog.message().equals(expectedReportLog.message())).toList().size());
-        });
+        assertTrue(areEqual(expectedReportLogs, actualReportLogs));
+    }
+
+    //To compare the lists of reportLogs (with order)
+    public static boolean areEqual(List<ReportLog> first, List<ReportLog> second) {
+        return first.size() == second.size() &&
+                IntStream.range(0, first.size()).allMatch(index ->
+                        customCompare(first.get(index), second.get(index)));
+    }
+
+    //to compare the ReportLogs without checking for the parentId
+    static boolean customCompare(ReportLog log1, ReportLog log2) {
+        if (log1 == log2) {
+            return true;
+        }
+        if (!Objects.equals(log1.message(), log2.message())) {
+            return false;
+        }
+        return log1.severity().containsAll(log2.severity());
     }
 }

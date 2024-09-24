@@ -1,5 +1,12 @@
 [
   {
+    "message": "Reading UCTE network file",
+    "severity": [
+      "ERROR",
+      "INFO"
+    ]
+  },
+  {
     "message": "Create buses",
     "severity": [
       "INFO"
@@ -12,23 +19,16 @@
     ]
   },
   {
-    "message": "Reading UCTE network file",
+    "message": "Fix UCTE transformers",
     "severity": [
-      "INFO",
-      "ERROR"
+      "ERROR",
+      "INFO"
     ]
   },
   {
     "message": "Create buses",
     "severity": [
       "INFO"
-    ]
-  },
-  {
-    "message": "Fix UCTE transformers",
-    "severity": [
-      "INFO",
-      "ERROR"
     ]
   },
   {
