@@ -89,7 +89,6 @@ public class ReportControllerTest {
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1 = "/expectedStructureAndElementsReportOne.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS = "/expectedStructureAndElementsReportOneWithOnlyErrors.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS = "/expectedStructureAndElementsReportOneWithOnlyInfos.json";
-    private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORTER1 = "/expectedReporterAndElements.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITH_MESSAGE_FILTER = "/expectedReportMessagesWithMessageFilter.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITHOUT_FILTERS = "/expectedReportMessagesWithoutFilters.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_FILTERS = "/expectedReportMessagesWithSeverityFilter.json";

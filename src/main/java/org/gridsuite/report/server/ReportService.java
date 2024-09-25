@@ -224,6 +224,6 @@ public class ReportService {
     }
 
     private static ReportLog toReportLog(LogProjection entity) {
-        return new ReportLog(entity.getMessage(), entity.getSeverities().stream().map(Severity::valueOf).collect(Collectors.toSet()), entity.getParent().getId());
+        return new ReportLog(entity.getMessage(), entity.getSeverities().stream().map(Severity::valueOf).collect(Collectors.toSet()), Optional.ofNullable(entity.getParent()).map(LogProjection::getId).orElse(null));
     }
 }
