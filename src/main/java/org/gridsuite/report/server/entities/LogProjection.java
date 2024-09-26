@@ -18,4 +18,6 @@ public interface LogProjection {
     Set<String> getSeverities();
 
     LogProjection getParent();
+
+    long getNanos();
 }

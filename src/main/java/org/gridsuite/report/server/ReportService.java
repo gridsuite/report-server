@@ -83,11 +83,11 @@ public class ReportService {
         Lists.partition(idList, SQL_QUERY_MAX_PARAM_NUMBER).forEach(ids -> {
             List<LogProjection> logProjections;
             if (severityLevelsFilter == null) {
-                logProjections = reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCaseOrderByNanos(ids, messageFilter == null ? "" : messageFilter);
+                logProjections = reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCase(ids, messageFilter == null ? "" : messageFilter);
             } else {
-                logProjections = reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesInOrderByNanos(ids, messageFilter == null ? "" : messageFilter, severityLevelsFilter);
+                logProjections = reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesIn(ids, messageFilter == null ? "" : messageFilter, severityLevelsFilter);
             }
-            reportLogs.addAll(logProjections.stream().map(ReportService::toReportLog).toList());
+            reportLogs.addAll(logProjections.stream().sorted(Comparator.comparingLong(LogProjection::getNanos)).map(ReportService::toReportLog).toList());
         });
         return reportLogs;
     }
