@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -40,35 +39,17 @@ public class ReportController {
 
     @GetMapping(value = "/reports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters"),
-        @ApiResponse(responseCode = "404", description = "The report does not exists")})
-    public ResponseEntity<List<Report>> getReport(@PathVariable("id") UUID id,
-                                                  @Parameter(description = "Filter on a the report name. If provided, will only return elements matching this given name.") @RequestParam(name = "reportNameFilter", required = false, defaultValue = "") String reportNameFilter,
-                                                  @Parameter(description = "Kind of matching filter to apply to the report name.") @RequestParam(name = "reportNameMatchingType", required = false) ReportService.ReportNameMatchingType reportNameMatchingType,
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters")})
+    public ResponseEntity<Report> getReport(@PathVariable("id") UUID id,
                                                   @Parameter(description = "Filter on severity levels. Will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
                                                   @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
-            List<Report> reports = service.getReport(id, severityLevels, reportNameFilter, reportNameMatchingType).getSubReports();
-            return reports.isEmpty() ?
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(id, defaultName))) :
-                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(reports);
+            Report report = service.getReport(id, severityLevels);
+            return report == null ?
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName)) :
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
         } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(List.of(service.getEmptyReport(id, defaultName)));
-        }
-    }
-
-    @GetMapping(value = "/subreports/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get the elements of a reporter and its subreporters")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the reporter and its subreporters"),
-        @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
-    public ResponseEntity<Report> getSubReport(@PathVariable("id") UUID id,
-                                               @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels) {
-        try {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getReport(id, severityLevels, null, null));
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName));
         }
     }
 
@@ -83,21 +64,20 @@ public class ReportController {
     @Operation(summary = "delete the report")
     @ApiResponse(responseCode = "200", description = "The report has been deleted")
         public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID reportUuid,
-                                                 @Parameter(description = "Filter on a given report type. If provided, will only delete elements with the given report type.") @RequestParam(name = "reportTypeFilter", required = false) String reportTypeFilter,
                                                  @Parameter(description = "Return 404 if report is not found") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound) {
         try {
-            service.deleteReport(reportUuid, reportTypeFilter);
+            service.deleteReport(reportUuid);
         } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {
             return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().build();
         }
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping(value = "treereports", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "delete treereports from a list of parent reports based on a key")
+    @DeleteMapping(value = "reports", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "delete reports by their UUIDs")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been deleted")})
-    public ResponseEntity<Void> deleteTreeReports(@Parameter(description = "parent reports to parse and their associated tree report key to identify which to delete") @RequestBody Map<UUID, String> identifiers) {
-        service.deleteReports(identifiers);
+    public ResponseEntity<Void> deleteReports(@Parameter(description = "list of reports UUIDs to delete") @RequestBody List<UUID> reportUuids) {
+        service.deleteReports(reportUuids);
         return ResponseEntity.ok().build();
     }
 }

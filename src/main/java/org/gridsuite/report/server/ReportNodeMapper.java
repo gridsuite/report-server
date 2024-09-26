@@ -7,7 +7,6 @@
 package org.gridsuite.report.server;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 
@@ -24,12 +23,12 @@ public final class ReportNodeMapper {
         // Should not be instantiated
     }
 
-    public static Report map(OptimizedReportNodeEntities optimizedReportNodeEntities, @Nullable Set<String> severityLevels, @Nullable String reportNameFilter, @Nullable ReportService.ReportNameMatchingType reportNameMatchingType) {
+    public static Report map(OptimizedReportNodeEntities optimizedReportNodeEntities, @Nullable Set<String> severityLevels) {
         UUID rootId = getRootId(optimizedReportNodeEntities);
 
         Map<UUID, Report> reportsMap = new HashMap<>();
         mapRootNode(optimizedReportNodeEntities.reportNodeEntityById().get(rootId), reportsMap);
-        mapLevels(optimizedReportNodeEntities, reportsMap, severityLevels, reportNameFilter, reportNameMatchingType);
+        mapLevels(optimizedReportNodeEntities, reportsMap, severityLevels);
 
         return reportsMap.get(rootId);
     }
@@ -54,9 +53,9 @@ public final class ReportNodeMapper {
         return report;
     }
 
-    private static void mapLevels(OptimizedReportNodeEntities optimizedReportNodeEntities, Map<UUID, Report> reportsMap, @Nullable Set<String> severityLevels, @Nullable String reportNameFilter, @Nullable ReportService.ReportNameMatchingType reportNameMatchingType) {
+    private static void mapLevels(OptimizedReportNodeEntities optimizedReportNodeEntities, Map<UUID, Report> reportsMap, @Nullable Set<String> severityLevels) {
         if (optimizedReportNodeEntities.treeDepth() > 1) {
-            mapLevel(optimizedReportNodeEntities, reportsMap, 1, reportMessageKeyMatches(reportNameFilter, reportNameMatchingType).and(hasOneOfSeverityLevels(severityLevels)));
+            mapLevel(optimizedReportNodeEntities, reportsMap, 1, hasOneOfSeverityLevels(severityLevels));
         }
         for (int i = 2; i < optimizedReportNodeEntities.treeDepth(); i++) {
             mapLevel(optimizedReportNodeEntities, reportsMap, i, hasOneOfSeverityLevels(severityLevels));
@@ -77,14 +76,10 @@ public final class ReportNodeMapper {
         ReportNodeEntity reportNodeEntity = reportEntities.get(id);
         Optional.ofNullable(reports.get(reportNodeEntity.getParent().getId())).ifPresent(parentReport -> {
             Report report = parentReport.addEmptyReport();
-            report.setMessage(extractMessage(reportNodeEntity));
+            report.setMessage(reportNodeEntity.getMessage());
             mapValues(reportNodeEntity, report);
             reports.put(id, report);
         });
-    }
-
-    private static String extractMessage(ReportNodeEntity reportNodeEntity) {
-        return reportNodeEntity.getMessage().contains("@") ? reportNodeEntity.getMessage().split("@")[0] : reportNodeEntity.getMessage();
     }
 
     private static void mapValues(ReportNodeEntity reportNodeEntity, Report report) {
@@ -98,13 +93,6 @@ public final class ReportNodeMapper {
     private static Predicate<ReportNodeEntity> hasOneOfSeverityLevels(Set<String> severityLevels) {
         return reportNodeEntity -> severityLevels == null ||
             hasNoReportSeverity(reportNodeEntity) || reportNodeEntity.getSeverities().stream().anyMatch(severityLevels::contains);
-    }
-
-    private static Predicate<ReportNodeEntity> reportMessageKeyMatches(@Nullable String reportNameFilter, @Nullable ReportService.ReportNameMatchingType reportNameMatchingType) {
-        return reportNodeEntity -> StringUtils.isBlank(reportNameFilter)
-            || reportNodeEntity.getMessage().startsWith("Root") // FIXME remove this hack when "Root" report will follow the same rules than computations and modifications
-            || reportNameMatchingType == ReportService.ReportNameMatchingType.EXACT_MATCHING && reportNodeEntity.getMessage().equals(reportNameFilter)
-            || reportNameMatchingType == ReportService.ReportNameMatchingType.ENDS_WITH && reportNodeEntity.getMessage().endsWith(reportNameFilter);
     }
 
     private static boolean hasNoReportSeverity(ReportNodeEntity reportNodeEntity) {

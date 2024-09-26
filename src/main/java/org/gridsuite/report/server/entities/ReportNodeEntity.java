@@ -58,6 +58,14 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
         this.severities = severities;
     }
 
+    public ReportNodeEntity(UUID id, String message, long nanos, ReportNodeEntity parent, Set<String> severities) {
+        this.id = id;
+        this.message = message;
+        this.nanos = nanos;
+        this.parent = parent;
+        this.severities = severities;
+    }
+
     public ReportNodeEntity(UUID id, long nanos) {
         this.id = id;
         this.nanos = nanos;

@@ -10,7 +10,6 @@ import com.google.common.collect.Lists;
 import com.powsybl.commons.report.ReportConstants;
 import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
@@ -43,11 +42,6 @@ public class ReportService {
 
     private final ReportNodeRepository reportNodeRepository;
 
-
-    public enum ReportNameMatchingType {
-        EXACT_MATCHING, ENDS_WITH
-    }
-
     static {
         long nanoNow = System.nanoTime();
         long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
@@ -69,10 +63,10 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public Report getReport(UUID reportId, Set<String> severityLevels, String reportNameFilter, ReportNameMatchingType reportNameMatchingType) {
+    public Report getReport(UUID reportId, Set<String> severityLevels) {
         Objects.requireNonNull(reportId);
         OptimizedReportNodeEntities optimizedReportNodeEntities = getOptimizedReportNodeEntities(reportId);
-        return map(optimizedReportNodeEntities, severityLevels, reportNameFilter, reportNameMatchingType);
+        return map(optimizedReportNodeEntities, severityLevels);
     }
 
     private OptimizedReportNodeEntities getOptimizedReportNodeEntities(UUID rootReportNodeId) {
@@ -110,7 +104,7 @@ public class ReportService {
 
     @Transactional
     public void createReport(UUID id, ReportNode reportNode) {
-        reportNodeRepository.findAllWithChildrenByIdIn(List.of(id)).stream().findFirst().ifPresentOrElse(
+        reportNodeRepository.findById(id).ifPresentOrElse(
             reportEntity -> {
                 LOGGER.debug("Reporter {} present, append ", reportNode.getMessage());
                 appendReportElements(reportEntity, reportNode);
@@ -123,30 +117,19 @@ public class ReportService {
     }
 
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
-        // for incremental network modifications, we need to append the new report elements to the existing network modification report
-        reportEntity.getChildren().stream()
-            .filter(child -> child.getMessage().equals(reportNode.getMessage()) && child.getMessage().contains("@"))
-            .findFirst()
-            .ifPresentOrElse(
-                child -> {
-                    // We don't have to update more ancestors because we only append at root level, and we know it
-                    // But if we want to generalize appending to any report we should update the severity list of all
-                    // the ancestors recursively
-                    child.addSeverities(reportNode.getChildren().stream().map(ReportService::severities).flatMap(Collection::stream).collect(Collectors.toSet()));
-                    reportNode.getChildren().forEach(c -> saveReportNodeRecursively(child, c));
-                },
-                () -> saveAllReportElements(reportEntity, reportNode)
-        );
+        // We don't have to update more ancestors because we only append at root level, and we know it
+        // But if we want to generalize appending to any report we should update the severity list of all the ancestors recursively
+        reportEntity.addSeverities(reportNode.getChildren().stream().map(ReportService::severities)
+                .flatMap(Collection::stream).collect(Collectors.toSet()));
+        reportNode.getChildren().forEach(c -> saveReportNodeRecursively(reportEntity, c));
+
     }
 
     private void createNewReport(UUID id, ReportNode reportNode) {
-        var persistedReport = reportNodeRepository.save(new ReportNodeEntity(id, System.nanoTime() - NANOS_FROM_EPOCH_TO_START));
-        saveAllReportElements(persistedReport, reportNode);
-    }
-
-    private void saveAllReportElements(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
-        saveReportNodeRecursively(parentReportNodeEntity, reportNode);
-        reportNodeRepository.save(parentReportNodeEntity);
+        var persistedReport = reportNodeRepository.save(
+            new ReportNodeEntity(id, reportNode.getMessage(), System.nanoTime() - NANOS_FROM_EPOCH_TO_START, null, severities(reportNode))
+        );
+        reportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, c));
     }
 
     private void saveReportNodeRecursively(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
@@ -172,31 +155,15 @@ public class ReportService {
     }
 
     @Transactional
-    public void deleteReport(UUID id, String reportType) {
-        Objects.requireNonNull(id);
-        ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(id).orElseThrow(() -> new EmptyResultDataAccessException("No element found", 1));
-        List<ReportNodeEntity> filteredChildrenList = reportNodeEntity.getChildren()
-            .stream()
-            .filter(child -> StringUtils.isBlank(reportType) || child.getMessage().endsWith(reportType))
-            .toList();
-        filteredChildrenList.forEach(child -> deleteRoot(child.getId()));
-
-        if (filteredChildrenList.size() == reportNodeEntity.getChildren().size()) {
-            // let's remove the whole Report only if we have removed all its children
-            reportNodeRepository.deleteByIdIn(List.of(id));
-        }
+    public void deleteReport(UUID reportUuid) {
+        ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(reportUuid).orElseThrow(() -> new EmptyResultDataAccessException("No element found", 1));
+        deleteRoot(reportNodeEntity.getId());
     }
 
     @Transactional
-    public void deleteReports(Map<UUID, String> identifiers) {
-        Objects.requireNonNull(identifiers);
-        identifiers.forEach(this::deleteReportByMessage);
-    }
-
-    private void deleteReportByMessage(UUID reportId, String reportMessage) {
-        Objects.requireNonNull(reportId);
-        List<ReportNodeEntity> reportNodeEntities = reportNodeRepository.findAllByParentIdAndMessage(reportId, reportMessage);
-        reportNodeEntities.forEach(reportNodeEntity -> deleteRoot(reportNodeEntity.getId()));
+    public void deleteReports(List<UUID> reportUuids) {
+        Objects.requireNonNull(reportUuids);
+        reportUuids.forEach(this::deleteRoot);
     }
 
     /**

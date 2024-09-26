@@ -9,8 +9,6 @@ package org.gridsuite.report.server.utils;
 
 import org.gridsuite.report.server.dto.Report;
 
-import java.util.*;
-
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertDeleteCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
@@ -27,13 +25,6 @@ public final class TestUtils {
         assertInsertCount(insert);
         assertUpdateCount(update);
         assertDeleteCount(delete);
-    }
-
-    public static void assertReportListsAreEqualIgnoringIds(List<Report> expectedNodeList, List<Report> actualNodeList) {
-        assertEquals(expectedNodeList.size(), actualNodeList.size());
-        for (int i = 0; i < expectedNodeList.size(); i++) {
-            assertReportsAreEqualIgnoringIds(expectedNodeList.get(i), actualNodeList.get(i));
-        }
     }
 
     public static void assertReportsAreEqualIgnoringIds(Report expectedNode, Report actualNode) {

@@ -1,65 +1,63 @@
-[
-  {
-    "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
-    "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-    "severities": ["TRACE", "ERROR", "INFO"],
-    "subReports": [
-      {
-        "id": "dc4b350a-c769-4d29-a24e-5504c1fed875",
-        "message": "Reading UCTE network file",
-        "severities": ["ERROR"],
-        "subReports": [
-          {
-            "id": "6b355456-ecfb-488a-bd5f-aa1f9967d6dd",
-            "message": "Fix UCTE lines",
-            "severities": ["ERROR"],
-            "subReports": [
-              {
-                "id": null,
-                "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
-                "severities": ["ERROR"],
-                "subReports": []
-              },
-              {
-                "id": null,
-                "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
-                "severities": ["ERROR"],
-                "subReports": []
-              },
-              {
-                "id": null,
-                "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
-                "severities": ["ERROR"],
-                "subReports": []
-              },
-              {
-                "id": null,
-                "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
-                "severities": ["ERROR"],
-                "subReports": []
-              }
-            ]
-          },
-          {
-            "id": "985452be-516d-4be7-a16e-1489b0dd54cb",
-            "message": "Fix UCTE nodes",
-            "severities": [],
-            "subReports": []
-          },
-          {
-            "id": "3210bd31-4612-4a45-8442-867999516a9a",
-            "message": "Fix UCTE transformers",
-            "severities": [],
-            "subReports": []
-          },
-          {
-            "id": "919cdfa2-fb62-40aa-9c18-7960e9fa57c7",
-            "message": "Fix UCTE regulations",
-            "severities": [],
-            "subReports": []
-          }
-        ]
-      }
-    ]
-  }
-]
+{
+  "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+  "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+  "severities": ["TRACE", "ERROR", "INFO"],
+  "subReports": [
+    {
+      "id": "dc4b350a-c769-4d29-a24e-5504c1fed875",
+      "message": "Reading UCTE network file",
+      "severities": ["ERROR"],
+      "subReports": [
+        {
+          "id": "6b355456-ecfb-488a-bd5f-aa1f9967d6dd",
+          "message": "Fix UCTE lines",
+          "severities": ["ERROR"],
+          "subReports": [
+            {
+              "id": null,
+              "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
+              "severities": ["ERROR"],
+              "subReports": []
+            },
+            {
+              "id": null,
+              "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
+              "severities": ["ERROR"],
+              "subReports": []
+            },
+            {
+              "id": null,
+              "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
+              "severities": ["ERROR"],
+              "subReports": []
+            },
+            {
+              "id": null,
+              "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
+              "severities": ["ERROR"],
+              "subReports": []
+            }
+          ]
+        },
+        {
+          "id": "985452be-516d-4be7-a16e-1489b0dd54cb",
+          "message": "Fix UCTE nodes",
+          "severities": [],
+          "subReports": []
+        },
+        {
+          "id": "3210bd31-4612-4a45-8442-867999516a9a",
+          "message": "Fix UCTE transformers",
+          "severities": [],
+          "subReports": []
+        },
+        {
+          "id": "919cdfa2-fb62-40aa-9c18-7960e9fa57c7",
+          "message": "Fix UCTE regulations",
+          "severities": [],
+          "subReports": []
+        }
+      ]
+    }
+  ]
+}
