@@ -1,0 +1,321 @@
+{
+  "version": "2.1",
+  "dictionaries": {
+    "default": {
+      "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+      "UcteReading": "Reading UCTE network file",
+      "createBus": "Create bus ${bus}",
+      "createBuses": "Create buses",
+      "createBusesSubstation": "Create buses for substation ${substation}",
+      "createLines": "Create lines",
+      "createSubstation": "Create substation ${substationName}",
+      "createTransformers": "Create transformers",
+      "createVoltageLevel": "Create voltage level ${voltageLevelName}",
+      "danglingLineCreation": "Create dangling line '${ucteLine}' (Xnode='${xnodeCode}')",
+      "fixUcteLines": "Fix UCTE lines",
+      "fixUcteNodes": "Fix UCTE nodes",
+      "fixUcteRegulations": "Fix UCTE regulations",
+      "fixUcteTransformer": "Fix UCTE transformers",
+      "negativeLineResistance": "${lineId} - Real line resistance cannot be negative (${resistance} ohm)",
+      "novalueReport": "No value report",
+      "roundTripReporterJsonTest": "Test importing UCTE file frVoltageRegulatingXnode.uct"
+    }
+  },
+  "reportRoot": {
+    "messageKey": "roundTripReporterJsonTest",
+    "children": [
+      {
+        "messageKey": "UcteReading",
+        "children": [
+          {
+            "messageKey": "fixUcteLines",
+            "children": [
+              {
+                "messageKey": "negativeLineResistance",
+                "values": {
+                  "reportSeverity": {
+                    "value": "ERROR",
+                    "type": "SEVERITY"
+                  },
+                  "lineId": {
+                    "value": "FFFFFF11 XXXXXX11 1"
+                  },
+                  "resistance": {
+                    "value": 0,
+                    "type": "RESISTANCE"
+                  }
+                }
+              },
+              {
+                "messageKey": "negativeLineResistance",
+                "values": {
+                  "reportSeverity": {
+                    "value": "ERROR",
+                    "type": "SEVERITY"
+                  },
+                  "lineId": {
+                    "value": "FFFFFF11 XXXXXX12 1"
+                  },
+                  "resistance": {
+                    "value": 0,
+                    "type": "RESISTANCE"
+                  }
+                }
+              },
+              {
+                "messageKey": "negativeLineResistance",
+                "values": {
+                  "reportSeverity": {
+                    "value": "ERROR",
+                    "type": "SEVERITY"
+                  },
+                  "lineId": {
+                    "value": "FFFFFF13 XXXXXX13 1"
+                  },
+                  "resistance": {
+                    "value": 0,
+                    "type": "RESISTANCE"
+                  }
+                }
+              },
+              {
+                "messageKey": "negativeLineResistance",
+                "values": {
+                  "reportSeverity": {
+                    "value": "ERROR",
+                    "type": "SEVERITY"
+                  },
+                  "lineId": {
+                    "value": "FFFFFF13 XXXXXX14 1"
+                  },
+                  "resistance": {
+                    "value": 0,
+                    "type": "RESISTANCE"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "messageKey": "createBuses",
+            "children": [
+              {
+                "messageKey": "createLines",
+                "values": {
+                  "reportSeverity": {
+                    "value": "INFO",
+                    "type": "SEVERITY"
+                  },
+                  "lineId": {
+                    "value": "Oui"
+                  },
+                  "resistance": {
+                    "value": 0,
+                    "type": "RESISTANCE"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "messageKey": "fixUcteNodes"
+          },
+          {
+            "messageKey": "fixUcteTransformer",
+            "children": [
+              {
+                "messageKey": "createBuses",
+                "children": [
+                  {
+                    "messageKey": "createLines",
+                    "values": {
+                      "reportSeverity": {
+                        "value": "INFO",
+                        "type": "SEVERITY"
+                      },
+                      "lineId": {
+                        "value": "Oui"
+                      },
+                      "resistance": {
+                        "value": 0,
+                        "type": "RESISTANCE"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "messageKey": "negativeLineResistance",
+                "values": {
+                  "reportSeverity": {
+                    "value": "ERROR",
+                    "type": "SEVERITY"
+                  },
+                  "lineId": {
+                    "value": "FFFFFF13 XXXXXX14 1"
+                  },
+                  "resistance": {
+                    "value": 0,
+                    "type": "RESISTANCE"
+                  }
+                }
+              }
+            ]
+
+          },
+          {
+            "messageKey": "fixUcteRegulations"
+          }
+        ]
+      },
+      {
+        "messageKey": "createBuses",
+        "children": [
+          {
+            "messageKey": "createBusesSubstation",
+            "values": {
+              "substation": {
+                "value": "FFFFFF"
+              }
+            },
+            "children": [
+              {
+                "messageKey": "createSubstation",
+                "values": {
+                  "reportSeverity": {
+                    "value": "TRACE",
+                    "type": "SEVERITY"
+                  },
+                  "substationName": {
+                    "value": "FFFFFF",
+                    "type": "SUBSTATION"
+                  }
+                }
+              },
+              {
+                "messageKey": "createVoltageLevel",
+                "values": {
+                  "voltageLevelName": {
+                    "value": "FFFFFF1",
+                    "type": "VOLTAGE_LEVEL"
+                  },
+                  "reportSeverity": {
+                    "value": "TRACE",
+                    "type": "SEVERITY"
+                  }
+                }
+              },
+              {
+                "messageKey": "createBus",
+                "values": {
+                  "bus": {
+                    "value": "FFFFFF11"
+                  },
+                  "reportSeverity": {
+                    "value": "TRACE",
+                    "type": "SEVERITY"
+                  }
+                }
+              },
+              {
+                "messageKey": "createBus",
+                "values": {
+                  "bus": {
+                    "value": "FFFFFF13"
+                  },
+                  "reportSeverity": {
+                    "value": "TRACE",
+                    "type": "SEVERITY"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "messageKey": "createLines",
+        "children": [
+          {
+            "messageKey": "danglingLineCreation",
+            "values": {
+              "ucteLine": {
+                "value": "FFFFFF11 XXXXXX11 1"
+              },
+              "reportSeverity": {
+                "value": "TRACE",
+                "type": "SEVERITY"
+              },
+              "xnodeCode": {
+                "value": "XXXXXX11"
+              }
+            }
+          },
+          {
+            "messageKey": "danglingLineCreation",
+            "values": {
+              "ucteLine": {
+                "value": "FFFFFF11 XXXXXX12 1"
+              },
+              "reportSeverity": {
+                "value": "TRACE",
+                "type": "SEVERITY"
+              },
+              "xnodeCode": {
+                "value": "XXXXXX12"
+              }
+            }
+          },
+          {
+            "messageKey": "danglingLineCreation",
+            "values": {
+              "ucteLine": {
+                "value": "FFFFFF13 XXXXXX13 1"
+              },
+              "reportSeverity": {
+                "value": "TRACE",
+                "type": "SEVERITY"
+              },
+              "xnodeCode": {
+                "value": "XXXXXX13"
+              }
+            }
+          },
+          {
+            "messageKey": "danglingLineCreation",
+            "values": {
+              "ucteLine": {
+                "value": "FFFFFF13 XXXXXX14 1"
+              },
+              "reportSeverity": {
+                "value": "TRACE",
+                "type": "SEVERITY"
+              },
+              "xnodeCode": {
+                "value": "XXXXXX14"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "messageKey": "novalueReport",
+        "values": {
+          "reportSeverity": {
+            "value": "INFO",
+            "type": "SEVERITY"
+          }
+        }
+      },
+      {
+        "messageKey": "createTransformers",
+        "values": {
+          "reportSeverity": {
+            "value": "TRACE",
+            "type": "SEVERITY"
+          }
+        }
+      }
+    ]
+  }
+}

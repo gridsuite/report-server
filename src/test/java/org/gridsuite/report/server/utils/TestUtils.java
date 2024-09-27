@@ -8,11 +8,15 @@
 package org.gridsuite.report.server.utils;
 
 import org.gridsuite.report.server.dto.Report;
+import org.gridsuite.report.server.dto.ReportLog;
 
+import java.util.*;
+import java.util.stream.IntStream;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertDeleteCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertUpdateCount;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class TestUtils {
@@ -34,5 +38,27 @@ public final class TestUtils {
         for (int i = 0; i < expectedNode.getSubReports().size(); i++) {
             assertReportsAreEqualIgnoringIds(expectedNode.getSubReports().get(i), actualNode.getSubReports().get(i));
         }
+    }
+
+    public static void assertReportMessagesAreEqual(List<ReportLog> expectedReportLogs, List<ReportLog> actualReportLogs) {
+        assertTrue(areEqual(expectedReportLogs, actualReportLogs));
+    }
+
+    //To compare the lists of reportLogs (with order)
+    public static boolean areEqual(List<ReportLog> first, List<ReportLog> second) {
+        return first.size() == second.size() &&
+                IntStream.range(0, first.size()).allMatch(index ->
+                        customCompare(first.get(index), second.get(index)));
+    }
+
+    //to compare the ReportLogs without checking for the parentId
+    static boolean customCompare(ReportLog log1, ReportLog log2) {
+        if (log1 == log2) {
+            return true;
+        }
+        if (!Objects.equals(log1.message(), log2.message())) {
+            return false;
+        }
+        return log1.severity().containsAll(log2.severity());
     }
 }

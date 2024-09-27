@@ -1,0 +1,50 @@
+[
+  {
+    "message": "Fix UCTE lines",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "Create lines",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "Create lines",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  }
+]

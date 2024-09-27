@@ -14,14 +14,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import org.gridsuite.report.server.dto.Report;
+import org.gridsuite.report.server.dto.ReportLog;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -50,6 +49,22 @@ public class ReportController {
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName));
+        }
+    }
+
+    @GetMapping(value = "/reports/{id}/logs", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the messages, severity and the parent id contained in the report")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The list of message (severity and parent id) of the reporter and its subreporters"),
+        @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
+    public ResponseEntity<List<ReportLog>> getReportLogs(@PathVariable("id") UUID id,
+                                                             @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
+                                                             @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter) {
+        try {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(service.getReportLogs(id, severityLevelsFilter, messageFilter));
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.notFound().build();
         }
     }
 

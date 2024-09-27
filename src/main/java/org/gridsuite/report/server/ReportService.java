@@ -11,6 +11,8 @@ import com.powsybl.commons.report.ReportConstants;
 import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
 import org.gridsuite.report.server.dto.Report;
+import org.gridsuite.report.server.dto.ReportLog;
+import org.gridsuite.report.server.entities.LogProjection;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.slf4j.Logger;
@@ -19,6 +21,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -69,17 +72,29 @@ public class ReportService {
         return map(optimizedReportNodeEntities, severityLevels);
     }
 
+    public List<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter) {
+        // We first do a recursive find from the root node to aggregate all the IDs of the tree by their tree depth
+        Map<Integer, List<UUID>> treeIds = getTreeFromRootReport(rootReportNodeId);
+
+        // Then we flatten the ID list to be able to fetch related data in one request (what if this list is too big ?)
+        List<UUID> idList = treeIds.values().stream().flatMap(Collection::stream).toList();
+
+        List<ReportLog> reportLogs = new ArrayList<>();
+        Lists.partition(idList, SQL_QUERY_MAX_PARAM_NUMBER).forEach(ids -> {
+            List<LogProjection> logProjections;
+            if (severityLevelsFilter == null) {
+                logProjections = reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCase(ids, messageFilter == null ? "" : messageFilter);
+            } else {
+                logProjections = reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesIn(ids, messageFilter == null ? "" : messageFilter, severityLevelsFilter);
+            }
+            reportLogs.addAll(logProjections.stream().sorted(Comparator.comparingLong(LogProjection::getNanos)).map(ReportService::toReportLog).toList());
+        });
+        return reportLogs;
+    }
+
     private OptimizedReportNodeEntities getOptimizedReportNodeEntities(UUID rootReportNodeId) {
         // We first do a recursive find from the root node to aggregate all the IDs of the tree by their tree depth
-        Map<Integer, List<UUID>> treeIds = reportNodeRepository.findTreeFromRootReport(rootReportNodeId)
-            .stream()
-            .collect(Collectors.groupingBy(
-                result -> (Integer) result[0],
-                Collectors.mapping(
-                    result -> UUID.fromString((String) result[1]),
-                    Collectors.toList()
-                )
-            ));
+        Map<Integer, List<UUID>> treeIds = getTreeFromRootReport(rootReportNodeId);
 
         // Then we flatten the ID list to be able to fetch related data in one request (what if this list is too big ?)
         List<UUID> idList = treeIds.values().stream().flatMap(Collection::stream).toList();
@@ -116,13 +131,24 @@ public class ReportService {
         );
     }
 
+    private Map<Integer, List<UUID>> getTreeFromRootReport(UUID rootTreeReportId) {
+        return reportNodeRepository.findTreeFromRootReport(rootTreeReportId)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        result -> (Integer) result[0],
+                        Collectors.mapping(
+                                result -> UUID.fromString((String) result[1]),
+                                Collectors.toList()
+                        )
+                ));
+    }
+
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
         // We don't have to update more ancestors because we only append at root level, and we know it
         // But if we want to generalize appending to any report we should update the severity list of all the ancestors recursively
         reportEntity.addSeverities(reportNode.getChildren().stream().map(ReportService::severities)
                 .flatMap(Collection::stream).collect(Collectors.toSet()));
         reportNode.getChildren().forEach(c -> saveReportNodeRecursively(reportEntity, c));
-
     }
 
     private void createNewReport(UUID id, ReportNode reportNode) {
@@ -194,5 +220,9 @@ public class ReportService {
     // package private for tests
     void deleteAll() {
         reportNodeRepository.deleteAll();
+    }
+
+    private static ReportLog toReportLog(LogProjection entity) {
+        return new ReportLog(entity.getMessage(), entity.getSeverities().stream().map(Severity::valueOf).collect(Collectors.toSet()), Optional.ofNullable(entity.getParent()).map(LogProjection::getId).orElse(null));
     }
 }
