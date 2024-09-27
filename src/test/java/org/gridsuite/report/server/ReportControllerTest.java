@@ -255,7 +255,6 @@ public class ReportControllerTest {
         assertReportMessagesAreEqual(result, toString(EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_AND_MESSAGE_FILTERS));
         assertRequestsCount(1, 0, 0, 0);
         SQLStatementCountValidator.reset();
-
     }
 
     @SneakyThrows

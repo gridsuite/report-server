@@ -149,7 +149,6 @@ public class ReportService {
         reportEntity.addSeverities(reportNode.getChildren().stream().map(ReportService::severities)
                 .flatMap(Collection::stream).collect(Collectors.toSet()));
         reportNode.getChildren().forEach(c -> saveReportNodeRecursively(reportEntity, c));
-
     }
 
     private void createNewReport(UUID id, ReportNode reportNode) {

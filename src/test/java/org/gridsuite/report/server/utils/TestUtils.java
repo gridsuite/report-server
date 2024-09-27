@@ -12,7 +12,6 @@ import org.gridsuite.report.server.dto.ReportLog;
 
 import java.util.*;
 import java.util.stream.IntStream;
-
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertDeleteCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertInsertCount;
 import static com.vladmihalcea.sql.SQLStatementCountValidator.assertSelectCount;
