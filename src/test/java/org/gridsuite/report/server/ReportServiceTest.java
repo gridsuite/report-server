@@ -17,9 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.gridsuite.report.server.ReportService.MAX_MESSAGE_CHAR;
 import static org.gridsuite.report.server.utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -208,6 +210,28 @@ class ReportServiceTest {
         assertEquals(Set.of("INFO", "WARN", "ERROR"), rootReportNodeEntityBis.getSeverities());
         assertEquals(4, rootReportNodeEntityBis.getChildren().size());
         assertEquals(Set.of("ERROR"), reportNodeEntityBis.getSeverities());
+    }
+
+    @Test
+    void testCreateReportWithTooLongMessage() {
+        String veryLongString = String.join("", Collections.nCopies(1000, "verylongstring"));
+
+        var rootReportNode = ReportNode.newRootReportNode()
+            .withMessageTemplate("test", veryLongString)
+            .build();
+
+        rootReportNode.newReportNode()
+            .withMessageTemplate("test", veryLongString)
+            .add();
+
+        var reportUuid = UUID.randomUUID();
+        reportService.createReport(reportUuid, rootReportNode);
+
+        var rootReportNodeEntity = reportService.getReportNodeEntity(reportUuid).orElseThrow();
+        assertEquals(veryLongString.substring(0, MAX_MESSAGE_CHAR), rootReportNodeEntity.getMessage());
+
+        var reportNodeEntity = reportService.getReportNodeEntity(rootReportNodeEntity.getChildren().get(0).getId()).orElseThrow();
+        assertEquals(veryLongString.substring(0, MAX_MESSAGE_CHAR), reportNodeEntity.getMessage());
     }
 
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, Set<String> severityList) {
