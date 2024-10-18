@@ -43,6 +43,8 @@ public class ReportService {
     // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
     private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
 
+    static final int MAX_MESSAGE_CHAR = 500;
+
     private final ReportNodeRepository reportNodeRepository;
 
     static {
@@ -153,14 +155,23 @@ public class ReportService {
 
     private void createNewReport(UUID id, ReportNode reportNode) {
         var persistedReport = reportNodeRepository.save(
-            new ReportNodeEntity(id, reportNode.getMessage(), System.nanoTime() - NANOS_FROM_EPOCH_TO_START, null, severities(reportNode))
+            new ReportNodeEntity(id, truncatedMessage(reportNode.getMessage()), System.nanoTime() - NANOS_FROM_EPOCH_TO_START, null, severities(reportNode))
         );
         reportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, c));
     }
 
+    private static String truncatedMessage(String message) {
+        if (message.length() <= MAX_MESSAGE_CHAR) {
+            return message;
+        }
+        String truncatedMessage = message.substring(0, MAX_MESSAGE_CHAR);
+        LOGGER.error("Message {}... exceeds max character length ({}). It will be truncated", truncatedMessage, MAX_MESSAGE_CHAR);
+        return truncatedMessage;
+    }
+
     private void saveReportNodeRecursively(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
         var reportNodeEntity = new ReportNodeEntity(
-            reportNode.getMessage(),
+            truncatedMessage(reportNode.getMessage()),
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
             parentReportNodeEntity,
             severities(reportNode)
