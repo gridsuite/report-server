@@ -6,7 +6,7 @@
  */
 package org.gridsuite.report.server;
 
-import com.powsybl.commons.report.ReportNodeImpl;
+import com.powsybl.commons.report.ReportNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -71,7 +71,7 @@ public class ReportController {
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
-    public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNodeImpl reportNode) {
+    public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNode reportNode) {
         service.createReport(id, reportNode);
     }
 
