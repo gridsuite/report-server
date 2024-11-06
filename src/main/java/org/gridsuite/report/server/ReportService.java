@@ -81,17 +81,15 @@ public class ReportService {
         // Then we flatten the ID list to be able to fetch related data in one request (what if this list is too big ?)
         List<UUID> idList = treeIds.values().stream().flatMap(Collection::stream).toList();
 
-        List<ReportLog> reportLogs = new ArrayList<>();
+        List<LogProjection> logProjections = new ArrayList<>();
         Lists.partition(idList, SQL_QUERY_MAX_PARAM_NUMBER).forEach(ids -> {
-            List<LogProjection> logProjections;
             if (severityLevelsFilter == null) {
-                logProjections = reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCase(ids, messageFilter == null ? "" : messageFilter);
+                logProjections.addAll(reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCase(ids, messageFilter == null ? "" : messageFilter));
             } else {
-                logProjections = reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesIn(ids, messageFilter == null ? "" : messageFilter, severityLevelsFilter);
+                logProjections.addAll(reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesIn(ids, messageFilter == null ? "" : messageFilter, severityLevelsFilter));
             }
-            reportLogs.addAll(logProjections.stream().sorted(Comparator.comparingLong(LogProjection::getNanos)).map(ReportService::toReportLog).toList());
         });
-        return reportLogs;
+        return new ArrayList<>(logProjections.stream().sorted(Comparator.comparingLong(LogProjection::getNanos)).map(ReportService::toReportLog).toList());
     }
 
     private OptimizedReportNodeEntities getOptimizedReportNodeEntities(UUID rootReportNodeId) {
