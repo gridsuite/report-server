@@ -72,21 +72,25 @@ public class ReportService {
     }
 
     public List<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter) {
-        // We first do a recursive find from the root node to aggregate all the IDs of the tree by their tree depth
-        Map<Integer, List<UUID>> treeIds = getTreeFromRootReport(rootReportNodeId);
-
-        // Then we flatten the ID list to be able to fetch related data in one request (what if this list is too big ?)
-        List<UUID> idList = treeIds.values().stream().flatMap(Collection::stream).toList();
-
-        List<LogProjection> logProjections = new ArrayList<>();
-        Lists.partition(idList, SQL_QUERY_MAX_PARAM_NUMBER).forEach(ids -> {
-            if (severityLevelsFilter == null) {
-                logProjections.addAll(reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCase(ids, messageFilter == null ? "" : messageFilter));
-            } else {
-                logProjections.addAll(reportNodeRepository.findAllByIdInAndMessageContainingIgnoreCaseAndSeveritiesIn(ids, messageFilter == null ? "" : messageFilter, severityLevelsFilter));
-            }
-        });
-        return new ArrayList<>(logProjections.stream().sorted(Comparator.comparingLong(LogProjection::getNanos)).map(ReportService::toReportLog).toList());
+        return reportNodeRepository.findById(rootReportNodeId)
+            .map(entity -> {
+                if (severityLevelsFilter == null) {
+                    return reportNodeRepository.findAllByOrderBetweenAndMessageContainingIgnoreCaseOrderByOrder(
+                        entity.getOrder(),
+                        entity.getEndOrder(),
+                        messageFilter == null ? "" : messageFilter);
+                } else {
+                    return reportNodeRepository.findAllByOrderBetweenAndMessageContainingIgnoreCaseAndSeveritiesInOrderByOrder(
+                        entity.getOrder(),
+                        entity.getEndOrder(),
+                        messageFilter == null ? "" : messageFilter,
+                        severityLevelsFilter);
+                }
+            })
+            .orElse(Collections.emptyList())
+            .stream()
+            .map(ReportService::toReportLog)
+            .toList();
     }
 
     private OptimizedReportNodeEntities getOptimizedReportNodeEntities(UUID rootReportNodeId) {

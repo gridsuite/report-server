@@ -205,7 +205,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportMessagesAreEqual(result, toString(EXPECTED_REPORT_MESSAGE_WITHOUT_FILTERS));
-        assertRequestsCount(1, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
         SQLStatementCountValidator.reset();
 
         //Test with a filter on the message that will return results
@@ -214,7 +214,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportMessagesAreEqual(result, toString(EXPECTED_REPORT_MESSAGE_WITH_MESSAGE_FILTER));
-        assertRequestsCount(1, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
         SQLStatementCountValidator.reset();
 
         //Test with a filter on the message that won't return results
@@ -225,7 +225,7 @@ public class ReportControllerTest {
         TypeReference<List<ReportLog>> listTypeReference = new TypeReference<>() { };
         List<ReportLog> response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
         assertEquals(0, response.size());
-        assertRequestsCount(1, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
         SQLStatementCountValidator.reset();
 
         //Test with a filter on the severity that will return results
@@ -234,7 +234,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportMessagesAreEqual(result, toString(EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_FILTERS));
-        assertRequestsCount(1, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
         SQLStatementCountValidator.reset();
 
         //Test with a filter on the severity that won't return results
@@ -244,7 +244,7 @@ public class ReportControllerTest {
 
         response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
         assertEquals(0, response.size());
-        assertRequestsCount(1, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
         SQLStatementCountValidator.reset();
 
         //Test with both filters on and expect some results
@@ -253,7 +253,7 @@ public class ReportControllerTest {
                 .andReturn();
 
         assertReportMessagesAreEqual(result, toString(EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_AND_MESSAGE_FILTERS));
-        assertRequestsCount(1, 0, 0, 0);
+        assertRequestsCount(2, 0, 0, 0);
         SQLStatementCountValidator.reset();
     }
 
