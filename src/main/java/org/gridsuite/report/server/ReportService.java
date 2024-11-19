@@ -7,7 +7,6 @@
 package org.gridsuite.report.server;
 
 import com.google.common.collect.Lists;
-import com.powsybl.commons.report.ReportConstants;
 import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
 import org.gridsuite.report.server.dto.Report;
@@ -42,8 +41,6 @@ public class ReportService {
 
     // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
     private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
-
-    static final int MAX_MESSAGE_CHAR = 500;
 
     private final ReportNodeRepository reportNodeRepository;
 
@@ -144,49 +141,45 @@ public class ReportService {
     }
 
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
+        List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>();
+        var appendedSize = 0;
+        var startingOrder = reportEntity.getEndOrder() + 1;
+        for (var child : reportNode.getChildren()) {
+            var sizedReportNode = SizedReportNodeMapper.map(child, startingOrder);
+            sizedReportNodeChildren.add(sizedReportNode);
+            appendedSize += sizedReportNode.getSize();
+            startingOrder = sizedReportNode.getOrder() + sizedReportNode.getSize() + 1;
+        }
+        reportEntity.setEndOrder(reportEntity.getEndOrder() + appendedSize);
+
         // We don't have to update more ancestors because we only append at root level, and we know it
         // But if we want to generalize appending to any report we should update the severity list of all the ancestors recursively
-        reportEntity.addSeverities(reportNode.getChildren().stream().map(ReportService::severities)
-                .flatMap(Collection::stream).collect(Collectors.toSet()));
-        reportNode.getChildren().forEach(c -> saveReportNodeRecursively(reportEntity, c));
+        reportEntity.addSeverities(sizedReportNodeChildren.stream().map(SizedReportNode::getSeverities)
+            .flatMap(Collection::stream).collect(Collectors.toSet()));
+
+        sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(reportEntity, c));
     }
 
     private void createNewReport(UUID id, ReportNode reportNode) {
+        var sizedReportNode = SizedReportNodeMapper.map(reportNode);
         var persistedReport = reportNodeRepository.save(
-            new ReportNodeEntity(id, truncatedMessage(reportNode.getMessage()), System.nanoTime() - NANOS_FROM_EPOCH_TO_START, null, severities(reportNode))
+            new ReportNodeEntity(id, sizedReportNode.getMessage(), System.nanoTime() - NANOS_FROM_EPOCH_TO_START, 0, sizedReportNode.getSize() - 1, null, sizedReportNode.getSeverities())
         );
-        reportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, c));
+        sizedReportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, c));
     }
 
-    private static String truncatedMessage(String message) {
-        if (message.length() <= MAX_MESSAGE_CHAR) {
-            return message;
-        }
-        String truncatedMessage = message.substring(0, MAX_MESSAGE_CHAR);
-        LOGGER.error("Message {}... exceeds max character length ({}). It will be truncated", truncatedMessage, MAX_MESSAGE_CHAR);
-        return truncatedMessage;
-    }
-
-    private void saveReportNodeRecursively(ReportNodeEntity parentReportNodeEntity, ReportNode reportNode) {
+    private void saveReportNodeRecursively(ReportNodeEntity parentReportNodeEntity, SizedReportNode sizedReportNode) {
         var reportNodeEntity = new ReportNodeEntity(
-            truncatedMessage(reportNode.getMessage()),
+            sizedReportNode.getMessage(),
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
+            sizedReportNode.getOrder(),
+            sizedReportNode.getOrder() + sizedReportNode.getSize() - 1,
             parentReportNodeEntity,
-            severities(reportNode)
+            sizedReportNode.getSeverities()
         );
 
         reportNodeRepository.save(reportNodeEntity);
-        reportNode.getChildren().forEach(child -> saveReportNodeRecursively(reportNodeEntity, child));
-    }
-
-    private static Set<String> severities(ReportNode reportNode) {
-        Set<String> severities = new HashSet<>();
-        if (reportNode.getChildren().isEmpty() && reportNode.getValues().containsKey(ReportConstants.SEVERITY_KEY)) {
-            severities.add(reportNode.getValues().get(ReportConstants.SEVERITY_KEY).getValue().toString());
-        } else {
-            reportNode.getChildren().forEach(child -> severities.addAll(severities(child)));
-        }
-        return severities;
+        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(reportNodeEntity, child));
     }
 
     @Transactional

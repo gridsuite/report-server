@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -29,6 +30,12 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
 
     @Column(name = "nanos")
     private long nanos;
+
+    @Column(name = "order_")
+    private int order;
+
+    @Column(name = "end_order")
+    private int endOrder;
 
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
@@ -50,18 +57,22 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<ReportNodeEntity> children;
 
-    public ReportNodeEntity(String message, long nanos, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(String message, long nanos, int order, int endOrder, ReportNodeEntity parent, Set<String> severities) {
         this.id = UUID.randomUUID();
         this.message = message;
         this.nanos = nanos;
+        this.order = order;
+        this.endOrder = endOrder;
         this.parent = parent;
         this.severities = severities;
     }
 
-    public ReportNodeEntity(UUID id, String message, long nanos, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(UUID id, String message, long nanos, int order, int endOrder, ReportNodeEntity parent, Set<String> severities) {
         this.id = id;
         this.message = message;
         this.nanos = nanos;
+        this.order = order;
+        this.endOrder = endOrder;
         this.parent = parent;
         this.severities = severities;
     }
