@@ -161,29 +161,30 @@ public class ReportService {
         reportEntity.addSeverities(sizedReportNodeChildren.stream().map(SizedReportNode::getSeverities)
             .flatMap(Collection::stream).collect(Collectors.toSet()));
 
-        sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(reportEntity, c));
+        sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(reportEntity, reportEntity, c));
     }
 
     private void createNewReport(UUID id, ReportNode reportNode) {
         var sizedReportNode = SizedReportNodeMapper.map(reportNode);
         var persistedReport = reportNodeRepository.save(
-            new ReportNodeEntity(id, sizedReportNode.getMessage(), System.nanoTime() - NANOS_FROM_EPOCH_TO_START, 0, sizedReportNode.getSize() - 1, null, sizedReportNode.getSeverities())
+            new ReportNodeEntity(id, sizedReportNode.getMessage(), System.nanoTime() - NANOS_FROM_EPOCH_TO_START, 0, sizedReportNode.getSize() - 1, null, null, sizedReportNode.getSeverities())
         );
-        sizedReportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, c));
+        sizedReportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, persistedReport, c));
     }
 
-    private void saveReportNodeRecursively(ReportNodeEntity parentReportNodeEntity, SizedReportNode sizedReportNode) {
+    private void saveReportNodeRecursively(ReportNodeEntity rootReportNodeEntity, ReportNodeEntity parentReportNodeEntity, SizedReportNode sizedReportNode) {
         var reportNodeEntity = new ReportNodeEntity(
             sizedReportNode.getMessage(),
             System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
             sizedReportNode.getOrder(),
             sizedReportNode.getOrder() + sizedReportNode.getSize() - 1,
+            rootReportNodeEntity,
             parentReportNodeEntity,
             sizedReportNode.getSeverities()
         );
 
         reportNodeRepository.save(reportNodeEntity);
-        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(reportNodeEntity, child));
+        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(rootReportNodeEntity, reportNodeEntity, child));
     }
 
     @Transactional

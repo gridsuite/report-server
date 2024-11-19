@@ -50,28 +50,34 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     private Set<String> severities;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "root_node_id", foreignKey = @ForeignKey(name = "root_node_fk"))
+    private ReportNodeEntity rootNode;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "parent_fk"))
     private ReportNodeEntity parent;
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<ReportNodeEntity> children;
 
-    public ReportNodeEntity(String message, long nanos, int order, int endOrder, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(String message, long nanos, int order, int endOrder, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
         this.id = UUID.randomUUID();
         this.message = message;
         this.nanos = nanos;
         this.order = order;
         this.endOrder = endOrder;
+        this.rootNode = rootNode;
         this.parent = parent;
         this.severities = severities;
     }
 
-    public ReportNodeEntity(UUID id, String message, long nanos, int order, int endOrder, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(UUID id, String message, long nanos, int order, int endOrder, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
         this.id = id;
         this.message = message;
         this.nanos = nanos;
         this.order = order;
         this.endOrder = endOrder;
+        this.rootNode = rootNode;
         this.parent = parent;
         this.severities = severities;
     }

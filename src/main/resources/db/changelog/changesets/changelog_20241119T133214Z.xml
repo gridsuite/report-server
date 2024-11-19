@@ -1,0 +1,11 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="mancinijor (generated)" id="1732023144492-1">
+        <addColumn tableName="report_node">
+            <column name="root_node_id" type="uuid"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="mancinijor (generated)" id="1732023144492-2">
+        <addForeignKeyConstraint baseColumnNames="root_node_id" baseTableName="report_node" constraintName="root_node_fk" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="report_node" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
