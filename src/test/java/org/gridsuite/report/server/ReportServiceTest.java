@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.gridsuite.report.server.SizedReportNodeMapper.MAX_MESSAGE_CHAR;
+import static org.gridsuite.report.server.SizedReportNode.MAX_MESSAGE_CHAR;
 import static org.gridsuite.report.server.utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 

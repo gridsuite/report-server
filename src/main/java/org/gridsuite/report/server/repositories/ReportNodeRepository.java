@@ -32,11 +32,13 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
 
     List<ReportNodeEntity> findAllByMessage(String message);
 
+    @SuppressWarnings("checkstyle:methodname")
     @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<LogProjection> findAllByOrderBetweenAndMessageContainingIgnoreCaseOrderByOrder(int orderAfter, int orderBefore, String message);
+    List<LogProjection> findAllByRootNode_IdAndOrderBetweenAndMessageContainingIgnoreCaseOrderByOrder(UUID rootNodeId, int orderAfter, int orderBefore, String message);
 
+    @SuppressWarnings("checkstyle:methodname")
     @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<LogProjection> findAllByOrderBetweenAndMessageContainingIgnoreCaseAndSeveritiesInOrderByOrder(int orderAfter, int orderBefore, String message, Set<String> severities);
+    List<LogProjection> findAllByRootNode_IdAndOrderBetweenAndMessageContainingIgnoreCaseAndSeveritiesInOrderByOrder(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
 
     @Modifying
     @Query(value = """

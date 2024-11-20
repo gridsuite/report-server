@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -75,12 +76,14 @@ public class ReportService {
         return reportNodeRepository.findById(rootReportNodeId)
             .map(entity -> {
                 if (severityLevelsFilter == null) {
-                    return reportNodeRepository.findAllByOrderBetweenAndMessageContainingIgnoreCaseOrderByOrder(
+                    return reportNodeRepository.findAllByRootNode_IdAndOrderBetweenAndMessageContainingIgnoreCaseOrderByOrder(
+                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
                         entity.getOrder(),
                         entity.getEndOrder(),
                         messageFilter == null ? "" : messageFilter);
                 } else {
-                    return reportNodeRepository.findAllByOrderBetweenAndMessageContainingIgnoreCaseAndSeveritiesInOrderByOrder(
+                    return reportNodeRepository.findAllByRootNode_IdAndOrderBetweenAndMessageContainingIgnoreCaseAndSeveritiesInOrderByOrder(
+                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
                         entity.getOrder(),
                         entity.getEndOrder(),
                         messageFilter == null ? "" : messageFilter,
@@ -126,7 +129,7 @@ public class ReportService {
                 appendReportElements(reportEntity, reportNode);
             },
             () -> {
-                LOGGER.debug("Reporter {} absent, create ", reportNode.getMessage());
+                LOGGER.debug("Reporter {} absent, from ", reportNode.getMessage());
                 createNewReport(id, reportNode);
             }
         );
@@ -146,10 +149,10 @@ public class ReportService {
 
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
         List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>();
-        var appendedSize = 0;
-        var startingOrder = reportEntity.getEndOrder() + 1;
-        for (var child : reportNode.getChildren()) {
-            var sizedReportNode = SizedReportNodeMapper.map(child, startingOrder);
+        int appendedSize = 0;
+        int startingOrder = reportEntity.getEndOrder() + 1;
+        for (ReportNode child : reportNode.getChildren()) {
+            SizedReportNode sizedReportNode = SizedReportNode.from(child, startingOrder);
             sizedReportNodeChildren.add(sizedReportNode);
             appendedSize += sizedReportNode.getSize();
             startingOrder = sizedReportNode.getOrder() + sizedReportNode.getSize() + 1;
@@ -165,8 +168,8 @@ public class ReportService {
     }
 
     private void createNewReport(UUID id, ReportNode reportNode) {
-        var sizedReportNode = SizedReportNodeMapper.map(reportNode);
-        var persistedReport = reportNodeRepository.save(
+        SizedReportNode sizedReportNode = SizedReportNode.from(reportNode);
+        ReportNodeEntity persistedReport = reportNodeRepository.save(
             new ReportNodeEntity(id, sizedReportNode.getMessage(), System.nanoTime() - NANOS_FROM_EPOCH_TO_START, 0, sizedReportNode.getSize() - 1, null, null, sizedReportNode.getSeverities())
         );
         sizedReportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, persistedReport, c));
