@@ -97,7 +97,7 @@ public class ReportService {
                 appendReportElements(reportEntity, reportNode);
             },
             () -> {
-                LOGGER.debug("Reporter {} absent, from ", reportNode.getMessage());
+                LOGGER.debug("Reporter {} absent, create ", reportNode.getMessage());
                 createNewReport(id, reportNode);
             }
         );

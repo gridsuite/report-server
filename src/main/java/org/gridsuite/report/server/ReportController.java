@@ -59,7 +59,7 @@ public class ReportController {
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
     public ResponseEntity<List<ReportLog>> getReportLogs(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
-                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severity") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter) {
+                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter) {
         try {
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
