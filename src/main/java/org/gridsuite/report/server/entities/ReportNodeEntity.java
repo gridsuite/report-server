@@ -29,9 +29,6 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Id
     private UUID id;
 
-    @Column(name = "nanos")
-    private long nanos;
-
     @Column(name = "order_")
     private int order;
 
@@ -65,10 +62,9 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<ReportNodeEntity> children;
 
-    public ReportNodeEntity(String message, long nanos, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
         this.id = UUID.randomUUID();
         this.message = message;
-        this.nanos = nanos;
         this.order = order;
         this.endOrder = endOrder;
         this.isLeaf = isLeaf;
@@ -77,10 +73,9 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
         this.severities = severities;
     }
 
-    public ReportNodeEntity(UUID id, String message, long nanos, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(UUID id, String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
         this.id = id;
         this.message = message;
-        this.nanos = nanos;
         this.order = order;
         this.endOrder = endOrder;
         this.isLeaf = isLeaf;

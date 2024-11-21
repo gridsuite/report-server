@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -36,18 +35,10 @@ public class ReportService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
 
-    private static final long NANOS_FROM_EPOCH_TO_START;
-
     // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
     private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
 
     private final ReportNodeRepository reportNodeRepository;
-
-    static {
-        long nanoNow = System.nanoTime();
-        long nanoViaMillis = Instant.now().toEpochMilli() * 1000000;
-        NANOS_FROM_EPOCH_TO_START = nanoNow - nanoViaMillis;
-    }
 
     public ReportService(ReportNodeRepository reportNodeRepository) {
         this.reportNodeRepository = reportNodeRepository;
@@ -135,7 +126,7 @@ public class ReportService {
     private void createNewReport(UUID id, ReportNode reportNode) {
         SizedReportNode sizedReportNode = SizedReportNode.from(reportNode);
         ReportNodeEntity persistedReport = reportNodeRepository.save(
-            new ReportNodeEntity(id, sizedReportNode.getMessage(), System.nanoTime() - NANOS_FROM_EPOCH_TO_START, 0, sizedReportNode.getSize() - 1, sizedReportNode.isLeaf(), null, null, sizedReportNode.getSeverities())
+            new ReportNodeEntity(id, sizedReportNode.getMessage(), 0, sizedReportNode.getSize() - 1, sizedReportNode.isLeaf(), null, null, sizedReportNode.getSeverities())
         );
         persistedReport.setRootNode(persistedReport);
         sizedReportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, persistedReport, c));
@@ -144,7 +135,6 @@ public class ReportService {
     private void saveReportNodeRecursively(ReportNodeEntity rootReportNodeEntity, ReportNodeEntity parentReportNodeEntity, SizedReportNode sizedReportNode) {
         var reportNodeEntity = new ReportNodeEntity(
             sizedReportNode.getMessage(),
-            System.nanoTime() - NANOS_FROM_EPOCH_TO_START,
             sizedReportNode.getOrder(),
             sizedReportNode.getOrder() + sizedReportNode.getSize() - 1,
             sizedReportNode.isLeaf(),
