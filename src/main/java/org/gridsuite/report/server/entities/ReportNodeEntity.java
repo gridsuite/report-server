@@ -21,7 +21,8 @@ import java.util.UUID;
 @Setter
 @Table(name = "report_node", indexes = {
     @Index(name = "report_node_parent_id_idx", columnList = "parent_id"),
-    @Index(name = "root_node_orders_idx", columnList = "root_node_id, order_, end_order")
+    @Index(name = "root_node_orders_idx", columnList = "root_node_id, order_, end_order"),
+    @Index(name = "root_node_and_container_idx", columnList = "root_node_id, is_leaf")
 })
 public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<UUID> {
 
@@ -36,6 +37,9 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
 
     @Column(name = "end_order")
     private int endOrder;
+
+    @Column(name = "is_leaf")
+    private boolean isLeaf;
 
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
@@ -61,23 +65,25 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<ReportNodeEntity> children;
 
-    public ReportNodeEntity(String message, long nanos, int order, int endOrder, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(String message, long nanos, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
         this.id = UUID.randomUUID();
         this.message = message;
         this.nanos = nanos;
         this.order = order;
         this.endOrder = endOrder;
+        this.isLeaf = isLeaf;
         this.rootNode = rootNode;
         this.parent = parent;
         this.severities = severities;
     }
 
-    public ReportNodeEntity(UUID id, String message, long nanos, int order, int endOrder, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(UUID id, String message, long nanos, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
         this.id = id;
         this.message = message;
         this.nanos = nanos;
         this.order = order;
         this.endOrder = endOrder;
+        this.isLeaf = isLeaf;
         this.rootNode = rootNode;
         this.parent = parent;
         this.severities = severities;

@@ -6,18 +6,10 @@
  */
 package org.gridsuite.report.server.entities;
 
-import java.util.Set;
 import java.util.UUID;
 
-public interface LogProjection {
-
-    UUID getId();
-
-    String getMessage();
-
-    Set<String> getSeverities();
-
-    LogProjection getParent();
-
-    long getNanos();
+/**
+ * @author Joris Mancini <joris.mancini_externe at rte-france.com>
+ */
+public record ReportProjection(UUID id, String message, String severity, UUID parentId) {
 }

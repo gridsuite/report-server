@@ -58,7 +58,7 @@
     },
     {
         "message": "Fix UCTE nodes",
-        "severity": []
+        "severity": ["UNKNOWN"]
     },
     {
         "message": "Fix UCTE transformers",
@@ -87,7 +87,7 @@
     },
     {
         "message": "Fix UCTE regulations",
-        "severity": []
+        "severity": ["UNKNOWN"]
     },
     {
         "message": "Create buses",

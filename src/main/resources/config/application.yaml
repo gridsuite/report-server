@@ -9,6 +9,8 @@ spring:
         order_updates: true
         jdbc:
           batch_size: 128
+        show_sql: true
+        generate_statistics: true
 
 powsybl-ws:
   database:

@@ -16,7 +16,6 @@ import lombok.SneakyThrows;
 
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
-import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.TestUtils;
 import org.junit.After;
@@ -87,8 +86,6 @@ public class ReportControllerTest {
     private static final String REPORT_CONCAT = "/reportConcat.json";
     private static final String REPORT_CONCAT2 = "/reportConcat2.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1 = "/expectedStructureAndElementsReportOne.json";
-    private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS = "/expectedStructureAndElementsReportOneWithOnlyErrors.json";
-    private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS = "/expectedStructureAndElementsReportOneWithOnlyInfos.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITH_MESSAGE_FILTER = "/expectedReportMessagesWithMessageFilter.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITHOUT_FILTERS = "/expectedReportMessagesWithoutFilters.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_FILTERS = "/expectedReportMessagesWithSeverityFilter.json";
@@ -109,7 +106,7 @@ public class ReportControllerTest {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andReturn();
         assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
@@ -142,50 +139,7 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetReportWithSeverityFilters() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        SQLStatementCountValidator.reset();
-
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetReportWithSeverityFiltersOnError() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        SQLStatementCountValidator.reset();
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=ERROR"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_ERRORS));
-        assertRequestsCount(2, 0, 0, 0);
-    }
-
-    @Test
-    public void testGetReportWithSeverityFiltersOnInfo() throws Exception {
-        String testReport1 = toString(REPORT_ONE);
-        insertReport(REPORT_UUID, testReport1);
-
-        SQLStatementCountValidator.reset();
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?severityLevels=INFO"))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1_ONLY_WITH_INFOS));
-        assertRequestsCount(2, 0, 0, 0);
+        assertRequestsCount(1, 0, 0, 0);
     }
 
     @Test
@@ -193,14 +147,10 @@ public class ReportControllerTest {
         String testReport4 = toString(REPORT_FOUR);
         insertReport(REPORT_UUID, testReport4);
 
-        List<ReportNodeEntity> reporters = reportNodeRepository.findAllByMessage("Reading UCTE network file");
-        assertEquals(1, reporters.size());
-        String uuidReporter = reporters.get(0).getId().toString();
-
         SQLStatementCountValidator.reset();
 
         //Test without filters
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs"))
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -209,7 +159,7 @@ public class ReportControllerTest {
         SQLStatementCountValidator.reset();
 
         //Test with a filter on the message that will return results
-        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?message=line"))
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs?message=line"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -218,7 +168,7 @@ public class ReportControllerTest {
         SQLStatementCountValidator.reset();
 
         //Test with a filter on the message that won't return results
-        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?message=thisfilterwontbematched"))
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs?message=thisfilterwontbematched"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -229,7 +179,7 @@ public class ReportControllerTest {
         SQLStatementCountValidator.reset();
 
         //Test with a filter on the severity that will return results
-        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?severityLevels=INFO"))
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs?severityLevels=INFO"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -238,7 +188,7 @@ public class ReportControllerTest {
         SQLStatementCountValidator.reset();
 
         //Test with a filter on the severity that won't return results
-        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?severityLevels=NO"))
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs?severityLevels=NO"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -248,7 +198,7 @@ public class ReportControllerTest {
         SQLStatementCountValidator.reset();
 
         //Test with both filters on and expect some results
-        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + uuidReporter + "/logs?severityLevels=INFO&message=line"))
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs?severityLevels=INFO&message=line"))
                 .andExpect(status().isOk())
                 .andReturn();
 

@@ -6,8 +6,8 @@
  */
 package org.gridsuite.report.server.repositories;
 
-import org.gridsuite.report.server.entities.LogProjection;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
+import org.gridsuite.report.server.entities.ReportProjection;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,20 +25,59 @@ import java.util.UUID;
 public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UUID> {
 
     @EntityGraph(attributePaths = {"children"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<ReportNodeEntity> findAllWithChildrenByIdIn(List<UUID> ids);
+    List<ReportNodeEntity> findAllWithChildrenById(UUID rootNodeId);
 
     @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<ReportNodeEntity> findAllWithSeveritiesByIdIn(List<UUID> ids);
+    List<ReportNodeEntity> findAllWithSeveritiesById(UUID rootNodeId);
 
-    List<ReportNodeEntity> findAllByMessage(String message);
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id,
+            rn.message,
+            s,
+            rn.parent.id
+        )
+        FROM ReportNodeEntity rn
+        LEFT JOIN rn.severities s
+        WHERE rn.rootNode.id = :rootNodeId AND rn.isLeaf = false
+        ORDER BY rn.order ASC
+        """)
+    List<ReportProjection> findAllContainersByRootNodeId(UUID rootNodeId);
 
-    @SuppressWarnings("checkstyle:methodname")
-    @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<LogProjection> findAllByRootNode_IdAndOrderBetweenAndMessageContainingIgnoreCaseOrderByOrder(UUID rootNodeId, int orderAfter, int orderBefore, String message);
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id,
+            rn.message,
+            s,
+            rn.parent.id
+        )
+        FROM ReportNodeEntity rn
+        LEFT JOIN rn.severities s
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message)
+        ORDER BY rn.order ASC
+        """)
+    List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message);
 
-    @SuppressWarnings("checkstyle:methodname")
-    @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<LogProjection> findAllByRootNode_IdAndOrderBetweenAndMessageContainingIgnoreCaseAndSeveritiesInOrderByOrder(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id,
+            rn.message,
+            s,
+            rn.parent.id
+        )
+        FROM ReportNodeEntity rn
+        LEFT JOIN rn.severities s
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message)
+                AND s IN (:severities)
+        ORDER BY rn.order ASC
+        """)
+    List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
 
     @Modifying
     @Query(value = """

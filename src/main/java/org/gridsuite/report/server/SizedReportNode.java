@@ -30,13 +30,15 @@ public class SizedReportNode {
     private String message;
     private int order;
     private int size;
+    private boolean isLeaf;
     private List<SizedReportNode> children;
     private Set<String> severities;
 
-    public SizedReportNode(String message, int order, int size, List<SizedReportNode> children, Set<String> severities) {
+    public SizedReportNode(String message, int order, int size, boolean isLeaf, List<SizedReportNode> children, Set<String> severities) {
         this.message = message;
         this.order = order;
         this.size = size;
+        this.isLeaf = isLeaf;
         this.children = children;
         this.severities = severities;
     }
@@ -66,6 +68,7 @@ public class SizedReportNode {
                 truncatedMessage(reportNode.getMessage()),
                 counter++,
                 0,
+                isLeaf(reportNode),
                 new ArrayList<>(),
                 severities(reportNode)
             );
@@ -89,12 +92,16 @@ public class SizedReportNode {
 
         private static Set<String> severities(ReportNode reportNode) {
             Set<String> severities = new HashSet<>();
-            if (reportNode.getChildren().isEmpty() && reportNode.getValues().containsKey(ReportConstants.SEVERITY_KEY)) {
+            if (isLeaf(reportNode)) {
                 severities.add(reportNode.getValues().get(ReportConstants.SEVERITY_KEY).getValue().toString());
             } else {
                 reportNode.getChildren().forEach(child -> severities.addAll(severities(child)));
             }
             return severities;
+        }
+
+        private static boolean isLeaf(ReportNode reportNode) {
+            return reportNode.getChildren().isEmpty() && reportNode.getValues().containsKey(ReportConstants.SEVERITY_KEY);
         }
     }
 }

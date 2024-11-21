@@ -20,7 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -40,10 +42,9 @@ public class ReportController {
     @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters")})
     public ResponseEntity<Report> getReport(@PathVariable("id") UUID id,
-                                                  @Parameter(description = "Filter on severity levels. Will only return elements with those severities.") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevels,
-                                                  @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+                                            @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
         try {
-            Report report = service.getReport(id, severityLevels);
+            Report report = service.getReport(id);
             return report == null ?
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName)) :
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
@@ -57,12 +58,12 @@ public class ReportController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The list of message (severity and parent id) of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
     public ResponseEntity<List<ReportLog>> getReportLogs(@PathVariable("id") UUID id,
-                                                             @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
-                                                             @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter) {
+                                                         @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
+                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severity") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter) {
         try {
             return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.getReportLogs(id, severityLevelsFilter, messageFilter));
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.getReportLogs(id, severityLevelsFilter, messageFilter));
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }
@@ -78,8 +79,8 @@ public class ReportController {
     @DeleteMapping(value = "reports/{id}")
     @Operation(summary = "delete the report")
     @ApiResponse(responseCode = "200", description = "The report has been deleted")
-        public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID reportUuid,
-                                                 @Parameter(description = "Return 404 if report is not found") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound) {
+    public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID reportUuid,
+                                             @Parameter(description = "Return 404 if report is not found") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound) {
         try {
             service.deleteReport(reportUuid);
         } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {
