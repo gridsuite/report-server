@@ -25,8 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static org.gridsuite.report.server.ReportNodeMapper.map;
-
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
@@ -57,7 +55,7 @@ public class ReportService {
     @Transactional(readOnly = true)
     public Report getReport(UUID reportId) {
         Objects.requireNonNull(reportId);
-        return map(reportNodeRepository.findAllContainersByRootNodeId(reportId));
+        return ReportMapper.map(reportNodeRepository.findAllContainersByRootNodeId(reportId));
     }
 
     public List<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter) {
@@ -126,7 +124,16 @@ public class ReportService {
     private void createNewReport(UUID id, ReportNode reportNode) {
         SizedReportNode sizedReportNode = SizedReportNode.from(reportNode);
         ReportNodeEntity persistedReport = reportNodeRepository.save(
-            new ReportNodeEntity(id, sizedReportNode.getMessage(), 0, sizedReportNode.getSize() - 1, sizedReportNode.isLeaf(), null, null, sizedReportNode.getSeverities())
+            new ReportNodeEntity(
+                id,
+                sizedReportNode.getMessage(),
+                sizedReportNode.getOrder(),
+                sizedReportNode.getOrder() + sizedReportNode.getSize() - 1,
+                sizedReportNode.isLeaf(),
+                null,
+                null,
+                sizedReportNode.getSeverities()
+            )
         );
         persistedReport.setRootNode(persistedReport);
         sizedReportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, persistedReport, c));

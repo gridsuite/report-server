@@ -44,11 +44,11 @@ public class SizedReportNode {
     }
 
     public static SizedReportNode from(ReportNode reportNode) {
-        return new SizedReportNodeMapper().mapInternal(reportNode);
+        return new SizedReportNodeMapper().map(reportNode);
     }
 
     public static SizedReportNode from(ReportNode reportNode, int startingOrder) {
-        return new SizedReportNodeMapper(startingOrder).mapInternal(reportNode);
+        return new SizedReportNodeMapper(startingOrder).map(reportNode);
     }
 
     private static final class SizedReportNodeMapper {
@@ -63,7 +63,7 @@ public class SizedReportNode {
             this(0);
         }
 
-        public SizedReportNode mapInternal(ReportNode reportNode) {
+        public SizedReportNode map(ReportNode reportNode) {
             SizedReportNode sizedReportNode = new SizedReportNode(
                 truncatedMessage(reportNode.getMessage()),
                 counter++,
@@ -73,7 +73,7 @@ public class SizedReportNode {
                 severities(reportNode)
             );
             int subTreeSize = reportNode.getChildren().stream().map(child -> {
-                var childSizedReportNode = mapInternal(child);
+                var childSizedReportNode = map(child);
                 sizedReportNode.getChildren().add(childSizedReportNode);
                 return childSizedReportNode.getSize();
             }).reduce(1, Integer::sum);
