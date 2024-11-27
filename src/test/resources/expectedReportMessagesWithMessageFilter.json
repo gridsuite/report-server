@@ -46,5 +46,35 @@
     "severity": [
       "ERROR"
     ]
+  },
+  {
+    "message": "Create lines",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create dangling line 'FFFFFF11 XXXXXX11 1' (Xnode='XXXXXX11')",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create dangling line 'FFFFFF11 XXXXXX12 1' (Xnode='XXXXXX12')",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create dangling line 'FFFFFF13 XXXXXX13 1' (Xnode='XXXXXX13')",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create dangling line 'FFFFFF13 XXXXXX14 1' (Xnode='XXXXXX14')",
+    "severity": [
+      "TRACE"
+    ]
   }
 ]

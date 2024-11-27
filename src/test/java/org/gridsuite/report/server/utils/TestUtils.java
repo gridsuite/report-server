@@ -56,9 +56,9 @@ public final class TestUtils {
         if (log1 == log2) {
             return true;
         }
-        if (!Objects.equals(log1.message(), log2.message())) {
+        if (!Objects.equals(log1.getMessage(), log2.getMessage())) {
             return false;
         }
-        return log1.severity().containsAll(log2.severity());
+        return log1.getSeverity().containsAll(log2.getSeverity());
     }
 }

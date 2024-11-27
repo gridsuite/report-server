@@ -12,49 +12,24 @@
           "id": "0305b82b-28c5-4739-b660-7a52cef9084f",
           "message": "Fix UCTE lines",
           "severities": ["ERROR"],
-          "subReports": [
-            {
-              "id": null,
-              "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
-              "severities": ["ERROR"],
-              "subReports": []
-            },
-            {
-              "id": null,
-              "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
-              "severities": ["ERROR"],
-              "subReports": []
-            },
-            {
-              "id": null,
-              "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
-              "severities": ["ERROR"],
-              "subReports": []
-            },
-            {
-              "id": null,
-              "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
-              "severities": ["ERROR"],
-              "subReports": []
-            }
-          ]
+          "subReports": []
         },
         {
           "id": "d323f586-bca9-4283-a6f6-65b0e67b526b",
           "message": "Fix UCTE nodes",
-          "severities": [],
+          "severities": ["UNKNOWN"],
           "subReports": []
         },
         {
           "id": "77dafe33-e738-46ab-ac8b-2944dcaaa376",
           "message": "Fix UCTE transformers",
-          "severities": [],
+          "severities": ["UNKNOWN"],
           "subReports": []
         },
         {
           "id": "f2f054af-7ad5-45f8-a1c4-c5555652470f",
           "message": "Fix UCTE regulations",
-          "severities": [],
+          "severities": ["UNKNOWN"],
           "subReports": []
         }
       ]
@@ -68,32 +43,7 @@
           "id": "65a0f4c6-444e-4dff-ba4d-fb9fc02971f7",
           "message": "Create buses for substation FFFFFF",
           "severities": ["TRACE"],
-          "subReports": [
-            {
-              "id": null,
-              "message": "Create substation FFFFFF",
-              "severities": ["TRACE"],
-              "subReports": []
-            },
-            {
-              "id": null,
-              "message": "Create voltage level FFFFFF1",
-              "severities": ["TRACE"],
-              "subReports": []
-            },
-            {
-              "id": null,
-              "message": "Create bus FFFFFF11",
-              "severities": ["TRACE"],
-              "subReports": []
-            },
-            {
-              "id": null,
-              "message": "Create bus FFFFFF13",
-              "severities": ["TRACE"],
-              "subReports": []
-            }
-          ]
+          "subReports": []
         }
       ]
     },
@@ -101,61 +51,17 @@
       "id": "c83381de-9047-4b8b-a1e5-1fd940d0ee0c",
       "message": "Create lines",
       "severities": ["TRACE"],
-      "subReports": [
-        {
-          "id": null,
-          "message": "Create dangling line 'FFFFFF11 XXXXXX11 1' (Xnode='XXXXXX11')",
-          "severities": ["TRACE"],
-          "subReports": []
-        },
-        {
-          "id": null,
-          "message": "Create dangling line 'FFFFFF11 XXXXXX12 1' (Xnode='XXXXXX12')",
-          "severities": ["TRACE"],
-          "subReports": []
-        },
-        {
-          "id": null,
-          "message": "Create dangling line 'FFFFFF13 XXXXXX13 1' (Xnode='XXXXXX13')",
-          "severities": ["TRACE"],
-          "subReports": []
-        },
-        {
-          "id": null,
-          "message": "Create dangling line 'FFFFFF13 XXXXXX14 1' (Xnode='XXXXXX14')",
-          "severities": ["TRACE"],
-          "subReports": []
-        }
-      ]
-    },
-    {
-      "id": null,
-      "message": "No value report",
-      "severities": ["INFO"],
-      "subReports": []
-    },
-    {
-      "id": null,
-      "message": "Create transformers",
-      "severities": ["TRACE"],
-      "subReports": []
-    },
-
-    {
-      "id": null,
-      "message": "No value report",
-      "severities": ["INFO"],
       "subReports": []
     },
     {
       "id": "19443852-eb79-4065-8b71-11afb8b7ec97",
       "message": "test on more",
-      "severities": [],
+      "severities": ["UNKNOWN"],
       "subReports": [
         {
           "id": "90ea994d-6af8-4748-9247-4c7731c89e8d",
           "message": "Fix UCTE nodes",
-          "severities": [],
+          "severities": ["UNKNOWN"],
           "subReports": []
         }
       ]

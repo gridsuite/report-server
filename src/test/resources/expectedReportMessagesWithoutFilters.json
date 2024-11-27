@@ -1,19 +1,174 @@
 [
   {
-    "message":"Reading UCTE network file",
-    "severity":["ERROR","INFO"]
-    },
-  {
-    "message":"Fix UCTE lines",
-    "severity":["ERROR"]
+    "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+    "severity": [
+      "ERROR",
+      "INFO",
+      "TRACE"
+    ]
   },
   {
-    "message":"FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
-    "severity":["ERROR"]
+    "message": "Reading UCTE network file",
+    "severity": [
+      "ERROR",
+      "INFO"
+    ]
   },
   {
-    "message":"FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
-    "severity":["ERROR"]
+    "message": "Fix UCTE lines",
+    "severity": [
+      "ERROR"
+    ]
   },
-  {"message":"FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)","severity":["ERROR"]},{"message":"FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)","severity":["ERROR"]},{"message":"Create buses","severity":["INFO"]},{"message":"Create lines","severity":["INFO"]},{"message":"Fix UCTE nodes","severity":[]},{"message":"Fix UCTE transformers","severity":["ERROR","INFO"]},{"message":"Create buses","severity":["INFO"]},{"message":"Create lines","severity":["INFO"]},{"message":"FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)","severity":["ERROR"]},{"message":"Fix UCTE regulations","severity":[]}
+  {
+    "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "Create buses",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "Create lines",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "Fix UCTE nodes",
+    "severity": [
+      "UNKNOWN"
+    ]
+  },
+  {
+    "message": "Fix UCTE transformers",
+    "severity": [
+      "ERROR",
+      "INFO"
+    ]
+  },
+  {
+    "message": "Create buses",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "Create lines",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
+    "severity": [
+      "ERROR"
+    ]
+  },
+  {
+    "message": "Fix UCTE regulations",
+    "severity": [
+      "UNKNOWN"
+    ]
+  },
+  {
+    "message": "Create buses",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create buses for substation FFFFFF",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create substation FFFFFF",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create voltage level FFFFFF1",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create bus FFFFFF11",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create bus FFFFFF13",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create lines",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create dangling line 'FFFFFF11 XXXXXX11 1' (Xnode='XXXXXX11')",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create dangling line 'FFFFFF11 XXXXXX12 1' (Xnode='XXXXXX12')",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create dangling line 'FFFFFF13 XXXXXX13 1' (Xnode='XXXXXX13')",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "Create dangling line 'FFFFFF13 XXXXXX14 1' (Xnode='XXXXXX14')",
+    "severity": [
+      "TRACE"
+    ]
+  },
+  {
+    "message": "No value report",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "Create transformers",
+    "severity": [
+      "TRACE"
+    ]
+  }
 ]

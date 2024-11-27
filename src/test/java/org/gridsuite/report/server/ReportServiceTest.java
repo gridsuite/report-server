@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.gridsuite.report.server.ReportService.MAX_MESSAGE_CHAR;
+import static org.gridsuite.report.server.SizedReportNode.MAX_MESSAGE_CHAR;
 import static org.gridsuite.report.server.utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -58,7 +58,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, reportNode);
-        assertRequestsCount(1, 1, 0, 0);
+        assertRequestsCount(1, 1, 1, 0);
 
         assertEquals(1, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -88,7 +88,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, reportNode);
-        assertRequestsCount(1, 2, 0, 0);
+        assertRequestsCount(1, 2, 1, 0);
 
         assertEquals(4, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -127,7 +127,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(1, 1, 0, 0);
+        assertRequestsCount(1, 1, 1, 0);
 
         assertEquals(2, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -156,7 +156,7 @@ class ReportServiceTest {
             .add();
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(1, 1, 0, 0);
+        assertRequestsCount(1, 1, 1, 0);
 
         assertEquals(3, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -203,7 +203,7 @@ class ReportServiceTest {
             .add();
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(2, 3, 0, 0);
+        assertRequestsCount(2, 3, 1, 0);
 
         var rootReportNodeEntityBis = reportService.getReportNodeEntity(parentReportId).orElseThrow();
         var reportNodeEntityBis = reportService.getReportNodeEntity(rootReportNodeEntityBis.getChildren().get(3).getId()).orElseThrow();

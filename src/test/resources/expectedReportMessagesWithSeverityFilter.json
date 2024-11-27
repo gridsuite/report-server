@@ -1,5 +1,13 @@
 [
   {
+    "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+    "severity": [
+      "ERROR",
+      "INFO",
+      "TRACE"
+    ]
+  },
+  {
     "message": "Reading UCTE network file",
     "severity": [
       "ERROR",
@@ -33,6 +41,12 @@
   },
   {
     "message": "Create lines",
+    "severity": [
+      "INFO"
+    ]
+  },
+  {
+    "message": "No value report",
     "severity": [
       "INFO"
     ]
