@@ -92,9 +92,10 @@ public class SizedReportNode {
 
         private static Set<String> severities(ReportNode reportNode) {
             Set<String> severities = new HashSet<>();
-            if (isLeaf(reportNode)) {
+            if (reportNode.getValues().containsKey(ReportConstants.SEVERITY_KEY)) {
                 severities.add(reportNode.getValues().get(ReportConstants.SEVERITY_KEY).getValue().toString());
-            } else {
+            }
+            if (!isLeaf(reportNode)) {
                 reportNode.getChildren().forEach(child -> severities.addAll(severities(child)));
             }
             return severities;
