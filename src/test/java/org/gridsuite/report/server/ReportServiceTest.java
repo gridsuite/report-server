@@ -234,6 +234,32 @@ class ReportServiceTest {
         assertEquals(veryLongString.substring(0, MAX_MESSAGE_CHAR), reportNodeEntity.getMessage());
     }
 
+    @Test
+    void testParentReportSeverityAggregation() {
+        var reportNode = ReportNode.newRootReportNode()
+            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
+            .withSeverity(TypedValue.ERROR_SEVERITY)
+            .build();
+        reportNode.newReportNode()
+            .withMessageTemplate("traceMessage", "traceMessage")
+            .withSeverity(TypedValue.TRACE_SEVERITY)
+            .add();
+        var subReportNode = reportNode.newReportNode()
+            .withMessageTemplate("infoMessage", "infoMessage")
+            .withSeverity(TypedValue.INFO_SEVERITY)
+            .add();
+        subReportNode.newReportNode()
+            .withMessageTemplate("debugMessage", "debugMessage")
+            .withSeverity(TypedValue.DEBUG_SEVERITY)
+            .add();
+        var parentReportId = UUID.randomUUID();
+        reportService.createReport(parentReportId, reportNode);
+        var rootReportNodeEntity = reportService.getReportNodeEntity(parentReportId).orElseThrow();
+        assertEquals(Set.of("ERROR", "TRACE", "INFO", "DEBUG"), rootReportNodeEntity.getSeverities());
+        var reportNodeEntity = reportService.getReportNodeEntity(rootReportNodeEntity.getChildren().get(1).getId()).orElseThrow();
+        assertEquals(Set.of("INFO", "DEBUG"), reportNodeEntity.getSeverities());
+    }
+
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, Set<String> severityList) {
         assertEquals(reportNode.getMessage(), entity.getMessage());
         assertEquals(severityList, entity.getSeverities());
