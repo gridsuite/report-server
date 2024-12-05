@@ -76,6 +76,13 @@ public class ReportController {
         service.createReport(id, reportNode);
     }
 
+    @PostMapping(value = "reports/{id}/duplicate", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Duplicate a report")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report has been duplicated")})
+    public ResponseEntity<UUID> duplicateReport(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(service.duplicateReport(id));
+    }
+
     @DeleteMapping(value = "reports/{id}")
     @Operation(summary = "delete the report")
     @ApiResponse(responseCode = "200", description = "The report has been deleted")

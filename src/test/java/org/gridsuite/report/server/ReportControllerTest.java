@@ -90,6 +90,7 @@ public class ReportControllerTest {
     private static final String EXPECTED_REPORT_MESSAGE_WITHOUT_FILTERS = "/expectedReportMessagesWithoutFilters.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_FILTERS = "/expectedReportMessagesWithSeverityFilter.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_AND_MESSAGE_FILTERS = "/expectedReportMessagesWithSeverityAndMessageFilter.json";
+    private static final String EXPECTED_REPORT_ONE = "/expectedReportOne.json";
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
 
@@ -219,6 +220,21 @@ public class ReportControllerTest {
             .andExpect(status().isOk())
             .andReturn();
         assertReportsAreEqualIgnoringIds(result2, toString(DEFAULT_EMPTY_REPORT2));
+    }
+
+    @Test
+    public void testDuplicateReport() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+        MvcResult result = mvc.perform(post(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/duplicate")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andReturn();
+        UUID duplicatedReportId = objectMapper.readValue(result.getResponse().getContentAsString(), UUID.class);
+        MvcResult resultAfterDuplication = mvc.perform(get(URL_TEMPLATE + "/reports/" + duplicatedReportId))
+            .andExpect(status().isOk())
+            .andReturn();
+        assertReportsAreEqualIgnoringIds(resultAfterDuplication, toString(EXPECTED_REPORT_ONE));
     }
 
     @Test

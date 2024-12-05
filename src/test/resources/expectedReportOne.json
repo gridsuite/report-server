@@ -1,0 +1,66 @@
+{
+  "id": "ac7170b2-f1d7-41b1-8f21-7fc806edc81a",
+  "parentId": null,
+  "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+  "severities": ["TRACE", "ERROR", "INFO"],
+  "subReports": [
+    {
+      "id": "8fde1ace-42f2-4b15-baf4-cd4dedf53e03",
+      "parentId": "ac7170b2-f1d7-41b1-8f21-7fc806edc81a",
+      "message": "Reading UCTE network file",
+      "severities": ["ERROR"],
+      "subReports": [
+        {
+          "id": "7fe0214a-35d9-435b-a666-eb073999e472",
+          "parentId": "8fde1ace-42f2-4b15-baf4-cd4dedf53e03",
+          "message": "Fix UCTE lines",
+          "severities": ["ERROR"],
+          "subReports": []
+        },
+        {
+          "id": "b4c6cf36-8c3b-4808-85a1-1820808f10b8",
+          "parentId": "8fde1ace-42f2-4b15-baf4-cd4dedf53e03",
+          "message": "Fix UCTE nodes",
+          "severities": ["UNKNOWN"],
+          "subReports": []
+        },
+        {
+          "id": "37d73d6b-da0d-480f-a115-446af6ede91f",
+          "parentId": "8fde1ace-42f2-4b15-baf4-cd4dedf53e03",
+          "message": "Fix UCTE transformers",
+          "severities": ["UNKNOWN"],
+          "subReports": []
+        },
+        {
+          "id": "2b7f0ae6-f15c-4082-bf2d-dc42ee33bba1",
+          "parentId": "8fde1ace-42f2-4b15-baf4-cd4dedf53e03",
+          "message": "Fix UCTE regulations",
+          "severities": ["UNKNOWN"],
+          "subReports": []
+        }
+      ]
+    },
+    {
+      "id": "9b23e641-5bc8-4430-b033-3311c408bc15",
+      "parentId": "ac7170b2-f1d7-41b1-8f21-7fc806edc81a",
+      "message": "Create buses",
+      "severities": ["TRACE"],
+      "subReports": [
+        {
+          "id": "59338483-5961-4391-b043-aa6601cd118a",
+          "parentId": "9b23e641-5bc8-4430-b033-3311c408bc15",
+          "message": "Create buses for substation FFFFFF",
+          "severities": ["TRACE"],
+          "subReports": []
+        }
+      ]
+    },
+    {
+      "id": "164d8c20-8dbb-4615-b3e5-9608d274b8d5",
+      "parentId": "ac7170b2-f1d7-41b1-8f21-7fc806edc81a",
+      "message": "Create lines",
+      "severities": ["TRACE"],
+      "subReports": []
+    }
+  ]
+}

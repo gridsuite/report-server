@@ -155,6 +155,41 @@ public class ReportService {
     }
 
     @Transactional
+    public UUID duplicateReport(UUID rootNodeId) {
+        ReportNodeEntity rootNode = reportNodeRepository.findById(rootNodeId)
+            .orElseThrow(() -> new NoSuchElementException("Root node not found"));
+
+        ReportNodeEntity duplicatedRootNode = duplicateReportNodeRecursively(rootNode, null);
+        return duplicatedRootNode.getId();
+    }
+
+    private ReportNodeEntity duplicateReportNodeRecursively(ReportNodeEntity node, ReportNodeEntity newParent) {
+        ReportNodeEntity duplicatedNode = new ReportNodeEntity(
+            node.getMessage(),
+            node.getOrder(),
+            node.getEndOrder(),
+            node.isLeaf(),
+            null,
+            newParent,
+            new HashSet<>(node.getSeverities())
+        );
+
+        reportNodeRepository.save(duplicatedNode);
+
+        if (newParent == null) {
+            duplicatedNode.setRootNode(duplicatedNode);
+        } else {
+            duplicatedNode.setRootNode(newParent.getRootNode());
+        }
+
+        for (ReportNodeEntity child : node.getChildren()) {
+            duplicateReportNodeRecursively(child, duplicatedNode);
+        }
+
+        return duplicatedNode;
+    }
+
+    @Transactional
     public void deleteReport(UUID reportUuid) {
         ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(reportUuid).orElseThrow(() -> new EmptyResultDataAccessException("No element found", 1));
         deleteRoot(reportNodeEntity.getId());
