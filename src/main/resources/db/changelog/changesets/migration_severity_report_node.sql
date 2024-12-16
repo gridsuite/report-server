@@ -1,5 +1,3 @@
-ALTER TABLE report_node ADD COLUMN severity VARCHAR(255) NOT NULL DEFAULT 'UNKNOWN';
-
 WITH ranked_severities AS (
     SELECT
         s.report_node_id,
@@ -22,5 +20,3 @@ UPDATE report_node
 SET severity = ranked_severities.severity
     FROM ranked_severities
 WHERE id = ranked_severities.report_node_id AND ranked_severities.rank = 1;
-
-DROP TABLE severity;
