@@ -1,6 +1,6 @@
 {
   "id": null,
   "message": "test",
-  "severities": [],
+  "severity": "UNKNOWN",
   "subReports": []
 }

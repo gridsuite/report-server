@@ -27,18 +27,14 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     @EntityGraph(attributePaths = {"children"}, type = EntityGraph.EntityGraphType.LOAD)
     List<ReportNodeEntity> findAllWithChildrenById(UUID rootNodeId);
 
-    @EntityGraph(attributePaths = {"severities"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<ReportNodeEntity> findAllWithSeveritiesById(UUID rootNodeId);
-
     @Query("""
         SELECT new org.gridsuite.report.server.entities.ReportProjection(
             rn.id,
             rn.message,
-            s,
+            rn.severity,
             rn.parent.id
         )
         FROM ReportNodeEntity rn
-        LEFT JOIN rn.severities s
         WHERE rn.rootNode.id = :rootNodeId AND rn.isLeaf = false
         ORDER BY rn.order ASC
         """)
@@ -48,11 +44,10 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         SELECT new org.gridsuite.report.server.entities.ReportProjection(
             rn.id,
             rn.message,
-            s,
+            rn.severity,
             rn.parent.id
         )
         FROM ReportNodeEntity rn
-        LEFT JOIN rn.severities s
         WHERE
                 rn.rootNode.id = :rootNodeId
                 AND rn.order BETWEEN :orderAfter AND :orderBefore
@@ -62,27 +57,25 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message);
 
     @Query("""
-        SELECT new org.gridsuite.report.server.entities.ReportProjection(
-            rn.id,
-            rn.message,
-            s,
-            rn.parent.id
-        )
-        FROM ReportNodeEntity rn
-        LEFT JOIN rn.severities s
-        WHERE
-                rn.rootNode.id = :rootNodeId
-                AND rn.order BETWEEN :orderAfter AND :orderBefore
-                AND UPPER(rn.message) LIKE UPPER(:message)
-                AND s IN (:severities)
-        ORDER BY rn.order ASC
-        """)
+            SELECT new org.gridsuite.report.server.entities.ReportProjection(
+                rn.id,
+                rn.message,
+                rn.severity,
+                rn.parent.id
+            )
+            FROM ReportNodeEntity rn
+            WHERE
+                    rn.rootNode.id = :rootNodeId
+                    AND rn.order BETWEEN :orderAfter AND :orderBefore
+                    AND UPPER(rn.message) LIKE UPPER(:message)
+                    AND rn.severity IN (:severities)
+            ORDER BY rn.order ASC
+            """)
     List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
 
     @Modifying
     @Query(value = """
         BEGIN;
-        DELETE FROM severity WHERE report_node_id IN :ids ;
         DELETE FROM report_node WHERE id IN :ids ;
         COMMIT;
         """, nativeQuery = true)

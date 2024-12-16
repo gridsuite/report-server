@@ -6,13 +6,22 @@
  */
 package org.gridsuite.report.server.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -41,15 +50,8 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(
-        name = "severity",
-        joinColumns = {@JoinColumn(name = "report_node_id")},
-        foreignKey = @ForeignKey(name = "report_node_severity_fk"),
-        indexes = @Index(name = "report_node_severity_idx", columnList = "report_node_id")
-    )
     @Column(name = "severity")
-    private Set<String> severities;
+    private String severity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "root_node_id", foreignKey = @ForeignKey(name = "root_node_fk"))
@@ -62,7 +64,7 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<ReportNodeEntity> children;
 
-    public ReportNodeEntity(String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, String severity) {
         this.id = UUID.randomUUID();
         this.message = message;
         this.order = order;
@@ -70,10 +72,10 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
         this.isLeaf = isLeaf;
         this.rootNode = rootNode;
         this.parent = parent;
-        this.severities = severities;
+        this.severity = severity;
     }
 
-    public ReportNodeEntity(UUID id, String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, Set<String> severities) {
+    public ReportNodeEntity(UUID id, String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, String severity) {
         this.id = id;
         this.message = message;
         this.order = order;
@@ -81,10 +83,6 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
         this.isLeaf = isLeaf;
         this.rootNode = rootNode;
         this.parent = parent;
-        this.severities = severities;
-    }
-
-    public void addSeverities(Set<String> severities) {
-        this.severities.addAll(severities);
+        this.severity = severity;
     }
 }

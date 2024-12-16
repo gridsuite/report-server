@@ -1,54 +1,22 @@
 [
   {
-    "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-    "severity": [
-      "ERROR",
-      "INFO",
-      "TRACE"
-    ]
-  },
-  {
-    "message": "Reading UCTE network file",
-    "severity": [
-      "ERROR",
-      "INFO"
-    ]
-  },
-  {
     "message": "Create buses",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "Create lines",
-    "severity": [
-      "INFO"
-    ]
-  },
-  {
-    "message": "Fix UCTE transformers",
-    "severity": [
-      "ERROR",
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "Create buses",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "Create lines",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "No value report",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   }
 ]

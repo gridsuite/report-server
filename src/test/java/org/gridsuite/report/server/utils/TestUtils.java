@@ -33,7 +33,7 @@ public final class TestUtils {
 
     public static void assertReportsAreEqualIgnoringIds(Report expectedNode, Report actualNode) {
         assertEquals(expectedNode.getMessage(), actualNode.getMessage());
-        assertEquals(expectedNode.getSeverities().toString(), actualNode.getSeverities().toString());
+        assertEquals(expectedNode.getSeverity().toString(), actualNode.getSeverity().toString());
         assertEquals(expectedNode.getSubReports().size(), actualNode.getSubReports().size());
         for (int i = 0; i < expectedNode.getSubReports().size(); i++) {
             assertReportsAreEqualIgnoringIds(expectedNode.getSubReports().get(i), actualNode.getSubReports().get(i));
@@ -59,6 +59,6 @@ public final class TestUtils {
         if (!Objects.equals(log1.getMessage(), log2.getMessage())) {
             return false;
         }
-        return log1.getSeverity().containsAll(log2.getSeverity());
+        return log1.getSeverity().equals(log2.getSeverity());
     }
 }

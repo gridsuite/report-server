@@ -11,8 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.gridsuite.report.server.Severity;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -22,20 +20,14 @@ import java.util.UUID;
 @Setter
 public class ReportLog {
     private String message;
-    private Set<Severity> severity;
+    private Severity severity;
     private UUID parentId;
 
     @JsonCreator
-    public ReportLog(String message, Set<Severity> severity, UUID parentId) {
+    public ReportLog(String message, Severity severity, UUID parentId) {
         this.message = message;
         this.severity = severity;
         this.parentId = parentId;
     }
 
-    public ReportLog(String message, Severity severity, UUID parentId) {
-        this.message = message;
-        this.severity = new HashSet<>();
-        this.severity.add(severity);
-        this.parentId = parentId;
-    }
 }

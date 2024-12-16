@@ -30,7 +30,7 @@ public final class ReportLogMapper {
                 reportLogs.add(reportLog);
                 reportLogsById.put(report.id(), reportLog);
             } else {
-                reportLogsById.get(report.id()).getSeverity().add(Severity.fromValue(report.severity()));
+                reportLogsById.get(report.id()).setSeverity(Severity.fromValue(report.severity()));
             }
         }
         return reportLogs;

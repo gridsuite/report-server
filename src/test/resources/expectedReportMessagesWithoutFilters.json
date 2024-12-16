@@ -1,174 +1,114 @@
 [
   {
     "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-    "severity": [
-      "ERROR",
-      "INFO",
-      "TRACE"
-    ]
+    "severity": "ERROR"
   },
   {
     "message": "Reading UCTE network file",
-    "severity": [
-      "ERROR",
-      "INFO"
-    ]
+    "severity": "ERROR"
   },
   {
     "message": "Fix UCTE lines",
-    "severity": [
-      "ERROR"
-    ]
+    "severity": "ERROR"
   },
   {
     "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
-    "severity": [
-      "ERROR"
-    ]
+    "severity": "ERROR"
   },
   {
     "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
-    "severity": [
-      "ERROR"
-    ]
+    "severity": "ERROR"
   },
   {
     "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
-    "severity": [
-      "ERROR"
-    ]
+    "severity": "ERROR"
   },
   {
     "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
-    "severity": [
-      "ERROR"
-    ]
+    "severity": "ERROR"
   },
   {
     "message": "Create buses",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "Create lines",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "Fix UCTE nodes",
-    "severity": [
-      "UNKNOWN"
-    ]
+    "severity": "UNKNOWN"
   },
   {
     "message": "Fix UCTE transformers",
-    "severity": [
-      "ERROR",
-      "INFO"
-    ]
+    "severity": "ERROR"
   },
   {
     "message": "Create buses",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "Create lines",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
-    "severity": [
-      "ERROR"
-    ]
+    "severity": "ERROR"
   },
   {
     "message": "Fix UCTE regulations",
-    "severity": [
-      "UNKNOWN"
-    ]
+    "severity": "UNKNOWN"
   },
   {
     "message": "Create buses",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create buses for substation FFFFFF",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create substation FFFFFF",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create voltage level FFFFFF1",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create bus FFFFFF11",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create bus FFFFFF13",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create lines",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create dangling line 'FFFFFF11 XXXXXX11 1' (Xnode='XXXXXX11')",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create dangling line 'FFFFFF11 XXXXXX12 1' (Xnode='XXXXXX12')",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create dangling line 'FFFFFF13 XXXXXX13 1' (Xnode='XXXXXX13')",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "Create dangling line 'FFFFFF13 XXXXXX14 1' (Xnode='XXXXXX14')",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   },
   {
     "message": "No value report",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "Create transformers",
-    "severity": [
-      "TRACE"
-    ]
+    "severity": "TRACE"
   }
 ]

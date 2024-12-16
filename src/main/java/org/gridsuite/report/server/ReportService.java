@@ -45,11 +45,7 @@ public class ReportService {
     // To use only for tests to fetch an entity with all the relationships
     @Transactional(readOnly = true)
     public Optional<ReportNodeEntity> getReportNodeEntity(UUID id) {
-        return Optional.ofNullable(reportNodeRepository.findAllWithChildrenById(id).get(0))
-            .map(reportNodeEntity -> {
-                reportNodeRepository.findAllWithSeveritiesById(id);
-                return reportNodeEntity;
-            });
+        return Optional.ofNullable(reportNodeRepository.findAllWithChildrenById(id).get(0));
     }
 
     @Transactional(readOnly = true)
@@ -84,6 +80,7 @@ public class ReportService {
         Report emptyReport = new Report();
         emptyReport.setId(id);
         emptyReport.setMessage(defaultName);
+        emptyReport.setSeverity(Severity.UNKNOWN);
         return emptyReport;
     }
 
@@ -115,9 +112,10 @@ public class ReportService {
 
         // We don't have to update more ancestors because we only append at root level, and we know it
         // But if we want to generalize appending to any report we should update the severity list of all the ancestors recursively
-        reportEntity.addSeverities(sizedReportNodeChildren.stream().map(SizedReportNode::getSeverities)
-            .flatMap(Collection::stream).collect(Collectors.toSet()));
-
+        String highestSeverity = sizedReportNodeChildren.stream().map(SizedReportNode::getSeverity).reduce((severity, severity2) -> Severity.fromValue(severity).getLevel() > Severity.fromValue(severity2).getLevel() ? severity : severity2).orElse(Severity.UNKNOWN.toString());
+        if (Severity.fromValue(highestSeverity).getLevel() > Severity.fromValue(reportEntity.getSeverity()).getLevel()) {
+            reportEntity.setSeverity(highestSeverity);
+        }
         sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(reportEntity, reportEntity, c));
     }
 
@@ -132,7 +130,7 @@ public class ReportService {
                 sizedReportNode.isLeaf(),
                 null,
                 null,
-                sizedReportNode.getSeverities()
+                sizedReportNode.getSeverity()
             )
         );
         persistedReport.setRootNode(persistedReport);
@@ -147,7 +145,7 @@ public class ReportService {
             sizedReportNode.isLeaf(),
             rootReportNodeEntity,
             parentReportNodeEntity,
-            sizedReportNode.getSeverities()
+            sizedReportNode.getSeverity()
         );
 
         reportNodeRepository.save(reportNodeEntity);
@@ -171,7 +169,7 @@ public class ReportService {
             node.isLeaf(),
             null,
             newParent,
-            new HashSet<>(node.getSeverities())
+            node.getSeverity()
         );
 
         reportNodeRepository.save(duplicatedNode);

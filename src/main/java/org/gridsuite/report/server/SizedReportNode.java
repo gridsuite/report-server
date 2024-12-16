@@ -14,9 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Joris Mancini <joris.mancini_externe at rte-france.com>
@@ -32,15 +30,15 @@ public class SizedReportNode {
     private int size;
     private boolean isLeaf;
     private List<SizedReportNode> children;
-    private Set<String> severities;
+    private String severity;
 
-    public SizedReportNode(String message, int order, int size, boolean isLeaf, List<SizedReportNode> children, Set<String> severities) {
+    public SizedReportNode(String message, int order, int size, boolean isLeaf, List<SizedReportNode> children, String severity) {
         this.message = message;
         this.order = order;
         this.size = size;
         this.isLeaf = isLeaf;
         this.children = children;
-        this.severities = severities;
+        this.severity = severity;
     }
 
     public static SizedReportNode from(ReportNode reportNode) {
@@ -70,7 +68,7 @@ public class SizedReportNode {
                 0,
                 isLeaf(reportNode),
                 new ArrayList<>(),
-                severities(reportNode)
+                getHighestSeverity(reportNode)
             );
             int subTreeSize = reportNode.getChildren().stream().map(child -> {
                 var childSizedReportNode = map(child);
@@ -90,15 +88,18 @@ public class SizedReportNode {
             return truncatedMessage;
         }
 
-        private static Set<String> severities(ReportNode reportNode) {
-            Set<String> severities = new HashSet<>();
-            if (reportNode.getValues().containsKey(ReportConstants.SEVERITY_KEY)) {
-                severities.add(reportNode.getValues().get(ReportConstants.SEVERITY_KEY).getValue().toString());
+        private static String getHighestSeverity(ReportNode reportNode) {
+            String highestSeverity = reportNode.getValues().containsKey(ReportConstants.SEVERITY_KEY)
+                ? reportNode.getValues().get(ReportConstants.SEVERITY_KEY).getValue().toString()
+                : Severity.UNKNOWN.toString();
+
+            for (ReportNode child : reportNode.getChildren()) {
+                String childSeverity = getHighestSeverity(child);
+                if (Severity.fromValue(childSeverity).getLevel() > Severity.fromValue(highestSeverity).getLevel()) {
+                    highestSeverity = childSeverity;
+                }
             }
-            if (!isLeaf(reportNode)) {
-                reportNode.getChildren().forEach(child -> severities.addAll(severities(child)));
-            }
-            return severities;
+            return highestSeverity;
         }
 
         private static boolean isLeaf(ReportNode reportNode) {
