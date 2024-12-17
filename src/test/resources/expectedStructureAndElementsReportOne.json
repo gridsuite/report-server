@@ -1,35 +1,35 @@
 {
   "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
   "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-  "severities": ["TRACE", "ERROR", "INFO"],
+  "severity": "ERROR",
   "subReports": [
     {
       "id": "bdb8ad58-862b-447f-924b-1fa3fc04950e",
       "message": "Reading UCTE network file",
-      "severities": ["ERROR"],
+      "severity": "ERROR",
       "subReports": [
         {
           "id": "ae1999cd-fe2e-4941-936f-1207f1b2bccc",
           "message": "Fix UCTE lines",
-          "severities": ["ERROR"],
+          "severity": "ERROR",
           "subReports": []
         },
         {
           "id": "e5d1d6af-31e9-4427-bb3f-8c9fa3fb0013",
           "message": "Fix UCTE nodes",
-          "severities": ["UNKNOWN"],
+          "severity": "UNKNOWN",
           "subReports": []
         },
         {
           "id": "ef66ba40-0d65-4c2e-a740-e8036ec11359",
           "message": "Fix UCTE transformers",
-          "severities": ["UNKNOWN"],
+          "severity": "UNKNOWN",
           "subReports": []
         },
         {
           "id": "bab9a6f9-0acb-4ba6-a027-9a0e71faa8ba",
           "message": "Fix UCTE regulations",
-          "severities": ["UNKNOWN"],
+          "severity": "UNKNOWN",
           "subReports": []
         }
       ]
@@ -37,12 +37,12 @@
     {
       "id": "1fbbe203-2b3a-4c0e-8e3e-8550072ec945",
       "message": "Create buses",
-      "severities": ["TRACE"],
+      "severity": "TRACE",
       "subReports": [
         {
           "id": "ca52969c-1f80-44ac-ae00-595deadff5e9",
           "message": "Create buses for substation FFFFFF",
-          "severities": ["TRACE"],
+          "severity": "TRACE",
           "subReports": []
         }
       ]
@@ -50,7 +50,7 @@
     {
       "id": "74a0796a-3aff-4a0a-a3be-4a361698a74e",
       "message": "Create lines",
-      "severities": ["TRACE"],
+      "severity": "TRACE",
       "subReports": []
     }
   ]

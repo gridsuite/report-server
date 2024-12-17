@@ -1,35 +1,35 @@
 {
   "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
   "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
-  "severities": ["TRACE", "ERROR", "INFO"],
+  "severity": "ERROR",
   "subReports": [
     {
       "id": "1bab7ef6-78f6-46d9-b848-b7e59e91d3d1",
       "message": "Reading UCTE network file",
-      "severities": ["ERROR"],
+      "severity": "ERROR",
       "subReports": [
         {
           "id": "0305b82b-28c5-4739-b660-7a52cef9084f",
           "message": "Fix UCTE lines",
-          "severities": ["ERROR"],
+          "severity": "ERROR",
           "subReports": []
         },
         {
           "id": "d323f586-bca9-4283-a6f6-65b0e67b526b",
           "message": "Fix UCTE nodes",
-          "severities": ["UNKNOWN"],
+          "severity": "UNKNOWN",
           "subReports": []
         },
         {
           "id": "77dafe33-e738-46ab-ac8b-2944dcaaa376",
           "message": "Fix UCTE transformers",
-          "severities": ["UNKNOWN"],
+          "severity": "UNKNOWN",
           "subReports": []
         },
         {
           "id": "f2f054af-7ad5-45f8-a1c4-c5555652470f",
           "message": "Fix UCTE regulations",
-          "severities": ["UNKNOWN"],
+          "severity": "UNKNOWN",
           "subReports": []
         }
       ]
@@ -37,12 +37,12 @@
     {
       "id": "52e5ca73-381a-48f0-a307-053376f1c014",
       "message": "Create buses",
-      "severities": ["TRACE"],
+      "severity": "TRACE",
       "subReports": [
         {
           "id": "65a0f4c6-444e-4dff-ba4d-fb9fc02971f7",
           "message": "Create buses for substation FFFFFF",
-          "severities": ["TRACE"],
+          "severity": "TRACE",
           "subReports": []
         }
       ]
@@ -50,18 +50,18 @@
     {
       "id": "c83381de-9047-4b8b-a1e5-1fd940d0ee0c",
       "message": "Create lines",
-      "severities": ["TRACE"],
+      "severity": "TRACE",
       "subReports": []
     },
     {
       "id": "19443852-eb79-4065-8b71-11afb8b7ec97",
       "message": "test on more",
-      "severities": ["UNKNOWN"],
+      "severity": "UNKNOWN",
       "subReports": [
         {
           "id": "90ea994d-6af8-4748-9247-4c7731c89e8d",
           "message": "Fix UCTE nodes",
-          "severities": ["UNKNOWN"],
+          "severity": "UNKNOWN",
           "subReports": []
         }
       ]

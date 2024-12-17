@@ -1,0 +1,22 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="marcelinhug (generated)" id="1733498161628-1">
+        <addColumn tableName="report_node">
+            <column name="severity" type="varchar(255)" defaultValue="UNKNOWN"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="marcelinhug" id="1733498161628-2">
+        <sqlFile
+                dbms="postgresql"
+                encoding="UTF-8" path="migration_severity_report_node.sql"
+                relativeToChangelogFile="true"
+                splitStatements="false"
+                stripComments="true"/>
+    </changeSet>
+    <changeSet author="marcelinhug (generated)" id="1733498161628-3">
+        <dropForeignKeyConstraint baseTableName="SEVERITY" constraintName="REPORT_NODE_SEVERITY_FK"/>
+    </changeSet>
+    <changeSet author="marcelinhug (generated)" id="1733498161628-4">
+        <dropTable tableName="SEVERITY"/>
+    </changeSet>
+</databaseChangeLog>

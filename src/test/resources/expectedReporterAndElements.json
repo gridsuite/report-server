@@ -1,35 +1,35 @@
 {
   "id": "d4b2856c-da15-4e28-a2e3-90794a6ef377",
   "message": "Reading UCTE network file",
-  "severities": ["ERROR"],
+  "severity": "ERROR",
   "subReports": [
     {
       "id": "495b1bc4-a1c8-439e-9025-45e3f6ac6a15",
       "message": "Fix UCTE lines",
-      "severities": ["ERROR"],
+      "severity": "ERROR",
       "subReports": [
         {
           "id": null,
           "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
-          "severities": ["ERROR"],
+          "severity": "ERROR",
           "subReports": []
         },
         {
           "id": null,
           "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
-          "severities": ["ERROR"],
+          "severity": "ERROR",
           "subReports": []
         },
         {
           "id": null,
           "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
-          "severities": ["ERROR"],
+          "severity": "ERROR",
           "subReports": []
         },
         {
           "id": null,
           "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
-          "severities": ["ERROR"],
+          "severity": "ERROR",
           "subReports": []
         }
       ]
@@ -37,19 +37,19 @@
     {
       "id": "fab18061-cb0a-4772-aa90-fa496e54df2a",
       "message": "Fix UCTE nodes",
-      "severities": [],
+      "severity": "UNKNOWN",
       "subReports": []
     },
     {
       "id": "b93df599-b4d2-4e5d-ad38-052cef421e3b",
       "message": "Fix UCTE transformers",
-      "severities": [],
+      "severity": "UNKNOWN",
       "subReports": []
     },
     {
       "id": "11ed1ecf-432d-4b2d-9e90-4f654c693196",
       "message": "Fix UCTE regulations",
-      "severities": [],
+      "severity": "UNKNOWN",
       "subReports": []
     }
   ]

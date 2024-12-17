@@ -38,7 +38,7 @@ public final class ReportMapper {
     private static void mapReportNodeEntity(ReportProjection reportProjection, Map<UUID, Report> reports) {
         Optional.ofNullable(reports.get(reportProjection.id()))
             .ifPresentOrElse(
-                report -> report.getSeverities().add(Severity.fromValue(reportProjection.severity())),
+                report -> report.setSeverity(Severity.fromValue(reportProjection.severity())),
                 () -> Optional.ofNullable(reportProjection.parentId())
                     .map(reports::get)
                     .ifPresent(parentReport -> {
@@ -57,7 +57,7 @@ public final class ReportMapper {
     }
 
     private static void mapValues(ReportProjection reportProjection, Report report) {
-        report.getSeverities().add(Severity.fromValue(reportProjection.severity()));
+        report.setSeverity(Severity.fromValue(reportProjection.severity()));
         report.setId(reportProjection.id());
         report.setParentId(reportProjection.parentId());
     }

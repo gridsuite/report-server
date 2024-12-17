@@ -1,14 +1,10 @@
 [
   {
     "message": "Create lines",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   },
   {
     "message": "Create lines",
-    "severity": [
-      "INFO"
-    ]
+    "severity": "INFO"
   }
 ]

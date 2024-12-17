@@ -29,7 +29,7 @@ public class Report {
     private UUID id;
     private UUID parentId;
     private String message;
-    private List<Severity> severities = new ArrayList<>();
+    private Severity severity;
     private List<Report> subReports = new ArrayList<>();
 
     public Report addEmptyReport() {
