@@ -63,7 +63,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.rootNode.id = :rootNodeId
             AND rn.order BETWEEN :orderAfter AND :orderBefore
         """)
-    Set<String> findDistinctSeveritiesByParentId(UUID rootNodeId, int orderAfter, int orderBefore);
+    Set<String> findDistinctSeveritiesByRootNodeIdAndOrder(UUID rootNodeId, int orderAfter, int orderBefore);
 
     @Query("""
             SELECT new org.gridsuite.report.server.entities.ReportProjection(
