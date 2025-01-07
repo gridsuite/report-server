@@ -56,22 +56,14 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         """)
     List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message);
 
-    @Query(value = """
-        WITH RECURSIVE children(id, severity) AS (
-            SELECT id, severity
-            FROM report_node
-            WHERE parent_id = :parentId
-
-            UNION ALL
-
-            SELECT rn.id, rn.severity
-            FROM report_node rn
-            JOIN children c ON rn.parent_id = c.id
-        )
-        SELECT severity FROM children
-        GROUP BY severity;
-        """, nativeQuery = true)
-    Set<String> findDistinctSeveritiesByParentId(UUID parentId);
+    @Query("""
+        SELECT DISTINCT rn.severity
+        FROM ReportNodeEntity rn
+        WHERE
+            rn.rootNode.id = :rootNodeId
+            AND rn.order BETWEEN :orderAfter AND :orderBefore
+        """)
+    Set<String> findDistinctSeveritiesByParentId(UUID rootNodeId, int orderAfter, int orderBefore);
 
     @Query("""
             SELECT new org.gridsuite.report.server.entities.ReportProjection(

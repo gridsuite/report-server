@@ -77,7 +77,12 @@ public class ReportService {
     }
 
     public Set<String> getReportAggregatedSeverities(UUID parentId) {
-        return reportNodeRepository.findDistinctSeveritiesByParentId(parentId);
+        return reportNodeRepository.findById(parentId)
+            .map(entity -> reportNodeRepository.findDistinctSeveritiesByParentId(
+                Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
+                entity.getOrder(),
+                entity.getEndOrder()))
+            .orElse(Collections.emptySet());
     }
 
     public Report getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
