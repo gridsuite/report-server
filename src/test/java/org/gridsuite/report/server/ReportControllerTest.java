@@ -250,6 +250,17 @@ public class ReportControllerTest {
         assertReportsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
     }
 
+    @Test
+    public void testGetReportAggregatedSeverities() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/aggregated-severities"))
+            .andExpect(status().isOk())
+            .andReturn();
+        Set<String> severities = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() { });
+        assertEquals(Set.of("TRACE", "ERROR", "UNKNOWN", "INFO"), severities);
+    }
+
     private void testImported(String report1Id, String reportConcat2) throws Exception {
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())

@@ -53,6 +53,15 @@ public class ReportController {
         }
     }
 
+    @GetMapping(value = "/reports/{id}/aggregated-severities", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get the severities of the report")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The severities of the report")})
+    public ResponseEntity<Set<String>> getReportAggregatedSeverities(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(service.getReportAggregatedSeverities(id));
+    }
+
     @GetMapping(value = "/reports/{id}/logs", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get the messages, severity and the parent id contained in the report")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The list of message (severity and parent id) of the reporter and its subreporters"),

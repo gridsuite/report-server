@@ -76,6 +76,10 @@ public class ReportService {
             .orElse(Collections.emptyList());
     }
 
+    public Set<String> getReportAggregatedSeverities(UUID parentId) {
+        return reportNodeRepository.findDistinctSeveritiesByParentId(parentId);
+    }
+
     public Report getEmptyReport(@NonNull UUID id, @NonNull String defaultName) {
         Report emptyReport = new Report();
         emptyReport.setId(id);
