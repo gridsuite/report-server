@@ -57,6 +57,15 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message);
 
     @Query("""
+        SELECT DISTINCT rn.severity
+        FROM ReportNodeEntity rn
+        WHERE
+            rn.rootNode.id = :rootNodeId
+            AND rn.order BETWEEN :orderAfter AND :orderBefore
+        """)
+    Set<String> findDistinctSeveritiesByRootNodeIdAndOrder(UUID rootNodeId, int orderAfter, int orderBefore);
+
+    @Query("""
             SELECT new org.gridsuite.report.server.entities.ReportProjection(
                 rn.id,
                 rn.message,
