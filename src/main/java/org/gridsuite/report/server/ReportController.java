@@ -16,11 +16,13 @@ import jakarta.persistence.EntityNotFoundException;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 
@@ -87,9 +89,16 @@ public class ReportController {
 
     @PostMapping(value = "reports/{id}/duplicate", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Duplicate a report")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report has been duplicated")})
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "The report has been duplicated"),
+        @ApiResponse(responseCode = "404", description = "Report not found")
+    })
     public ResponseEntity<UUID> duplicateReport(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(service.duplicateReport(id));
+        try {
+            return ResponseEntity.ok(service.duplicateReport(id));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @DeleteMapping(value = "reports/{id}")
