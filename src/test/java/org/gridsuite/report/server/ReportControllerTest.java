@@ -238,6 +238,13 @@ public class ReportControllerTest {
     }
 
     @Test
+    public void testDuplicateReportNotFound() throws Exception {
+        mvc.perform(post(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/duplicate")
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
     public void testDeleteReport() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
