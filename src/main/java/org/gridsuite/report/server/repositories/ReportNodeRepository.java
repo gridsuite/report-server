@@ -51,7 +51,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         WHERE
                 rn.rootNode.id = :rootNodeId
                 AND rn.order BETWEEN :orderAfter AND :orderBefore
-                AND UPPER(rn.message) LIKE UPPER(:message)
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
         ORDER BY rn.order ASC
         """)
     List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message);
@@ -76,7 +76,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             WHERE
                     rn.rootNode.id = :rootNodeId
                     AND rn.order BETWEEN :orderAfter AND :orderBefore
-                    AND UPPER(rn.message) LIKE UPPER(:message)
+                    AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
                     AND rn.severity IN (:severities)
             ORDER BY rn.order ASC
             """)
