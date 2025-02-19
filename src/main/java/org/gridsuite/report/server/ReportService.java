@@ -9,6 +9,7 @@ package org.gridsuite.report.server;
 import com.google.common.collect.Lists;
 import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
@@ -55,6 +56,10 @@ public class ReportService {
     }
 
     public List<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter) {
+        // The '_' and '%' characters have special meaning in the sql LIKE pattern condition
+        // So, in order to filter logs containing these characters, we must escape them, using the backslash character,
+        // which is then also given as the ESCAPE character in the LIKE condition of the sql request (see ReportNoeRepository.java)
+        String messageSqlPattern = messageFilter == null ? "%" : "%" + StringUtils.replaceEach(messageFilter, new String[]{"_", "%"}, new String[]{"\\_", "\\%"}) + "%";
         return reportNodeRepository.findById(rootReportNodeId)
             .map(entity -> {
                 if (severityLevelsFilter == null) {
@@ -62,13 +67,13 @@ public class ReportService {
                         Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
                         entity.getOrder(),
                         entity.getEndOrder(),
-                        messageFilter == null ? "%" : "%" + messageFilter + "%");
+                        messageSqlPattern);
                 } else {
                     return reportNodeRepository.findAllReportsByRootNodeIdAndOrderAndMessageAndSeverities(
                         Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
                         entity.getOrder(),
                         entity.getEndOrder(),
-                        messageFilter == null ? "%" : "%" + messageFilter + "%",
+                        messageSqlPattern,
                         severityLevelsFilter);
                 }
             })
