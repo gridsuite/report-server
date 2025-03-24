@@ -1,6 +1,8 @@
 spring:
   application:
     name: report-server
+  main:
+      allow-circular-references: true
 
   jpa:
     properties:
@@ -8,7 +10,7 @@ spring:
         order_inserts: true
         order_updates: true
         jdbc:
-          batch_size: 128
+          batch_size: 512
 
 powsybl-ws:
   database:
