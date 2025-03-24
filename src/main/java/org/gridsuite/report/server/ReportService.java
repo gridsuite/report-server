@@ -44,7 +44,7 @@ public class ReportService {
 
     private final ReportNodeRepository reportNodeRepository;
 
-    public ReportService(ReportNodeRepository reportNodeRepository,@Lazy ReportService reportService) {
+    public ReportService(ReportNodeRepository reportNodeRepository, @Lazy ReportService reportService) {
         this.reportNodeRepository = reportNodeRepository;
         this.self = reportService;
     }
