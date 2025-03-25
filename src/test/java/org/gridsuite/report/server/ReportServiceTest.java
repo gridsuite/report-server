@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 
 import static org.gridsuite.report.server.SizedReportNode.MAX_MESSAGE_CHAR;
