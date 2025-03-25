@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.gridsuite.report.server.SizedReportNode.MAX_MESSAGE_CHAR;
@@ -58,8 +59,9 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, reportNode);
-        assertRequestsCount(1, 1, 1, 0);
+        assertRequestsCount(1, 1, 0, 0);
 
+        List<ReportNodeEntity> entities = reportNodeRepository.findAll();
         assertEquals(1, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
         assertTrue(parentReportEntity.isPresent());
@@ -88,7 +90,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, reportNode);
-        assertRequestsCount(1, 1, 1, 0);
+        assertRequestsCount(1, 1, 0, 0);
 
         assertEquals(4, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -127,7 +129,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(1, 1, 1, 0);
+        assertRequestsCount(3, 1, 1, 0);
 
         assertEquals(2, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -156,7 +158,7 @@ class ReportServiceTest {
             .add();
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(1, 1, 1, 0);
+        assertRequestsCount(3, 1, 1, 0);
 
         assertEquals(3, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -203,7 +205,7 @@ class ReportServiceTest {
             .add();
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(1, 1, 1, 0);
+        assertRequestsCount(3, 1, 1, 0);
 
         var rootReportNodeEntityBis = reportService.getReportNodeEntity(parentReportId).orElseThrow();
         var reportNodeEntityBis = reportService.getReportNodeEntity(rootReportNodeEntityBis.getChildren().get(3).getId()).orElseThrow();

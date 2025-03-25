@@ -118,7 +118,7 @@ public class ReportService {
     }
 
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
-        List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>(reportEntity.getChildren().size());
+        List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>(reportNode.getChildren().size());
         int appendedSize = 0;
         int startingOrder = reportEntity.getEndOrder() + 1;
         for (ReportNode child : reportNode.getChildren()) {
@@ -136,13 +136,18 @@ public class ReportService {
             reportEntity.setSeverity(highestSeverity);
         }
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
+        entitiesToSave.add(reportEntity);
         sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(reportEntity, reportEntity, c, entitiesToSave));
+
+        if (!entitiesToSave.isEmpty()) {
+            self.saveBatchedReports(entitiesToSave);
+        }
     }
 
     private void createNewReport(UUID id, ReportNode reportNode) {
         SizedReportNode sizedReportNode = SizedReportNode.from(reportNode);
-        ReportNodeEntity persistedReport = reportNodeRepository.save(
-            new ReportNodeEntity(
+        List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
+        ReportNodeEntity persistedReport = new ReportNodeEntity(
                 id,
                 sizedReportNode.getMessage(),
                 sizedReportNode.getOrder(),
@@ -151,14 +156,17 @@ public class ReportService {
                 null,
                 null,
                 sizedReportNode.getSeverity()
-            )
         );
         persistedReport.setRootNode(persistedReport);
-        List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
-        saveReportNodeRecursively(persistedReport, persistedReport, sizedReportNode, entitiesToSave);
 
-        //Saves remaining entities
-        reportNodeRepository.saveAll(entitiesToSave);
+        entitiesToSave.add(persistedReport);
+        sizedReportNode.getChildren().forEach(c ->
+            saveReportNodeRecursively(persistedReport, persistedReport, c, entitiesToSave)
+        );
+
+        if (!entitiesToSave.isEmpty()) {
+            self.saveBatchedReports(entitiesToSave);
+        }
     }
 
     protected void saveReportNodeRecursively(
@@ -186,9 +194,9 @@ public class ReportService {
     }
 
     @Transactional
-    public void saveBatchedReports(List<ReportNodeEntity> entitiesToSave) {
-        reportNodeRepository.saveAllAndFlush(entitiesToSave);
-        entitiesToSave.clear();
+    public void saveBatchedReports(List<ReportNodeEntity> batch) {
+        reportNodeRepository.saveAllAndFlush(batch);
+        batch.clear();
     }
 
     @Transactional
