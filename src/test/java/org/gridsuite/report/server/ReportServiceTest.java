@@ -61,7 +61,6 @@ class ReportServiceTest {
         reportService.createReport(parentReportId, reportNode);
         assertRequestsCount(1, 1, 0, 0);
 
-        List<ReportNodeEntity> entities = reportNodeRepository.findAll();
         assertEquals(1, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
         assertTrue(parentReportEntity.isPresent());
