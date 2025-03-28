@@ -260,6 +260,24 @@ class ReportServiceTest {
         assertEquals("INFO", reportNodeEntity.getSeverity());
     }
 
+    @Test
+    void testCreateSubstantialReport() {
+        var rootReportNode = ReportNode.newRootReportNode()
+            .withMessageTemplate("test", "test")
+            .build();
+
+        for (int i = 0; i < 2048; i++) {
+            rootReportNode.newReportNode()
+                .withMessageTemplate("test", "test")
+                .add();
+        }
+
+        var reportUuid = UUID.randomUUID();
+        SQLStatementCountValidator.reset();
+        reportService.createReport(reportUuid, rootReportNode);
+        assertRequestsCount(5, 5, 0, 0);
+    }
+
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, String severity) {
         assertEquals(reportNode.getMessage(), entity.getMessage());
         assertEquals(severity, entity.getSeverity());
