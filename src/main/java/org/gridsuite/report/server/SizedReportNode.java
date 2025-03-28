@@ -67,7 +67,7 @@ public class SizedReportNode {
                 counter++,
                 0,
                 isLeaf(reportNode),
-                new ArrayList<>(),
+                new ArrayList<>(reportNode.getChildren().size()),
                 getHighestSeverity(reportNode)
             );
             int subTreeSize = reportNode.getChildren().stream().map(child -> {

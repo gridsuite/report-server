@@ -16,6 +16,7 @@ import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,10 +38,15 @@ public class ReportService {
     // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
     private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
 
+    private static final int MAX_SIZE_INSERT_REPORT_BATCH = 512;
+
+    private final ReportService self;
+
     private final ReportNodeRepository reportNodeRepository;
 
-    public ReportService(ReportNodeRepository reportNodeRepository) {
+    public ReportService(ReportNodeRepository reportNodeRepository, @Lazy ReportService reportService) {
         this.reportNodeRepository = reportNodeRepository;
+        this.self = reportService;
     }
 
     // To use only for tests to fetch an entity with all the relationships
@@ -98,7 +104,6 @@ public class ReportService {
         return emptyReport;
     }
 
-    @Transactional
     public void createReport(UUID id, ReportNode reportNode) {
         reportNodeRepository.findById(id).ifPresentOrElse(
             reportEntity -> {
@@ -113,7 +118,7 @@ public class ReportService {
     }
 
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
-        List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>();
+        List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>(reportNode.getChildren().size());
         int appendedSize = 0;
         int startingOrder = reportEntity.getEndOrder() + 1;
         for (ReportNode child : reportNode.getChildren()) {
@@ -130,13 +135,19 @@ public class ReportService {
         if (Severity.fromValue(highestSeverity).getLevel() > Severity.fromValue(reportEntity.getSeverity()).getLevel()) {
             reportEntity.setSeverity(highestSeverity);
         }
-        sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(reportEntity, reportEntity, c));
+        List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
+        entitiesToSave.add(reportEntity);
+        sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(reportEntity, reportEntity, c, entitiesToSave));
+
+        if (!entitiesToSave.isEmpty()) {
+            self.saveBatchedReports(entitiesToSave);
+        }
     }
 
     private void createNewReport(UUID id, ReportNode reportNode) {
         SizedReportNode sizedReportNode = SizedReportNode.from(reportNode);
-        ReportNodeEntity persistedReport = reportNodeRepository.save(
-            new ReportNodeEntity(
+        List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
+        ReportNodeEntity persistedReport = new ReportNodeEntity(
                 id,
                 sizedReportNode.getMessage(),
                 sizedReportNode.getOrder(),
@@ -145,13 +156,25 @@ public class ReportService {
                 null,
                 null,
                 sizedReportNode.getSeverity()
-            )
         );
         persistedReport.setRootNode(persistedReport);
-        sizedReportNode.getChildren().forEach(c -> saveReportNodeRecursively(persistedReport, persistedReport, c));
+
+        entitiesToSave.add(persistedReport);
+        sizedReportNode.getChildren().forEach(c ->
+            saveReportNodeRecursively(persistedReport, persistedReport, c, entitiesToSave)
+        );
+
+        if (!entitiesToSave.isEmpty()) {
+            self.saveBatchedReports(entitiesToSave);
+        }
     }
 
-    private void saveReportNodeRecursively(ReportNodeEntity rootReportNodeEntity, ReportNodeEntity parentReportNodeEntity, SizedReportNode sizedReportNode) {
+    protected void saveReportNodeRecursively(
+        ReportNodeEntity rootReportNodeEntity,
+        ReportNodeEntity parentReportNodeEntity,
+        SizedReportNode sizedReportNode,
+        List<ReportNodeEntity> entitiesToSave
+    ) {
         var reportNodeEntity = new ReportNodeEntity(
             sizedReportNode.getMessage(),
             sizedReportNode.getOrder(),
@@ -162,8 +185,18 @@ public class ReportService {
             sizedReportNode.getSeverity()
         );
 
-        reportNodeRepository.save(reportNodeEntity);
-        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(rootReportNodeEntity, reportNodeEntity, child));
+        entitiesToSave.add(reportNodeEntity);
+        if (entitiesToSave.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
+            self.saveBatchedReports(entitiesToSave);
+        }
+        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(rootReportNodeEntity, reportNodeEntity, child, entitiesToSave));
+
+    }
+
+    @Transactional
+    public void saveBatchedReports(List<ReportNodeEntity> batch) {
+        reportNodeRepository.saveAllAndFlush(batch);
+        batch.clear();
     }
 
     @Transactional
