@@ -52,7 +52,7 @@ class ReportServiceTest {
     void createNonExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
             .withMessageTemplate("test", "template test ${test}")
-            .withTypedValue("test", "hello", TypedValue.UNTYPED)
+            .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .build();
         var parentReportId = UUID.randomUUID();
 
@@ -70,7 +70,7 @@ class ReportServiceTest {
     void createComplexNonExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
             .withMessageTemplate("test", "template test ${test}")
-            .withTypedValue("test", "hello", TypedValue.UNTYPED)
+            .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .build();
         var subReportNode1 = reportNode.newReportNode().withMessageTemplate("hellohello", "this is a ${mood} message template with ${smth}")
             .withTypedValue("mood", "welcoming", TypedValue.REACTANCE)
@@ -111,18 +111,18 @@ class ReportServiceTest {
     void appendToExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
             .withMessageTemplate("test", "template test ${test}")
-            .withTypedValue("test", "hello", TypedValue.UNTYPED)
+            .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .build();
         var parentReportId = UUID.randomUUID();
         reportService.createReport(parentReportId, reportNode);
 
         var anotherReport = ReportNode.newRootReportNode()
             .withMessageTemplate("test2", "template test2 ${test}")
-            .withTypedValue("test", "hello", TypedValue.UNTYPED)
+            .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .build();
         anotherReport.newReportNode()
             .withMessageTemplate("test3", "template test3 ${test}")
-            .withTypedValue("test", "hello", TypedValue.UNTYPED)
+            .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .add();
 
         SQLStatementCountValidator.reset();
