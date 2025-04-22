@@ -51,7 +51,8 @@ class ReportServiceTest {
     @Test
     void createNonExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "template test ${test}")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("templateTest")
             .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .build();
         var parentReportId = UUID.randomUUID();
@@ -69,19 +70,22 @@ class ReportServiceTest {
     @Test
     void createComplexNonExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "template test ${test}")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("templateTest")
             .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .build();
-        var subReportNode1 = reportNode.newReportNode().withMessageTemplate("hellohello", "this is a ${mood} message template with ${smth}")
+        var subReportNode1 = reportNode.newReportNode()
+            .withMessageTemplate("hellohello")
             .withTypedValue("mood", "welcoming", TypedValue.REACTANCE)
             .withTypedValue("smth", "idk", "newType")
             .add();
         var subSubReportNode1 = subReportNode1.newReportNode()
-            .withMessageTemplate("noidea", "I have no idea of ${idea}")
+            .withMessageTemplate("noidea")
             .withUntypedValue("idea", "none")
             .withSeverity(TypedValue.INFO_SEVERITY)
             .add();
-        var subReportNode2 = reportNode.newReportNode().withMessageTemplate("hehehe", "It's so funny")
+        var subReportNode2 = reportNode.newReportNode()
+            .withMessageTemplate("hehehe")
             .withSeverity(TypedValue.ERROR_SEVERITY)
             .add();
         var parentReportId = UUID.randomUUID();
@@ -110,18 +114,20 @@ class ReportServiceTest {
     @Test
     void appendToExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "template test ${test}")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("templateTest")
             .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .build();
         var parentReportId = UUID.randomUUID();
         reportService.createReport(parentReportId, reportNode);
 
         var anotherReport = ReportNode.newRootReportNode()
-            .withMessageTemplate("test2", "template test2 ${test}")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("templateTest2")
             .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .build();
         anotherReport.newReportNode()
-            .withMessageTemplate("test3", "template test3 ${test}")
+            .withMessageTemplate("templateTest3")
             .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .add();
 
@@ -140,19 +146,23 @@ class ReportServiceTest {
     @Test
     void appendIncrementalModificationReportToExistingReport() {
         var reportNode = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("test")
+            .withUntypedValue("message", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
             .build();
         reportNode.newReportNode()
-            .withMessageTemplate("genMod", "GENERATOR_MODIFICATION")
+            .withMessageTemplate("genMod")
             .add();
         var parentReportId = UUID.randomUUID();
         reportService.createReport(parentReportId, reportNode);
 
         var anotherReport = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("test")
+            .withUntypedValue("message", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
             .build();
         anotherReport.newReportNode()
-            .withMessageTemplate("twtMod", "TWO_WINDINGS_TRANSFORMER_MODIFICATION")
+            .withMessageTemplate("twtMod")
             .add();
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
@@ -169,21 +179,23 @@ class ReportServiceTest {
     @Test
     void testParentReportsSeverityListIsUpdatedAfterAppendingNewReport() {
         var reportNode = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("test")
+            .withUntypedValue("message", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
             .build();
         reportNode.newReportNode()
-            .withMessageTemplate("okok", "test")
+            .withMessageTemplate("okok")
             .withSeverity(TypedValue.WARN_SEVERITY)
             .add();
         reportNode.newReportNode()
-            .withMessageTemplate("okok", "test")
+            .withMessageTemplate("okok")
             .withSeverity(TypedValue.INFO_SEVERITY)
             .add();
         var subReportNode = reportNode.newReportNode()
-            .withMessageTemplate("genMod", "GENERATOR_MODIFICATION")
+            .withMessageTemplate("genMod")
             .add();
         subReportNode.newReportNode()
-            .withMessageTemplate("hehe", "stuff")
+            .withMessageTemplate("hehe")
             .withSeverity(TypedValue.WARN_SEVERITY)
             .add();
         var parentReportId = UUID.randomUUID();
@@ -195,10 +207,12 @@ class ReportServiceTest {
         assertEquals("WARN", subReportNodeEntity.getSeverity());
 
         var anotherReport = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("test")
+            .withUntypedValue("message", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
             .build();
         anotherReport.newReportNode()
-            .withMessageTemplate("twtMod", "TWO_WINDINGS_TRANSFORMER_MODIFICATION")
+            .withMessageTemplate("twtMod")
             .withSeverity(TypedValue.ERROR_SEVERITY)
             .add();
         SQLStatementCountValidator.reset();
@@ -217,11 +231,14 @@ class ReportServiceTest {
         String veryLongString = String.join("", Collections.nCopies(1000, "verylongstring"));
 
         var rootReportNode = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", veryLongString)
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("test")
+            .withUntypedValue("message", veryLongString)
             .build();
 
         rootReportNode.newReportNode()
-            .withMessageTemplate("test", veryLongString)
+            .withMessageTemplate("test")
+            .withUntypedValue("message", veryLongString)
             .add();
 
         var reportUuid = UUID.randomUUID();
@@ -237,19 +254,21 @@ class ReportServiceTest {
     @Test
     void testParentReportSeverityAggregation() {
         var reportNode = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("test")
+            .withUntypedValue("message", "958de6eb-b5cb-4069-bd1f-fd75301b4a54")
             .withSeverity(TypedValue.ERROR_SEVERITY)
             .build();
         reportNode.newReportNode()
-            .withMessageTemplate("traceMessage", "traceMessage")
+            .withMessageTemplate("traceMessage")
             .withSeverity(TypedValue.TRACE_SEVERITY)
             .add();
         var subReportNode = reportNode.newReportNode()
-            .withMessageTemplate("infoMessage", "infoMessage")
+            .withMessageTemplate("infoMessage")
             .withSeverity(TypedValue.INFO_SEVERITY)
             .add();
         subReportNode.newReportNode()
-            .withMessageTemplate("debugMessage", "debugMessage")
+            .withMessageTemplate("debugMessage")
             .withSeverity(TypedValue.DEBUG_SEVERITY)
             .add();
         var parentReportId = UUID.randomUUID();
@@ -263,12 +282,13 @@ class ReportServiceTest {
     @Test
     void testCreateSubstantialReport() {
         var rootReportNode = ReportNode.newRootReportNode()
-            .withMessageTemplate("test", "test")
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("test2")
             .build();
 
         for (int i = 0; i < 2048; i++) {
             rootReportNode.newReportNode()
-                .withMessageTemplate("test", "test")
+                .withMessageTemplate("test2")
                 .add();
         }
 
