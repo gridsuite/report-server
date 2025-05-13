@@ -21,12 +21,14 @@ import java.util.UUID;
 public class ReportLog {
     private String message;
     private Severity severity;
+    private int depth;
     private UUID parentId;
 
     @JsonCreator
-    public ReportLog(String message, Severity severity, UUID parentId) {
+    public ReportLog(String message, Severity severity, int depth, UUID parentId) {
         this.message = message;
         this.severity = severity;
+        this.depth = depth;
         this.parentId = parentId;
     }
 

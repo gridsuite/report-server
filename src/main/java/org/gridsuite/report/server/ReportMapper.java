@@ -58,6 +58,7 @@ public final class ReportMapper {
 
     private static void mapValues(ReportProjection reportProjection, Report report) {
         report.setSeverity(Severity.fromValue(reportProjection.severity()));
+        report.setDepth(reportProjection.depth());
         report.setId(reportProjection.id());
         report.setParentId(reportProjection.parentId());
     }

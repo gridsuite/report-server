@@ -37,6 +37,6 @@ public final class ReportLogMapper {
     }
 
     private static ReportLog createReportLog(ReportProjection entity) {
-        return new ReportLog(entity.message(), Severity.fromValue(entity.severity()), entity.parentId());
+        return new ReportLog(entity.message(), Severity.fromValue(entity.severity()), entity.depth(), entity.parentId());
     }
 }

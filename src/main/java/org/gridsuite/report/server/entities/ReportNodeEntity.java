@@ -43,6 +43,9 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Column(name = "severity")
     private String severity;
 
+    @Column(name = "depth")
+    private int depth;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "root_node_id", foreignKey = @ForeignKey(name = "root_node_fk"))
     private ReportNodeEntity rootNode;
@@ -54,7 +57,7 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<ReportNodeEntity> children;
 
-    public ReportNodeEntity(String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, String severity) {
+    public ReportNodeEntity(String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, String severity, int depth) {
         this.id = UUID.randomUUID();
         this.message = message;
         this.order = order;
@@ -63,9 +66,10 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
         this.rootNode = rootNode;
         this.parent = parent;
         this.severity = severity;
+        this.depth = depth;
     }
 
-    public ReportNodeEntity(UUID id, String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, String severity) {
+    public ReportNodeEntity(UUID id, String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, String severity, int depth) {
         this.id = id;
         this.message = message;
         this.order = order;
@@ -74,5 +78,6 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
         this.rootNode = rootNode;
         this.parent = parent;
         this.severity = severity;
+        this.depth = depth;
     }
 }

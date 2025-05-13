@@ -30,6 +30,7 @@ public class Report {
     private UUID parentId;
     private String message;
     private Severity severity;
+    private int depth;
     private List<Report> subReports = new ArrayList<>();
 
     public Report addEmptyReport() {

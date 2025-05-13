@@ -32,6 +32,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.id,
             rn.message,
             rn.severity,
+            rn.depth,
             rn.parent.id
         )
         FROM ReportNodeEntity rn
@@ -45,6 +46,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.id,
             rn.message,
             rn.severity,
+            rn.depth,
             rn.parent.id
         )
         FROM ReportNodeEntity rn
@@ -70,6 +72,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
                 rn.id,
                 rn.message,
                 rn.severity,
+                rn.depth,
                 rn.parent.id
             )
             FROM ReportNodeEntity rn
