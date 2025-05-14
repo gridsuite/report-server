@@ -48,7 +48,7 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Column(name = "severity")
     private String severity;
 
-    @Column(name = "depth")
+    @Column(name = "depth", columnDefinition = "integer default 0")
     private int depth;
 
     @ManyToOne(fetch = FetchType.LAZY)
