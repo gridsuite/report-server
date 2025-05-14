@@ -29,16 +29,18 @@ public class SizedReportNode {
     private int order;
     private int size;
     private boolean isLeaf;
+    private int depth;
     private List<SizedReportNode> children;
     private String severity;
 
-    public SizedReportNode(String message, int order, int size, boolean isLeaf, List<SizedReportNode> children, String severity) {
+    public SizedReportNode(String message, int order, int size, boolean isLeaf, List<SizedReportNode> children, String severity, int depth) {
         this.message = message;
         this.order = order;
         this.size = size;
         this.isLeaf = isLeaf;
         this.children = children;
         this.severity = severity;
+        this.depth = depth;
     }
 
     public static SizedReportNode from(ReportNode reportNode) {
@@ -62,16 +64,21 @@ public class SizedReportNode {
         }
 
         public SizedReportNode map(ReportNode reportNode) {
+            return mapWithDepth(reportNode, 0);
+        }
+
+        private SizedReportNode mapWithDepth(ReportNode reportNode, int currentDepth) {
             SizedReportNode sizedReportNode = new SizedReportNode(
                 truncatedMessage(reportNode.getMessage()),
                 counter++,
                 0,
                 isLeaf(reportNode),
                 new ArrayList<>(reportNode.getChildren().size()),
-                getHighestSeverity(reportNode)
+                getHighestSeverity(reportNode),
+                currentDepth
             );
             int subTreeSize = reportNode.getChildren().stream().map(child -> {
-                var childSizedReportNode = map(child);
+                var childSizedReportNode = mapWithDepth(child, currentDepth + 1);
                 sizedReportNode.getChildren().add(childSizedReportNode);
                 return childSizedReportNode.getSize();
             }).reduce(1, Integer::sum);

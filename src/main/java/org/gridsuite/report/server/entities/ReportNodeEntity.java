@@ -7,6 +7,8 @@
 package org.gridsuite.report.server.entities;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Getter
 @Setter
@@ -26,7 +30,8 @@ import java.util.UUID;
 public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<UUID> {
 
     @Id
-    private UUID id;
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
 
     @Column(name = "order_")
     private int order;
@@ -56,28 +61,4 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private List<ReportNodeEntity> children;
-
-    public ReportNodeEntity(String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, String severity, int depth) {
-        this.id = UUID.randomUUID();
-        this.message = message;
-        this.order = order;
-        this.endOrder = endOrder;
-        this.isLeaf = isLeaf;
-        this.rootNode = rootNode;
-        this.parent = parent;
-        this.severity = severity;
-        this.depth = depth;
-    }
-
-    public ReportNodeEntity(UUID id, String message, int order, int endOrder, boolean isLeaf, ReportNodeEntity rootNode, ReportNodeEntity parent, String severity, int depth) {
-        this.id = id;
-        this.message = message;
-        this.order = order;
-        this.endOrder = endOrder;
-        this.isLeaf = isLeaf;
-        this.rootNode = rootNode;
-        this.parent = parent;
-        this.severity = severity;
-        this.depth = depth;
-    }
 }
