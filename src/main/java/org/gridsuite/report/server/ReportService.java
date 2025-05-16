@@ -147,16 +147,15 @@ public class ReportService {
     private void createNewReport(UUID id, ReportNode reportNode) {
         SizedReportNode sizedReportNode = SizedReportNode.from(reportNode);
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
-        ReportNodeEntity persistedReport = new ReportNodeEntity(
-                id,
-                sizedReportNode.getMessage(),
-                sizedReportNode.getOrder(),
-                sizedReportNode.getOrder() + sizedReportNode.getSize() - 1,
-                sizedReportNode.isLeaf(),
-                null,
-                null,
-                sizedReportNode.getSeverity()
-        );
+        ReportNodeEntity persistedReport = ReportNodeEntity.builder()
+            .id(id)
+            .message(sizedReportNode.getMessage())
+            .order(sizedReportNode.getOrder())
+            .endOrder(sizedReportNode.getOrder() + sizedReportNode.getSize() - 1)
+            .isLeaf(sizedReportNode.isLeaf())
+            .severity(sizedReportNode.getSeverity())
+            .depth(sizedReportNode.getDepth())
+            .build();
         persistedReport.setRootNode(persistedReport);
 
         entitiesToSave.add(persistedReport);
@@ -175,15 +174,16 @@ public class ReportService {
         SizedReportNode sizedReportNode,
         List<ReportNodeEntity> entitiesToSave
     ) {
-        var reportNodeEntity = new ReportNodeEntity(
-            sizedReportNode.getMessage(),
-            sizedReportNode.getOrder(),
-            sizedReportNode.getOrder() + sizedReportNode.getSize() - 1,
-            sizedReportNode.isLeaf(),
-            rootReportNodeEntity,
-            parentReportNodeEntity,
-            sizedReportNode.getSeverity()
-        );
+        var reportNodeEntity = ReportNodeEntity.builder()
+            .message(sizedReportNode.getMessage())
+            .order(sizedReportNode.getOrder())
+            .endOrder(sizedReportNode.getOrder() + sizedReportNode.getSize() - 1)
+            .isLeaf(sizedReportNode.isLeaf())
+            .rootNode(rootReportNodeEntity)
+            .parent(parentReportNodeEntity)
+            .severity(sizedReportNode.getSeverity())
+            .depth(sizedReportNode.getDepth())
+            .build();
 
         entitiesToSave.add(reportNodeEntity);
         if (entitiesToSave.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
@@ -209,15 +209,15 @@ public class ReportService {
     }
 
     private ReportNodeEntity duplicateReportNodeRecursively(ReportNodeEntity node, ReportNodeEntity newParent) {
-        ReportNodeEntity duplicatedNode = new ReportNodeEntity(
-            node.getMessage(),
-            node.getOrder(),
-            node.getEndOrder(),
-            node.isLeaf(),
-            null,
-            newParent,
-            node.getSeverity()
-        );
+        ReportNodeEntity duplicatedNode = ReportNodeEntity.builder()
+            .message(node.getMessage())
+            .order(node.getOrder())
+            .endOrder(node.getEndOrder())
+            .isLeaf(node.isLeaf())
+            .parent(newParent)
+            .severity(node.getSeverity())
+            .depth(node.getDepth())
+            .build();
 
         reportNodeRepository.save(duplicatedNode);
 
