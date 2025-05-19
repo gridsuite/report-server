@@ -12,6 +12,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -82,6 +84,60 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             """)
     List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
 
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id,
+            rn.message,
+            rn.severity,
+            rn.parent.id
+        )
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+        ORDER BY rn.order ASC
+        """)
+    Page<ReportProjection> findPagedReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message, Pageable pageable);
+
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id,
+            rn.message,
+            rn.severity,
+            rn.parent.id
+        )
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+                AND rn.severity IN (:severities)
+        ORDER BY rn.order ASC
+        """)
+    Page<ReportProjection> findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities, Pageable pageable);
+
+    @Query("""
+        SELECT COUNT(rn.id)
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+        """)
+    int countReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message);
+
+    @Query("""
+        SELECT COUNT(rn.id)
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+                AND rn.severity IN (:severities)
+        """)
+    int countReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
+
     @Modifying
     @Query(value = """
         BEGIN;
@@ -105,4 +161,44 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         SELECT DISTINCT level, cast(id as varchar) FROM included_nodes;
         """, nativeQuery = true)
     List<Object[]> findTreeFromRootReport(UUID id);
+
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id,
+            rn.message,
+            rn.severity,
+            rn.parent.id
+        )
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+                AND rn.severity IN (:severities)
+        ORDER BY rn.order ASC
+        LIMIT :limit OFFSET :offset
+        """)
+    List<ReportProjection> findLimitedReportsByRootNodeIdAndOrderAndMessageAndSeverities(
+        UUID rootNodeId, int orderAfter, int orderBefore, String message,
+        Set<String> severities, int offset, int limit);
+
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id,
+            rn.message,
+            rn.severity,
+            rn.parent.id
+        )
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+        ORDER BY rn.order ASC
+        LIMIT :limit OFFSET :offset
+        """)
+    List<ReportProjection> findLimitedReportsByRootNodeIdAndOrderAndMessage(
+        UUID rootNodeId, int orderAfter, int orderBefore, String message,
+        int offset, int limit);
+
 }

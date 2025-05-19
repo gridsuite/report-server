@@ -18,6 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,6 +88,35 @@ public class ReportService {
             })
             .map(ReportLogMapper::map)
             .orElse(Collections.emptyList());
+    }
+
+    public Page<ReportLog> getReportLogsPage(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter, Pageable pageable) {
+        // The '_' and '%' characters have special meaning in the sql LIKE pattern condition
+        // So, in order to filter logs containing these characters, we must escape them, using the backslash character,
+        // which is then also given as the ESCAPE character in the LIKE condition of the sql request (see ReportNodeRepository.java)
+        String messageSqlPattern = messageFilter == null ? "%" : "%" + StringUtils.replaceEach(messageFilter, new String[]{"_", "%"}, new String[]{"\\_", "\\%"}) + "%";
+        return reportNodeRepository.findById(rootReportNodeId)
+            .map(entity -> {
+                if (severityLevelsFilter == null) {
+                    return reportNodeRepository.findPagedReportsByRootNodeIdAndOrderAndMessage(
+                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
+                        entity.getOrder(),
+                        entity.getEndOrder(),
+                        messageSqlPattern,
+                        pageable)
+                        .map(ReportLogMapper::createReportLog);
+                } else {
+                    return reportNodeRepository.findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(
+                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
+                        entity.getOrder(),
+                        entity.getEndOrder(),
+                        messageSqlPattern,
+                        severityLevelsFilter,
+                        pageable)
+                        .map(ReportLogMapper::createReportLog);
+                }
+            })
+            .orElse(Page.empty());
     }
 
     public Set<String> getReportAggregatedSeverities(UUID reportId) {
@@ -275,4 +307,130 @@ public class ReportService {
     void deleteAll() {
         reportNodeRepository.deleteAll();
     }
+
+    record ReportMetadata(UUID rootNodeId, int orderAfter, int orderBefore, long count) {
+    }
+
+    public Page<ReportLog> getMultipleReportsLogsPage(List<UUID> reportIds, @Nullable Set<String> severityLevelsFilter,
+            @Nullable String messageFilter, Pageable pageable) {
+
+        // The '_' and '%' characters have special meaning in the sql LIKE pattern
+        // condition
+        String messageSqlPattern = messageFilter == null ? "%"
+                : "%" + StringUtils.replaceEach(messageFilter, new String[] {"_", "%" }, new String[] {"\\_", "\\%" })
+                        + "%";
+
+        // Build the metadata for each report
+        List<ReportMetadata> reportsMetadata = buildReportsMetadata(reportIds, severityLevelsFilter, messageSqlPattern);
+
+        if (reportsMetadata.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        long totalCount = reportsMetadata.stream()
+                .mapToLong(ReportMetadata::count)
+                .sum();
+
+        // Extract logs based on pagination parameters
+        List<ReportLog> results = retrieveReportLogs(
+                reportsMetadata,
+                severityLevelsFilter,
+                messageSqlPattern,
+                (int) pageable.getOffset(),
+                pageable.getPageSize());
+
+        return new PageImpl<>(results, pageable, totalCount);
+    }
+
+    private List<ReportLog> retrieveReportLogs(
+            List<ReportMetadata> reportsMetadata,
+            @Nullable Set<String> severityLevelsFilter,
+            String messageSqlPattern,
+            int offset,
+            int pageSize) {
+        List<ReportLog> results = new ArrayList<>();
+        int currentOffset = 0;
+
+        for (ReportMetadata report : reportsMetadata) {
+            // Check if this report has records in our pagination window
+            if (currentOffset + report.count() > offset && results.size() < pageSize) {
+                // Calculate how many records to skip in this report
+                int reportOffset = Math.max(0, offset - currentOffset);
+                // Calculate how many records to take from this report
+                int reportLimit = Math.min(pageSize - results.size(), (int) report.count() - reportOffset);
+
+                if (reportLimit > 0) {
+                    // Retrieve the actual records
+                    List<ReportLog> reportLogs = retrieveReportLogs(
+                            report,
+                            severityLevelsFilter,
+                            messageSqlPattern,
+                            reportOffset,
+                            reportLimit);
+
+                    results.addAll(reportLogs);
+
+                    // Exit if we have enough records
+                    if (results.size() >= pageSize) {
+                        break;
+                    }
+                }
+            }
+
+            // Always update the offset after processing each report
+            currentOffset += report.count();
+        }
+
+        return results;
+    }
+
+    private List<ReportLog> retrieveReportLogs(ReportMetadata report, @Nullable Set<String> severityLevelsFilter,
+            String messageSqlPattern, int reportOffset, int reportLimit) {
+        if (severityLevelsFilter == null) {
+            return reportNodeRepository.findLimitedReportsByRootNodeIdAndOrderAndMessage(
+                    report.rootNodeId(), report.orderAfter(), report.orderBefore(),
+                    messageSqlPattern, reportOffset, reportLimit)
+                    .stream()
+                    .map(ReportLogMapper::createReportLog)
+                    .toList();
+        } else {
+            return reportNodeRepository.findLimitedReportsByRootNodeIdAndOrderAndMessageAndSeverities(
+                    report.rootNodeId(), report.orderAfter(), report.orderBefore(),
+                    messageSqlPattern, severityLevelsFilter, reportOffset, reportLimit)
+                    .stream()
+                    .map(ReportLogMapper::createReportLog)
+                    .toList();
+        }
+    }
+
+    private List<ReportMetadata> buildReportsMetadata(List<UUID> reportIds, @Nullable Set<String> severityLevelsFilter,
+            String messageSqlPattern) {
+        List<ReportMetadata> reportsMetadata = new ArrayList<>();
+
+        for (UUID reportId : reportIds) {
+            reportNodeRepository.findById(reportId).ifPresent(entity -> {
+                UUID rootId = Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId)
+                        .orElse(entity.getId());
+                int orderAfter = entity.getOrder();
+                int orderBefore = entity.getEndOrder();
+
+                long reportCount;
+                if (severityLevelsFilter == null) {
+                    reportCount = reportNodeRepository.countReportsByRootNodeIdAndOrderAndMessage(
+                            rootId, orderAfter, orderBefore, messageSqlPattern);
+                } else {
+                    reportCount = reportNodeRepository.countReportsByRootNodeIdAndOrderAndMessageAndSeverities(
+                            rootId, orderAfter, orderBefore, messageSqlPattern, severityLevelsFilter);
+                }
+
+                // Only add reports with matching records
+                if (reportCount > 0) {
+                    reportsMetadata.add(new ReportMetadata(rootId, orderAfter, orderBefore, reportCount));
+                }
+            });
+        }
+
+        return reportsMetadata;
+    }
+
 }

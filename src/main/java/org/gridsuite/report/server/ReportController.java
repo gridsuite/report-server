@@ -16,6 +16,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -88,6 +90,37 @@ public class ReportController {
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping(value = "/reports/{id}/logs/paged", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get a paged list of logs from the report")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "A page of logs from the report"),
+        @ApiResponse(responseCode = "404", description = "The reporter does not exist")})
+    public ResponseEntity<Page<ReportLog>> getPagedReportLogs(@PathVariable("id") UUID id,
+                                                             @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
+                                                             @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+                                                             Pageable pageable) {
+        try {
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.getReportLogsPage(id, severityLevelsFilter, messageFilter != null ? URLDecoder.decode(messageFilter, StandardCharsets.UTF_8) : null, pageable));
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping(value = "/reports/logs/paged", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get a paged list of logs from multiple reports")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "A page of logs from multiple reports")})
+    public ResponseEntity<Page<ReportLog>> getPagedReportLogsFromMultipleReports(
+            @Parameter(description = "List of report UUIDs to fetch logs from") @RequestParam("reportIds") List<UUID> reportIds,
+            @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
+            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+            Pageable pageable) {
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(service.getMultipleReportsLogsPage(reportIds, severityLevelsFilter, messageFilter != null ? URLDecoder.decode(messageFilter, StandardCharsets.UTF_8) : null, pageable));
     }
 
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
