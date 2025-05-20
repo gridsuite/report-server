@@ -12,6 +12,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -84,6 +86,64 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             ORDER BY rn.order ASC
             """)
     List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
+
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id,
+            rn.message,
+            rn.severity,
+            rn.depth,
+            rn.parent.id
+        )
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+        ORDER BY rn.order ASC
+        """)
+    Page<ReportProjection> findPagedReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message, Pageable pageable);
+
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id,
+            rn.message,
+            rn.severity,
+            rn.depth,
+            rn.parent.id
+        )
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+                AND rn.severity IN (:severities)
+        ORDER BY rn.order ASC
+        """)
+    Page<ReportProjection> findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities, Pageable pageable);
+
+    @Query("""
+        SELECT rn.message
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+        ORDER BY rn.order ASC
+        """)
+    List<String> findAllMessagesByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message);
+
+    @Query("""
+        SELECT rn.message
+        FROM ReportNodeEntity rn
+        WHERE
+                rn.rootNode.id = :rootNodeId
+                AND rn.order BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+                AND rn.severity IN (:severities)
+        ORDER BY rn.order ASC
+        """)
+    List<String> findAllMessagesByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
 
     @Modifying
     @Query(value = """
