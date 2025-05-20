@@ -95,38 +95,28 @@ public class ReportController {
 
     @GetMapping(value = "/reports/{id}/logs/paged", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get a paged list of logs from the report")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "A page of logs from the report"),
-        @ApiResponse(responseCode = "404", description = "The reporter does not exist")})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "A page of logs from the report")})
     public ResponseEntity<Page<ReportLog>> getPagedReportLogs(@PathVariable("id") UUID id,
                                                              @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
                                                              @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
                                                              Pageable pageable) {
-        try {
-            return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getReportLogsPage(id, severityLevelsFilter, decodeMessageFilter(messageFilter), pageable));
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(service.getReportLogsPage(id, severityLevelsFilter, decodeMessageFilter(messageFilter), pageable));
     }
 
     @GetMapping("/reports/{id}/logs/search-term-matches")
     @Operation(summary = "Get the positions of the search term matches in the logs")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The positions of the search term matches in the logs"),
-        @ApiResponse(responseCode = "404", description = "The reporter does not exist")})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The positions of the search term matches in the logs")})
     public ResponseEntity<List<MatchPosition>> searchTermMatchesInFilteredLogs(
             @PathVariable("id") UUID id,
             @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
             @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
             @Parameter(description = "The search term to look for in the logs") @RequestParam(name = "searchTerm") String searchTerm,
             @Parameter(description = "The page size for the search results") @RequestParam(name = "pageSize") int pageSize) {
-        try {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(service.searchTermMatchesInFilteredLogs(id, severityLevelsFilter, decodeMessageFilter(messageFilter), searchTerm, pageSize));
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.searchTermMatchesInFilteredLogs(id, severityLevelsFilter, decodeMessageFilter(messageFilter), searchTerm, pageSize));
     }
 
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)

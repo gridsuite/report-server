@@ -8,6 +8,7 @@ package org.gridsuite.report.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.Configuration;
@@ -16,6 +17,7 @@ import lombok.SneakyThrows;
 
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
+import org.gridsuite.report.server.dto.MatchPosition;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.TestUtils;
 import org.junit.After;
@@ -39,6 +41,7 @@ import java.util.*;
 
 import static org.gridsuite.report.server.utils.TestUtils.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -266,6 +269,165 @@ public class ReportControllerTest {
             .andReturn();
         Set<String> severities = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() { });
         assertEquals(Set.of("TRACE", "ERROR", "UNKNOWN", "INFO"), severities);
+    }
+
+    @Test
+    public void testGetPagedReportLogs() throws Exception {
+        String testReport = toString(REPORT_FOUR);
+        insertReport(REPORT_UUID, testReport);
+
+        SQLStatementCountValidator.reset();
+
+        // Test without filters - first page
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/paged")
+                .param("page", "0")
+                .param("size", "5"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        JsonNode rootNode = objectMapper.readTree(result.getResponse().getContentAsString());
+
+        // Get values for assertions
+        int size = rootNode.path("pageable").path("pageSize").asInt();
+        int number = rootNode.path("number").asInt();
+        long totalElements = rootNode.path("totalElements").asLong();
+        JsonNode contentNode = rootNode.path("content");
+
+        List<ReportLog> content = objectMapper.readValue(
+                contentNode.toString(),
+                new TypeReference<List<ReportLog>>() { });
+
+        assertEquals(5, size);
+        assertEquals(0, number);
+        assertTrue(totalElements > 0);
+        assertEquals(5, content.size());
+        assertRequestsCount(3, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test fifth page
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/paged")
+                .param("page", "5")
+                .param("size", "5"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        rootNode = objectMapper.readTree(result.getResponse().getContentAsString());
+        number = rootNode.path("number").asInt();
+        contentNode = rootNode.path("content");
+        content = objectMapper.readValue(contentNode.toString(), new TypeReference<List<ReportLog>>() { });
+        assertEquals(3, content.size());
+        assertEquals(5, number);
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with message filter
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/paged")
+                .param("message", "line")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        rootNode = objectMapper.readTree(result.getResponse().getContentAsString());
+        contentNode = rootNode.path("content");
+        content = objectMapper.readValue(contentNode.toString(), new TypeReference<List<ReportLog>>() { });
+        assertTrue(content.stream().allMatch(log -> log.getMessage().contains("line")));
+        assertRequestsCount(3, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with severity filter
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/paged")
+                .param("severityLevels", "INFO")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        rootNode = objectMapper.readTree(result.getResponse().getContentAsString());
+        contentNode = rootNode.path("content");
+        content = objectMapper.readValue(contentNode.toString(), new TypeReference<List<ReportLog>>() { });
+        assertTrue(content.stream().allMatch(log -> Severity.INFO.equals(log.getSeverity())));
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with both filters
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/paged")
+                .param("message", "line")
+                .param("severityLevels", "INFO")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        rootNode = objectMapper.readTree(result.getResponse().getContentAsString());
+        contentNode = rootNode.path("content");
+        content = objectMapper.readValue(contentNode.toString(), new TypeReference<List<ReportLog>>() { });
+        assertTrue(content.stream().allMatch(log ->
+                Severity.INFO.equals(log.getSeverity()) && log.getMessage().contains("line")));
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+    }
+
+    @Test
+    public void testSearchTermMatchesInFilteredLogs() throws Exception {
+        String testReport = toString(REPORT_FOUR);
+        insertReport(REPORT_UUID, testReport);
+
+        SQLStatementCountValidator.reset();
+
+        // Test basic search with just a search term
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search-term-matches")
+                .param("searchTerm", "line")
+                .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TypeReference<List<MatchPosition>> listTypeReference = new TypeReference<>() { };
+        List<MatchPosition> matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+
+        assertEquals(13, matches.size());
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with message filter
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search-term-matches")
+                .param("message", "line")
+                .param("searchTerm", "line")
+                .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(13, matches.size());
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with severity filter
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search-term-matches")
+                .param("severityLevels", "INFO")
+                .param("searchTerm", "line")
+                .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(2, matches.size());
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with both message and severity filters
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search-term-matches")
+                .param("message", "FFFFFF")
+                .param("severityLevels", "ERROR")
+                .param("searchTerm", "FF")
+                .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(5, matches.size());
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {
