@@ -44,23 +44,6 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     List<ReportProjection> findAllContainersByRootNodeId(UUID rootNodeId);
 
     @Query("""
-        SELECT new org.gridsuite.report.server.entities.ReportProjection(
-            rn.id,
-            rn.message,
-            rn.severity,
-            rn.depth,
-            rn.parent.id
-        )
-        FROM ReportNodeEntity rn
-        WHERE
-                rn.rootNode.id = :rootNodeId
-                AND rn.order BETWEEN :orderAfter AND :orderBefore
-                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
-        ORDER BY rn.order ASC
-        """)
-    List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message);
-
-    @Query("""
         SELECT DISTINCT rn.severity
         FROM ReportNodeEntity rn
         WHERE
@@ -68,24 +51,6 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             AND rn.order BETWEEN :orderAfter AND :orderBefore
         """)
     Set<String> findDistinctSeveritiesByRootNodeIdAndOrder(UUID rootNodeId, int orderAfter, int orderBefore);
-
-    @Query("""
-            SELECT new org.gridsuite.report.server.entities.ReportProjection(
-                rn.id,
-                rn.message,
-                rn.severity,
-                rn.depth,
-                rn.parent.id
-            )
-            FROM ReportNodeEntity rn
-            WHERE
-                    rn.rootNode.id = :rootNodeId
-                    AND rn.order BETWEEN :orderAfter AND :orderBefore
-                    AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
-                    AND rn.severity IN (:severities)
-            ORDER BY rn.order ASC
-            """)
-    List<ReportProjection> findAllReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
 
     @Query("""
         SELECT new org.gridsuite.report.server.entities.ReportProjection(

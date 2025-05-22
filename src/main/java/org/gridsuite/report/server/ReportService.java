@@ -65,30 +65,8 @@ public class ReportService {
         return ReportMapper.map(reportNodeRepository.findAllContainersByRootNodeId(reportId));
     }
 
-    public List<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter) {
-        String messageSqlPattern = createMessageSqlPattern(messageFilter);
-        return reportNodeRepository.findById(rootReportNodeId)
-            .map(entity -> {
-                if (severityLevelsFilter == null) {
-                    return reportNodeRepository.findAllReportsByRootNodeIdAndOrderAndMessage(
-                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
-                        entity.getOrder(),
-                        entity.getEndOrder(),
-                        messageSqlPattern);
-                } else {
-                    return reportNodeRepository.findAllReportsByRootNodeIdAndOrderAndMessageAndSeverities(
-                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
-                        entity.getOrder(),
-                        entity.getEndOrder(),
-                        messageSqlPattern,
-                        severityLevelsFilter);
-                }
-            })
-            .map(ReportLogMapper::map)
-            .orElse(Collections.emptyList());
-    }
-
-    public Page<ReportLog> getReportLogsPage(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter, Pageable pageable) {
+    public Page<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter, boolean paged, Pageable pageable) {
+        Pageable page = paged ? pageable : Pageable.unpaged();
         String messageSqlPattern = createMessageSqlPattern(messageFilter);
         return reportNodeRepository.findById(rootReportNodeId)
             .map(entity -> {
@@ -98,7 +76,7 @@ public class ReportService {
                         entity.getOrder(),
                         entity.getEndOrder(),
                         messageSqlPattern,
-                        pageable)
+                        page)
                         .map(ReportLogMapper::createReportLog);
                 } else {
                     return reportNodeRepository.findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(
@@ -107,7 +85,7 @@ public class ReportService {
                         entity.getEndOrder(),
                         messageSqlPattern,
                         severityLevelsFilter,
-                        pageable)
+                        page)
                         .map(ReportLogMapper::createReportLog);
                 }
             })
