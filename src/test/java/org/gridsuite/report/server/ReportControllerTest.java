@@ -368,7 +368,7 @@ public class ReportControllerTest {
         SQLStatementCountValidator.reset();
 
         // Test basic search with just a search term
-        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search-term-matches")
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search")
                 .param("searchTerm", "line")
                 .param("pageSize", "10"))
                 .andExpect(status().isOk())
@@ -378,11 +378,11 @@ public class ReportControllerTest {
         List<MatchPosition> matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
 
         assertEquals(13, matches.size());
-        assertRequestsCount(2, 0, 0, 0);
+        assertRequestsCount(1, 0, 0, 0);
         SQLStatementCountValidator.reset();
 
         // Test with message filter
-        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search-term-matches")
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search")
                 .param("message", "line")
                 .param("searchTerm", "line")
                 .param("pageSize", "10"))
@@ -391,11 +391,11 @@ public class ReportControllerTest {
 
         matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
         assertEquals(13, matches.size());
-        assertRequestsCount(2, 0, 0, 0);
+        assertRequestsCount(1, 0, 0, 0);
         SQLStatementCountValidator.reset();
 
         // Test with severity filter
-        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search-term-matches")
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search")
                 .param("severityLevels", "INFO")
                 .param("searchTerm", "line")
                 .param("pageSize", "10"))
@@ -404,11 +404,11 @@ public class ReportControllerTest {
 
         matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
         assertEquals(2, matches.size());
-        assertRequestsCount(2, 0, 0, 0);
+        assertRequestsCount(1, 0, 0, 0);
         SQLStatementCountValidator.reset();
 
         // Test with both message and severity filters
-        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search-term-matches")
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search")
                 .param("message", "FFFFFF")
                 .param("severityLevels", "ERROR")
                 .param("searchTerm", "FF")
@@ -418,7 +418,7 @@ public class ReportControllerTest {
 
         matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
         assertEquals(5, matches.size());
-        assertRequestsCount(2, 0, 0, 0);
+        assertRequestsCount(1, 0, 0, 0);
         SQLStatementCountValidator.reset();
     }
 

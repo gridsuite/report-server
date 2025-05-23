@@ -87,29 +87,6 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         """)
     Page<ReportProjection> findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities, Pageable pageable);
 
-    @Query("""
-        SELECT rn.message
-        FROM ReportNodeEntity rn
-        WHERE
-                rn.rootNode.id = :rootNodeId
-                AND rn.order BETWEEN :orderAfter AND :orderBefore
-                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
-        ORDER BY rn.order ASC
-        """)
-    List<String> findAllMessagesByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message);
-
-    @Query("""
-        SELECT rn.message
-        FROM ReportNodeEntity rn
-        WHERE
-                rn.rootNode.id = :rootNodeId
-                AND rn.order BETWEEN :orderAfter AND :orderBefore
-                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
-                AND rn.severity IN (:severities)
-        ORDER BY rn.order ASC
-        """)
-    List<String> findAllMessagesByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities);
-
     @Modifying
     @Query(value = """
         BEGIN;
@@ -133,4 +110,37 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         SELECT DISTINCT level, cast(id as varchar) FROM included_nodes;
         """, nativeQuery = true)
     List<Object[]> findTreeFromRootReport(UUID id);
+
+    @Query(value = """
+        WITH filtered_rows AS (
+            SELECT ROW_NUMBER() OVER (ORDER BY rn.order_ ASC) - 1 as row_position, rn.message
+            FROM report_node rn
+            WHERE
+                rn.root_node_id = :rootNodeId
+                AND rn.order_ BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+        )
+        SELECT row_position
+        FROM filtered_rows
+        WHERE UPPER(message) LIKE UPPER(:searchPattern) ESCAPE '\\'
+        ORDER BY row_position ASC
+        """, nativeQuery = true)
+    List<Integer> findRelativePositionsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message, String searchPattern);
+
+    @Query(value = """
+        WITH filtered_rows AS (
+            SELECT ROW_NUMBER() OVER (ORDER BY rn.order_ ASC) - 1 as row_position, rn.message
+            FROM report_node rn
+            WHERE
+                rn.root_node_id = :rootNodeId
+                AND rn.order_ BETWEEN :orderAfter AND :orderBefore
+                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+                AND rn.severity IN (:severities)
+        )
+        SELECT row_position
+        FROM filtered_rows
+        WHERE UPPER(message) LIKE UPPER(:searchPattern) ESCAPE '\\'
+        ORDER BY row_position ASC
+        """, nativeQuery = true)
+    List<Integer> findRelativePositionsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, String searchPattern, Set<String> severities);
 }

@@ -29,7 +29,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -77,7 +76,7 @@ public class ReportService {
                         entity.getEndOrder(),
                         messageSqlPattern,
                         page)
-                        .map(ReportLogMapper::createReportLog);
+                        .map(ReportLogMapper::map);
                 } else {
                     return reportNodeRepository.findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(
                         Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
@@ -86,7 +85,7 @@ public class ReportService {
                         messageSqlPattern,
                         severityLevelsFilter,
                         page)
-                        .map(ReportLogMapper::createReportLog);
+                        .map(ReportLogMapper::map);
                 }
             })
             .orElse(Page.empty());
@@ -291,32 +290,26 @@ public class ReportService {
         @NonNull String searchTerm,
         int pageSize
     ) {
-        List<String> filteredMessages = getFilteredMessages(rootReportNodeId, severityLevelsFilter, messageFilter);
-
-        return IntStream.range(0, filteredMessages.size())
-            .filter(i -> {
-                String message = filteredMessages.get(i);
-                return message != null && message.toLowerCase().contains(searchTerm.toLowerCase());
-            })
-            .mapToObj(i -> new MatchPosition(i / pageSize, i % pageSize))
-            .toList();
-    }
-
-    private List<String> getFilteredMessages(UUID rootReportNodeId, Set<String> severityLevelsFilter, String messageFilter) {
         String messageSqlPattern = createMessageSqlPattern(messageFilter);
-        return reportNodeRepository.findById(rootReportNodeId)
+        String searchPattern = createMessageSqlPattern(searchTerm);
+
+        List<Integer> positions = reportNodeRepository.findById(rootReportNodeId)
             .map(entity -> {
                 UUID rootId = Optional.ofNullable(entity.getRootNode())
                     .map(ReportNodeEntity::getId)
                     .orElse(entity.getId());
 
                 return severityLevelsFilter == null ?
-                    reportNodeRepository.findAllMessagesByRootNodeIdAndOrderAndMessage(
-                        rootId, entity.getOrder(), entity.getEndOrder(), messageSqlPattern) :
-                    reportNodeRepository.findAllMessagesByRootNodeIdAndOrderAndMessageAndSeverities(
-                        rootId, entity.getOrder(), entity.getEndOrder(), messageSqlPattern, severityLevelsFilter);
+                    reportNodeRepository.findRelativePositionsByRootNodeIdAndOrderAndMessage(
+                        rootId, entity.getOrder(), entity.getEndOrder(), messageSqlPattern, searchPattern) :
+                    reportNodeRepository.findRelativePositionsByRootNodeIdAndOrderAndMessageAndSeverities(
+                        rootId, entity.getOrder(), entity.getEndOrder(), messageSqlPattern, searchPattern, severityLevelsFilter);
             })
             .orElse(Collections.emptyList());
+
+        return positions.stream()
+            .map(position -> new MatchPosition(position / pageSize, position % pageSize))
+            .toList();
     }
 
     private String createMessageSqlPattern(@Nullable String filter) {

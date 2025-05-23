@@ -94,7 +94,7 @@ public class ReportController {
         }
     }
 
-    @GetMapping("/reports/{id}/logs/search-term-matches")
+    @GetMapping("/reports/{id}/logs/search")
     @Operation(summary = "Get the positions of the search term matches in the logs")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The positions of the search term matches in the logs")})
     public ResponseEntity<List<MatchPosition>> searchTermMatchesInFilteredLogs(
@@ -153,7 +153,7 @@ public class ReportController {
     /**
      * Decodes URL-encoded message filter if not null
      */
-    private String decodeMessageFilter(String messageFilter) {
+    private static String decodeMessageFilter(String messageFilter) {
         return messageFilter != null ? URLDecoder.decode(messageFilter, StandardCharsets.UTF_8) : null;
     }
 }
