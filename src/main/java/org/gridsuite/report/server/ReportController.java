@@ -13,9 +13,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
+import org.gridsuite.report.server.dto.MatchPosition;
 import org.gridsuite.report.server.dto.Report;
-import org.gridsuite.report.server.dto.ReportLog;
+import org.gridsuite.report.server.dto.ReportPage;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -78,16 +80,32 @@ public class ReportController {
     @Operation(summary = "Get the messages, severity and the parent id contained in the report")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The list of message (severity and parent id) of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
-    public ResponseEntity<List<ReportLog>> getReportLogs(@PathVariable("id") UUID id,
+    public ResponseEntity<ReportPage> getReportLogs(@PathVariable("id") UUID id,
                                                          @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
-                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter) {
+                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+                                                         @Parameter(description = "Whether we want paged logs") @RequestParam(name = "paged", required = false, defaultValue = "false") boolean paged,
+                                                         Pageable pageable) {
         try {
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.getReportLogs(id, severityLevelsFilter, messageFilter != null ? URLDecoder.decode(messageFilter, StandardCharsets.UTF_8) : null));
+                .body(new ReportPage(service.getReportLogs(id, severityLevelsFilter, decodeMessageFilter(messageFilter), paged, pageable)));
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/reports/{id}/logs/search")
+    @Operation(summary = "Get the positions of the search term matches in the logs")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The positions of the search term matches in the logs")})
+    public ResponseEntity<List<MatchPosition>> searchTermMatchesInFilteredLogs(
+            @PathVariable("id") UUID id,
+            @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
+            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+            @Parameter(description = "The search term to look for in the logs") @RequestParam(name = "searchTerm") String searchTerm,
+            @Parameter(description = "The page size for the search results") @RequestParam(name = "pageSize") int pageSize) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.searchTermMatchesInFilteredLogs(id, severityLevelsFilter, decodeMessageFilter(messageFilter), searchTerm, pageSize));
     }
 
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -130,5 +148,12 @@ public class ReportController {
     public ResponseEntity<Void> deleteReports(@Parameter(description = "list of reports UUIDs to delete") @RequestBody List<UUID> reportUuids) {
         service.deleteReports(reportUuids);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Decodes URL-encoded message filter if not null
+     */
+    private static String decodeMessageFilter(String messageFilter) {
+        return messageFilter != null ? URLDecoder.decode(messageFilter, StandardCharsets.UTF_8) : null;
     }
 }

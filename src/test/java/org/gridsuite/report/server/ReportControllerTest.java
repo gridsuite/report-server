@@ -16,6 +16,8 @@ import lombok.SneakyThrows;
 
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
+import org.gridsuite.report.server.dto.ReportPage;
+import org.gridsuite.report.server.dto.MatchPosition;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.TestUtils;
 import org.junit.After;
@@ -39,6 +41,7 @@ import java.util.*;
 
 import static org.gridsuite.report.server.utils.TestUtils.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -173,8 +176,8 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        TypeReference<List<ReportLog>> listTypeReference = new TypeReference<>() { };
-        List<ReportLog> response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        TypeReference<ReportPage> listTypeReference = new TypeReference<>() { };
+        List<ReportLog> response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference).content();
         assertEquals(0, response.size());
         assertRequestsCount(2, 0, 0, 0);
         SQLStatementCountValidator.reset();
@@ -193,7 +196,7 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference).content();
         assertEquals(0, response.size());
         assertRequestsCount(2, 0, 0, 0);
         SQLStatementCountValidator.reset();
@@ -268,6 +271,157 @@ public class ReportControllerTest {
         assertEquals(Set.of("TRACE", "ERROR", "UNKNOWN", "INFO"), severities);
     }
 
+    @Test
+    public void testGetPagedReportLogs() throws Exception {
+        String testReport = toString(REPORT_FOUR);
+        insertReport(REPORT_UUID, testReport);
+
+        SQLStatementCountValidator.reset();
+
+        // Test without filters - first page
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs")
+                .param("paged", "true")
+                .param("page", "0")
+                .param("size", "5"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TypeReference<ReportPage> listTypeReference = new TypeReference<>() { };
+        ReportPage response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+
+        assertEquals(6, response.totalPages());
+        assertEquals(28, response.totalElements());
+        assertEquals(5, response.content().size());
+        assertRequestsCount(3, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test fifth page
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs")
+                .param("paged", "true")
+                .param("page", "5")
+                .param("size", "5"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(3, response.content().size());
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with message filter
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs")
+                .param("paged", "true")
+                .param("message", "line")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(2, response.totalPages());
+        assertEquals(13, response.totalElements());
+        assertEquals(10, response.content().size());
+        assertRequestsCount(3, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with severity filter
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs")
+                .param("paged", "true")
+                .param("severityLevels", "INFO")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(1, response.totalPages());
+        assertEquals(5, response.content().size());
+        assertTrue(response.content().stream().allMatch(log -> Severity.INFO.equals(log.getSeverity())));
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with both filters
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs")
+                .param("paged", "true")
+                .param("message", "line")
+                .param("severityLevels", "INFO")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        response = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(1, response.totalPages());
+        assertEquals(2, response.totalElements());
+        assertEquals(2, response.content().size());
+        assertTrue(response.content().stream().allMatch(log ->
+                Severity.INFO.equals(log.getSeverity()) && log.getMessage().contains("line")));
+        assertRequestsCount(2, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+    }
+
+    @Test
+    public void testSearchTermMatchesInFilteredLogs() throws Exception {
+        String testReport = toString(REPORT_FOUR);
+        insertReport(REPORT_UUID, testReport);
+
+        SQLStatementCountValidator.reset();
+
+        // Test basic search with just a search term
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search")
+                .param("searchTerm", "line")
+                .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TypeReference<List<MatchPosition>> listTypeReference = new TypeReference<>() { };
+        List<MatchPosition> matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+
+        assertEquals(13, matches.size());
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with message filter
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search")
+                .param("message", "line")
+                .param("searchTerm", "line")
+                .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(13, matches.size());
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with severity filter
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search")
+                .param("severityLevels", "INFO")
+                .param("searchTerm", "line")
+                .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(2, matches.size());
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+
+        // Test with both message and severity filters
+        result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/logs/search")
+                .param("message", "FFFFFF")
+                .param("severityLevels", "ERROR")
+                .param("searchTerm", "FF")
+                .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        assertEquals(5, matches.size());
+        assertRequestsCount(1, 0, 0, 0);
+        SQLStatementCountValidator.reset();
+    }
+
     private void testImported(String report1Id, String reportConcat2) throws Exception {
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
@@ -291,7 +445,8 @@ public class ReportControllerTest {
     private void assertReportMessagesAreEqual(MvcResult result, String expectedContent) throws JsonProcessingException, UnsupportedEncodingException {
         TypeReference<List<ReportLog>> listTypeReference = new TypeReference<>() { };
         List<ReportLog> expectedReportLogs = objectMapper.readValue(expectedContent, listTypeReference);
-        List<ReportLog> actualReportLogs = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+        TypeReference<ReportPage> pagedModelTypeReference = new TypeReference<>() { };
+        List<ReportLog> actualReportLogs = objectMapper.readValue(result.getResponse().getContentAsString(), pagedModelTypeReference).content();
         TestUtils.assertReportMessagesAreEqual(expectedReportLogs, actualReportLogs);
     }
 }

@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
+import org.gridsuite.report.server.dto.MatchPosition;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
@@ -18,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,30 +64,31 @@ public class ReportService {
         return ReportMapper.map(reportNodeRepository.findAllContainersByRootNodeId(reportId));
     }
 
-    public List<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter) {
-        // The '_' and '%' characters have special meaning in the sql LIKE pattern condition
-        // So, in order to filter logs containing these characters, we must escape them, using the backslash character,
-        // which is then also given as the ESCAPE character in the LIKE condition of the sql request (see ReportNoeRepository.java)
-        String messageSqlPattern = messageFilter == null ? "%" : "%" + StringUtils.replaceEach(messageFilter, new String[]{"_", "%"}, new String[]{"\\_", "\\%"}) + "%";
+    public Page<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter, boolean paged, Pageable pageable) {
+        Pageable page = paged ? pageable : Pageable.unpaged();
+        String messageSqlPattern = createMessageSqlPattern(messageFilter);
         return reportNodeRepository.findById(rootReportNodeId)
             .map(entity -> {
                 if (severityLevelsFilter == null) {
-                    return reportNodeRepository.findAllReportsByRootNodeIdAndOrderAndMessage(
-                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
-                        entity.getOrder(),
-                        entity.getEndOrder(),
-                        messageSqlPattern);
-                } else {
-                    return reportNodeRepository.findAllReportsByRootNodeIdAndOrderAndMessageAndSeverities(
+                    return reportNodeRepository.findPagedReportsByRootNodeIdAndOrderAndMessage(
                         Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
                         entity.getOrder(),
                         entity.getEndOrder(),
                         messageSqlPattern,
-                        severityLevelsFilter);
+                        page)
+                        .map(ReportLogMapper::map);
+                } else {
+                    return reportNodeRepository.findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(
+                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
+                        entity.getOrder(),
+                        entity.getEndOrder(),
+                        messageSqlPattern,
+                        severityLevelsFilter,
+                        page)
+                        .map(ReportLogMapper::map);
                 }
             })
-            .map(ReportLogMapper::map)
-            .orElse(Collections.emptyList());
+            .orElse(Page.empty());
     }
 
     public Set<String> getReportAggregatedSeverities(UUID reportId) {
@@ -274,5 +278,45 @@ public class ReportService {
     // package private for tests
     void deleteAll() {
         reportNodeRepository.deleteAll();
+    }
+
+    /**
+     * Searches for term matches in filtered log messages and returns their positions
+     */
+    public List<MatchPosition> searchTermMatchesInFilteredLogs(
+        UUID rootReportNodeId,
+        @Nullable Set<String> severityLevelsFilter,
+        @Nullable String messageFilter,
+        @NonNull String searchTerm,
+        int pageSize
+    ) {
+        String messageSqlPattern = createMessageSqlPattern(messageFilter);
+        String searchPattern = createMessageSqlPattern(searchTerm);
+
+        List<Integer> positions = reportNodeRepository.findById(rootReportNodeId)
+            .map(entity -> {
+                UUID rootId = Optional.ofNullable(entity.getRootNode())
+                    .map(ReportNodeEntity::getId)
+                    .orElse(entity.getId());
+
+                return severityLevelsFilter == null ?
+                    reportNodeRepository.findRelativePositionsByRootNodeIdAndOrderAndMessage(
+                        rootId, entity.getOrder(), entity.getEndOrder(), messageSqlPattern, searchPattern) :
+                    reportNodeRepository.findRelativePositionsByRootNodeIdAndOrderAndMessageAndSeverities(
+                        rootId, entity.getOrder(), entity.getEndOrder(), messageSqlPattern, searchPattern, severityLevelsFilter);
+            })
+            .orElse(Collections.emptyList());
+
+        return positions.stream()
+            .map(position -> new MatchPosition(position / pageSize, position % pageSize))
+            .toList();
+    }
+
+    private String createMessageSqlPattern(@Nullable String filter) {
+        // The '_' and '%' characters have special meaning in the sql LIKE pattern condition
+        // So, in order to filter logs containing these characters, we must escape them, using the backslash character,
+        // which is then also given as the ESCAPE character in the LIKE condition of the sql request (see ReportNodeRepository.java)
+        return filter == null ? "%" :
+            "%" + StringUtils.replaceEach(filter, new String[]{"_", "%"}, new String[]{"\\_", "\\%"}) + "%";
     }
 }
