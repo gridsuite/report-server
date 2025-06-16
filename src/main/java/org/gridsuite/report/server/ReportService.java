@@ -125,8 +125,9 @@ public class ReportService {
         List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>(reportNode.getChildren().size());
         int appendedSize = 0;
         int startingOrder = reportEntity.getEndOrder() + 1;
+        int depth = reportEntity.getDepth() + 1;
         for (ReportNode child : reportNode.getChildren()) {
-            SizedReportNode sizedReportNode = SizedReportNode.from(child, startingOrder);
+            SizedReportNode sizedReportNode = SizedReportNode.from(child, startingOrder, depth);
             sizedReportNodeChildren.add(sizedReportNode);
             appendedSize += sizedReportNode.getSize();
             startingOrder = sizedReportNode.getOrder() + sizedReportNode.getSize() + 1;

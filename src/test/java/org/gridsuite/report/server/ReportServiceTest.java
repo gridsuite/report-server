@@ -203,8 +203,10 @@ class ReportServiceTest {
         var rootReportNodeEntity = reportService.getReportNodeEntity(parentReportId).orElseThrow();
         var reportNodeEntity = reportService.getReportNodeEntity(rootReportNodeEntity.getChildren().get(2).getId()).orElseThrow();
         assertEquals("WARN", rootReportNodeEntity.getSeverity());
+        assertEquals(0, rootReportNodeEntity.getDepth());
         var subReportNodeEntity = reportService.getReportNodeEntity(reportNodeEntity.getChildren().get(0).getId()).orElseThrow();
         assertEquals("WARN", subReportNodeEntity.getSeverity());
+        assertEquals(2, subReportNodeEntity.getDepth());
 
         var anotherReport = ReportNode.newRootReportNode()
             .withResourceBundles("i18n.reports")
@@ -224,6 +226,7 @@ class ReportServiceTest {
         assertEquals("ERROR", rootReportNodeEntityBis.getSeverity());
         assertEquals(4, rootReportNodeEntityBis.getChildren().size());
         assertEquals("ERROR", reportNodeEntityBis.getSeverity());
+        assertEquals(1, reportNodeEntityBis.getDepth());
     }
 
     @Test
