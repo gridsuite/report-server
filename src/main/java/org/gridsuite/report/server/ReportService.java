@@ -107,7 +107,7 @@ public class ReportService {
 
         // Convert Object[] results back to ReportProjection and then to ReportLog
         List<ReportLog> logs = projections.stream()
-            .map(row -> new ReportProjection((UUID) row[0], (String) row[1], (String) row[2], (Integer) row[3], (UUID) row[4]))
+            .map(row -> new ReportProjection(UUID.fromString((String) row[0]), (String) row[1], (String) row[2], (Integer) row[3], row[4] != null ? UUID.fromString((String) row[4]) : null))
             .map(ReportLogMapper::map)
             .toList();
 

@@ -145,27 +145,27 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     List<Integer> findRelativePositionsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, String searchPattern, Set<String> severities);
 
     @Query(value = """
-        SELECT rn.id, rn.message, rn.severity, rn.depth, rn.parent_id
-        FROM report_node rn
+        SELECT CAST(rn.id AS VARCHAR), rn.message, rn.severity, rn.depth, CAST(rn.parent_id AS VARCHAR)
+        FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
+        JOIN report_node rn ON rn.root_node_id = input_id.id
         WHERE
-            rn.root_node_id = ANY(:rootNodeIds)
-            AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+            UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
         ORDER BY
-            array_position(:rootNodeIds, rn.root_node_id),
+            input_id.ord,
             rn.order_ ASC
         """, nativeQuery = true)
     Page<Object[]> findPagedReportsByMultipleRootNodeIdsAndOrderAndMessage(
         UUID[] rootNodeIds, String message, Pageable pageable);
 
     @Query(value = """
-        SELECT rn.id, rn.message, rn.severity, rn.depth, rn.parent_id
-        FROM report_node rn
+        SELECT CAST(rn.id AS VARCHAR), rn.message, rn.severity, rn.depth, CAST(rn.parent_id AS VARCHAR)
+        FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
+        JOIN report_node rn ON rn.root_node_id = input_id.id
         WHERE
-            rn.root_node_id = ANY(:rootNodeIds)
-            AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+            UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
             AND rn.severity IN (:severities)
         ORDER BY
-            array_position(:rootNodeIds, rn.root_node_id),
+            input_id.ord,
             rn.order_ ASC
         """, nativeQuery = true)
     Page<Object[]> findPagedReportsByMultipleRootNodeIdsAndOrderAndMessageAndSeverities(
@@ -175,14 +175,12 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         WITH ordered_reports AS (
             SELECT
                 ROW_NUMBER() OVER (
-                    ORDER BY
-                        array_position(:rootNodeIds, rn.root_node_id),
-                        rn.order_ ASC
-                ) - 1 as row_position
-            FROM report_node rn
-            WHERE
-                rn.root_node_id = ANY(:rootNodeIds)
-                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+                    ORDER BY input_id.ord, rn.order_ ASC
+                ) - 1 as row_position,
+                rn.message
+            FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
+            JOIN report_node rn ON rn.root_node_id = input_id.id
+            WHERE UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
         )
         SELECT row_position
         FROM ordered_reports
@@ -196,15 +194,13 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         WITH ordered_reports AS (
             SELECT
                 ROW_NUMBER() OVER (
-                    ORDER BY
-                        array_position(:rootNodeIds, rn.root_node_id),
-                        rn.order_ ASC
-                ) - 1 as row_position
-            FROM report_node rn
-            WHERE
-                rn.root_node_id = ANY(:rootNodeIds)
-                AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
-                AND rn.severity IN (:severities)
+                    ORDER BY input_id.ord, rn.order_ ASC
+                ) - 1 as row_position,
+                rn.message
+            FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
+            JOIN report_node rn ON rn.root_node_id = input_id.id
+            WHERE UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+            AND rn.severity IN (:severities)
         )
         SELECT row_position
         FROM ordered_reports
