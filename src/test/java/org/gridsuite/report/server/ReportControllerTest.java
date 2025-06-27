@@ -422,6 +422,54 @@ public class ReportControllerTest {
         SQLStatementCountValidator.reset();
     }
 
+    @Test
+    public void testGetPagedReportLogsFromMultipleReports() throws Exception {
+        String testReport = toString(REPORT_FOUR);
+        insertReport(REPORT_UUID, testReport);
+
+        // Add a second report if needed for multi-report test
+        String secondReportId = "b2c5e1a1-6aa5-47a9-ba55-d1ee4e234d14";
+        insertReport(secondReportId, testReport);
+
+        // Test fetching logs from multiple reports
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/logs")
+                .param("reportIds", REPORT_UUID, secondReportId)
+                .param("paged", "true")
+                .param("page", "0")
+                .param("size", "5"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TypeReference<ReportPage> pageType = new TypeReference<>() { };
+        ReportPage response = objectMapper.readValue(result.getResponse().getContentAsString(), pageType);
+
+        assertEquals(12, response.totalPages());
+        assertEquals(56, response.totalElements());
+    }
+
+    @Test
+    public void testSearchTermMatchesInFilteredLogsFromMultipleReports() throws Exception {
+        String testReport = toString(REPORT_FOUR);
+        insertReport(REPORT_UUID, testReport);
+
+        // Add a second report if needed for multi-report test
+        String secondReportId = "b2c5e1a1-6aa5-47a9-ba55-d1ee4e234d14";
+        insertReport(secondReportId, testReport);
+
+        // Test searching term matches in multiple reports
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/logs/search")
+                .param("reportIds", REPORT_UUID, secondReportId)
+                .param("searchTerm", "line")
+                .param("pageSize", "10"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        TypeReference<List<MatchPosition>> listTypeReference = new TypeReference<>() { };
+        List<MatchPosition> matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
+
+        assertEquals(26, matches.size());
+    }
+
     private void testImported(String report1Id, String reportConcat2) throws Exception {
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())

@@ -15,8 +15,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import org.gridsuite.report.server.dto.MatchPosition;
 import org.gridsuite.report.server.dto.Report;
+import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.dto.ReportPage;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -94,6 +96,21 @@ public class ReportController {
         }
     }
 
+    @GetMapping(value = "/reports/logs", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get a paged list of logs from multiple reports")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "A page of logs from multiple reports")})
+    public ResponseEntity<Page<ReportLog>> getPagedReportLogsFromMultipleReports(
+            @Parameter(description = "List of report UUIDs to fetch logs from") @RequestParam("reportIds") List<UUID> reportIds,
+            @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
+            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+            @Parameter(description = "Whether we want paged logs") @RequestParam(name = "paged", required = false, defaultValue = "false") boolean paged,
+            Pageable pageable) {
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(service.getMultipleReportsLogsPage(reportIds, severityLevelsFilter, decodeMessageFilter(messageFilter), paged, pageable));
+    }
+
     @GetMapping("/reports/{id}/logs/search")
     @Operation(summary = "Get the positions of the search term matches in the logs")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The positions of the search term matches in the logs")})
@@ -106,6 +123,20 @@ public class ReportController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.searchTermMatchesInFilteredLogs(id, severityLevelsFilter, decodeMessageFilter(messageFilter), searchTerm, pageSize));
+    }
+
+    @GetMapping(value = "reports/logs/search")
+    @Operation(summary = "Get the positions of the search term matches in the logs from multiple reports")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The positions of the search term matches in the logs from multiple reports")})
+    public ResponseEntity<List<MatchPosition>> searchTermMatchesInFilteredLogsFromMultipleReports(
+            @Parameter(description = "List of report UUIDs to fetch logs from") @RequestParam("reportIds") List<UUID> reportIds,
+            @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
+            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+            @Parameter(description = "The search term to look for in the logs") @RequestParam(name = "searchTerm") String searchTerm,
+            @Parameter(description = "The page size for the search results") @RequestParam(name = "pageSize") int pageSize) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.searchTermMatchesInMultipleReportsFilteredLogs(reportIds, severityLevelsFilter, decodeMessageFilter(messageFilter), searchTerm, pageSize));
     }
 
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)

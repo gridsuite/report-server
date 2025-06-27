@@ -143,4 +143,70 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         ORDER BY row_position ASC
         """, nativeQuery = true)
     List<Integer> findRelativePositionsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, String searchPattern, Set<String> severities);
+
+    @Query(value = """
+        SELECT CAST(rn.id AS VARCHAR), rn.message, rn.severity, rn.depth, CAST(rn.parent_id AS VARCHAR)
+        FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
+        JOIN report_node rn ON rn.root_node_id = input_id.id
+        WHERE
+            UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+        ORDER BY
+            input_id.ord,
+            rn.order_ ASC
+        """, nativeQuery = true)
+    Page<Object[]> findPagedReportsByMultipleRootNodeIdsAndOrderAndMessage(
+        UUID[] rootNodeIds, String message, Pageable pageable);
+
+    @Query(value = """
+        SELECT CAST(rn.id AS VARCHAR), rn.message, rn.severity, rn.depth, CAST(rn.parent_id AS VARCHAR)
+        FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
+        JOIN report_node rn ON rn.root_node_id = input_id.id
+        WHERE
+            UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+            AND rn.severity IN (:severities)
+        ORDER BY
+            input_id.ord,
+            rn.order_ ASC
+        """, nativeQuery = true)
+    Page<Object[]> findPagedReportsByMultipleRootNodeIdsAndOrderAndMessageAndSeverities(
+        UUID[] rootNodeIds, String message, Set<String> severities, Pageable pageable);
+
+    @Query(value = """
+        WITH ordered_reports AS (
+            SELECT
+                ROW_NUMBER() OVER (
+                    ORDER BY input_id.ord, rn.order_ ASC
+                ) - 1 as row_position,
+                rn.message
+            FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
+            JOIN report_node rn ON rn.root_node_id = input_id.id
+            WHERE UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+        )
+        SELECT row_position
+        FROM ordered_reports
+        WHERE UPPER(message) LIKE UPPER(:searchPattern) ESCAPE '\\'
+        ORDER BY row_position
+        """, nativeQuery = true)
+    List<Integer> findRelativePositionsByMultipleRootNodeIdsAndOrderAndMessage(
+        UUID[] rootNodeIds, String message, String searchPattern);
+
+    @Query(value = """
+        WITH ordered_reports AS (
+            SELECT
+                ROW_NUMBER() OVER (
+                    ORDER BY input_id.ord, rn.order_ ASC
+                ) - 1 as row_position,
+                rn.message
+            FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
+            JOIN report_node rn ON rn.root_node_id = input_id.id
+            WHERE UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
+            AND rn.severity IN (:severities)
+        )
+        SELECT row_position
+        FROM ordered_reports
+        WHERE UPPER(message) LIKE UPPER(:searchPattern) ESCAPE '\\'
+        ORDER BY row_position
+        """, nativeQuery = true)
+    List<Integer> findRelativePositionsByMultipleRootNodeIdsAndOrderAndMessageAndSeverities(
+        UUID[] rootNodeIds, String message, String searchPattern, Set<String> severities);
 }
