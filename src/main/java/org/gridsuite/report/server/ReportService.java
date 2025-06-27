@@ -14,12 +14,14 @@ import org.gridsuite.report.server.dto.MatchPosition;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
+import org.gridsuite.report.server.entities.ReportProjection;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,6 +91,27 @@ public class ReportService {
                 }
             })
             .orElse(Page.empty());
+    }
+
+    public Page<ReportLog> getMultipleReportsLogsPage(List<UUID> reportIds, @Nullable Set<String> severityLevelsFilter,
+            @Nullable String messageFilter, boolean paged, Pageable pageable) {
+
+        Pageable page = paged ? pageable : Pageable.unpaged();
+        String messageSqlPattern = createMessageSqlPattern(messageFilter);
+        // Convert collection to arrays for PostgreSQL compatibility
+        UUID[] reportIdsArray = reportIds.toArray(new UUID[0]);
+
+        Page<Object[]> projections = severityLevelsFilter == null ? reportNodeRepository.findPagedReportsByMultipleRootNodeIdsAndOrderAndMessage(
+            reportIdsArray, messageSqlPattern, page) : reportNodeRepository.findPagedReportsByMultipleRootNodeIdsAndOrderAndMessageAndSeverities(
+                reportIdsArray, messageSqlPattern, severityLevelsFilter, page);
+
+        // Convert Object[] results back to ReportProjection and then to ReportLog
+        List<ReportLog> logs = projections.stream()
+            .map(row -> new ReportProjection(UUID.fromString((String) row[0]), (String) row[1], (String) row[2], (Integer) row[3], row[4] != null ? UUID.fromString((String) row[4]) : null))
+            .map(ReportLogMapper::map)
+            .toList();
+
+        return new PageImpl<>(logs, pageable, projections.getTotalElements());
     }
 
     public Set<String> getReportAggregatedSeverities(UUID reportId) {
@@ -307,6 +330,33 @@ public class ReportService {
                         rootId, entity.getOrder(), entity.getEndOrder(), messageSqlPattern, searchPattern, severityLevelsFilter);
             })
             .orElse(Collections.emptyList());
+
+        return positions.stream()
+            .map(position -> new MatchPosition(position / pageSize, position % pageSize))
+            .toList();
+    }
+
+    /**
+     * Searches for term matches in filtered log messages across multiple reports and returns their positions
+     */
+    public List<MatchPosition> searchTermMatchesInMultipleReportsFilteredLogs(
+        List<UUID> reportIds,
+        @Nullable Set<String> severityLevelsFilter,
+        @Nullable String messageFilter,
+        @NonNull String searchTerm,
+        int pageSize
+    ) {
+        String messageSqlPattern = createMessageSqlPattern(messageFilter);
+        String searchPattern = createMessageSqlPattern(searchTerm);
+
+        // Convert collections to arrays for PostgreSQL compatibility
+        UUID[] reportIdsArray = reportIds.toArray(new UUID[0]);
+
+        List<Integer> positions = severityLevelsFilter == null ?
+            reportNodeRepository.findRelativePositionsByMultipleRootNodeIdsAndOrderAndMessage(
+                reportIdsArray, messageSqlPattern, searchPattern) :
+            reportNodeRepository.findRelativePositionsByMultipleRootNodeIdsAndOrderAndMessageAndSeverities(
+                reportIdsArray, messageSqlPattern, searchPattern, severityLevelsFilter);
 
         return positions.stream()
             .map(position -> new MatchPosition(position / pageSize, position % pageSize))
