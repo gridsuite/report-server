@@ -142,8 +142,11 @@ public class ReportController {
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create reports")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
-    public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNode reportNode) {
-        service.createReport(id, reportNode);
+    public void createOrReplaceReport(
+            @PathVariable("id") UUID id,
+            @Parameter(description = "Whether to replace the report if it already exists") @RequestParam(name = "replace", defaultValue = "false") boolean replace,
+            @RequestBody ReportNode reportNode) {
+        service.createOrReplaceReport(id, reportNode, replace);
     }
 
     @PostMapping(value = "reports/{id}/duplicate", consumes = MediaType.APPLICATION_JSON_VALUE)
