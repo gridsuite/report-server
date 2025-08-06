@@ -131,11 +131,17 @@ public class ReportService {
         return emptyReport;
     }
 
-    public void createReport(UUID id, ReportNode reportNode) {
+    public void createOrReplaceReport(UUID id, ReportNode reportNode, boolean replace) {
         reportNodeRepository.findById(id).ifPresentOrElse(
             reportEntity -> {
-                LOGGER.debug("Reporter {} present, append ", reportNode.getMessage());
-                appendReportElements(reportEntity, reportNode);
+                if (replace) {
+                    LOGGER.debug("Reporter {} present, replacing ", reportNode.getMessage());
+                    self.deleteReport(id);
+                    createNewReport(id, reportNode);
+                } else {
+                    LOGGER.debug("Reporter {} present, append ", reportNode.getMessage());
+                    appendReportElements(reportEntity, reportNode);
+                }
             },
             () -> {
                 LOGGER.debug("Reporter {} absent, create ", reportNode.getMessage());
