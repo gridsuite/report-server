@@ -58,7 +58,7 @@ class ReportServiceTest {
         var parentReportId = UUID.randomUUID();
 
         SQLStatementCountValidator.reset();
-        reportService.createReport(parentReportId, reportNode);
+        reportService.createOrReplaceReport(parentReportId, reportNode, false);
         assertRequestsCount(1, 1, 0, 0);
 
         assertEquals(1, reportNodeRepository.findAll().size());
@@ -91,7 +91,7 @@ class ReportServiceTest {
         var parentReportId = UUID.randomUUID();
 
         SQLStatementCountValidator.reset();
-        reportService.createReport(parentReportId, reportNode);
+        reportService.createOrReplaceReport(parentReportId, reportNode, false);
         assertRequestsCount(1, 1, 0, 0);
 
         assertEquals(4, reportNodeRepository.findAll().size());
@@ -119,7 +119,7 @@ class ReportServiceTest {
             .withTypedValue("test", "hello", TypedValue.UNTYPED_TYPE)
             .build();
         var parentReportId = UUID.randomUUID();
-        reportService.createReport(parentReportId, reportNode);
+        reportService.createOrReplaceReport(parentReportId, reportNode, false);
 
         var anotherReport = ReportNode.newRootReportNode()
             .withResourceBundles("i18n.reports")
@@ -132,7 +132,7 @@ class ReportServiceTest {
             .add();
 
         SQLStatementCountValidator.reset();
-        reportService.createReport(parentReportId, anotherReport);
+        reportService.createOrReplaceReport(parentReportId, anotherReport, false);
         assertRequestsCount(3, 1, 1, 0);
 
         assertEquals(2, reportNodeRepository.findAll().size());
@@ -154,7 +154,7 @@ class ReportServiceTest {
             .withMessageTemplate("genMod")
             .add();
         var parentReportId = UUID.randomUUID();
-        reportService.createReport(parentReportId, reportNode);
+        reportService.createOrReplaceReport(parentReportId, reportNode, false);
 
         var anotherReport = ReportNode.newRootReportNode()
             .withResourceBundles("i18n.reports")
@@ -165,7 +165,7 @@ class ReportServiceTest {
             .withMessageTemplate("twtMod")
             .add();
         SQLStatementCountValidator.reset();
-        reportService.createReport(parentReportId, anotherReport);
+        reportService.createOrReplaceReport(parentReportId, anotherReport, false);
         assertRequestsCount(3, 1, 1, 0);
 
         assertEquals(3, reportNodeRepository.findAll().size());
@@ -199,7 +199,7 @@ class ReportServiceTest {
             .withSeverity(TypedValue.WARN_SEVERITY)
             .add();
         var parentReportId = UUID.randomUUID();
-        reportService.createReport(parentReportId, reportNode);
+        reportService.createOrReplaceReport(parentReportId, reportNode, false);
         var rootReportNodeEntity = reportService.getReportNodeEntity(parentReportId).orElseThrow();
         var reportNodeEntity = reportService.getReportNodeEntity(rootReportNodeEntity.getChildren().get(2).getId()).orElseThrow();
         assertEquals("WARN", rootReportNodeEntity.getSeverity());
@@ -218,7 +218,7 @@ class ReportServiceTest {
             .withSeverity(TypedValue.ERROR_SEVERITY)
             .add();
         SQLStatementCountValidator.reset();
-        reportService.createReport(parentReportId, anotherReport);
+        reportService.createOrReplaceReport(parentReportId, anotherReport, false);
         assertRequestsCount(3, 1, 1, 0);
 
         var rootReportNodeEntityBis = reportService.getReportNodeEntity(parentReportId).orElseThrow();
@@ -245,7 +245,7 @@ class ReportServiceTest {
             .add();
 
         var reportUuid = UUID.randomUUID();
-        reportService.createReport(reportUuid, rootReportNode);
+        reportService.createOrReplaceReport(reportUuid, rootReportNode, false);
 
         var rootReportNodeEntity = reportService.getReportNodeEntity(reportUuid).orElseThrow();
         assertEquals(veryLongString.substring(0, MAX_MESSAGE_CHAR), rootReportNodeEntity.getMessage());
@@ -275,7 +275,7 @@ class ReportServiceTest {
             .withSeverity(TypedValue.DEBUG_SEVERITY)
             .add();
         var parentReportId = UUID.randomUUID();
-        reportService.createReport(parentReportId, reportNode);
+        reportService.createOrReplaceReport(parentReportId, reportNode, false);
         var rootReportNodeEntity = reportService.getReportNodeEntity(parentReportId).orElseThrow();
         assertEquals("ERROR", rootReportNodeEntity.getSeverity());
         var reportNodeEntity = reportService.getReportNodeEntity(rootReportNodeEntity.getChildren().get(1).getId()).orElseThrow();
@@ -297,7 +297,7 @@ class ReportServiceTest {
 
         var reportUuid = UUID.randomUUID();
         SQLStatementCountValidator.reset();
-        reportService.createReport(reportUuid, rootReportNode);
+        reportService.createOrReplaceReport(reportUuid, rootReportNode, false);
         assertRequestsCount(5, 5, 0, 0);
     }
 
