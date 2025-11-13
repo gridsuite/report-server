@@ -144,6 +144,73 @@ public class ReportService {
         );
     }
 
+    @Transactional
+    public void createOrReplaceReport(UUID id, ReportNode reportNode) {
+        reportNodeRepository.findById(id).ifPresentOrElse(
+                reportEntity -> {
+                    LOGGER.debug("Reporter {} present, replacing children", reportNode.getMessage());
+                    replaceReportChildren(reportEntity, reportNode);
+                },
+                () -> {
+                    LOGGER.debug("Reporter {} absent, create", reportNode.getMessage());
+                    createNewReport(id, reportNode);
+                }
+        );
+    }
+
+    /**
+     * Replaces all children of an existing report while keeping the root entity.
+     * This avoids Hibernate session conflicts when recreating reports with the same ID.
+     */
+    private void replaceReportChildren(ReportNodeEntity rootEntity, ReportNode newReportNode) {
+        // Delete only the children, not the root
+        deleteChildren(rootEntity.getId());
+
+        // Update root entity properties
+        SizedReportNode sizedReportNode = SizedReportNode.from(newReportNode);
+        rootEntity.setMessage(sizedReportNode.getMessage());
+        rootEntity.setSeverity(sizedReportNode.getSeverity());
+        rootEntity.setOrder(sizedReportNode.getOrder());
+        rootEntity.setEndOrder(sizedReportNode.getOrder() + sizedReportNode.getSize() - 1);
+        rootEntity.setLeaf(sizedReportNode.isLeaf());
+
+        // Save updated root
+        reportNodeRepository.save(rootEntity);
+
+        // Add new children
+        List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
+        sizedReportNode.getChildren().forEach(child ->
+                saveReportNodeRecursively(rootEntity, rootEntity, child, entitiesToSave)
+        );
+
+        if (!entitiesToSave.isEmpty()) {
+            self.saveBatchedReports(entitiesToSave);
+        }
+    }
+
+    /**
+     * Deletes only the children of a report, keeping the root intact.
+     */
+    private void deleteChildren(UUID rootReportId) {
+        reportNodeRepository.findTreeFromRootReport(rootReportId)
+            .stream()
+            .filter(result -> !rootReportId.equals(UUID.fromString((String) result[1]))) // Exclude root
+            .collect(Collectors.groupingBy(
+                    result -> (Integer) result[0],
+                    Collectors.mapping(
+                            result -> UUID.fromString((String) result[1]),
+                            Collectors.toList()
+                    )
+            ))
+            .entrySet()
+            .stream()
+            .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
+            .forEach(entry ->
+                    Lists.partition(entry.getValue(), SQL_QUERY_MAX_PARAM_NUMBER)
+                            .forEach(reportNodeRepository::deleteByIdIn)
+            );
+    }
+
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
         List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>(reportNode.getChildren().size());
         int appendedSize = 0;
