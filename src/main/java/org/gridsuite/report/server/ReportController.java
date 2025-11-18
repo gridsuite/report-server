@@ -140,10 +140,17 @@ public class ReportController {
     }
 
     @PutMapping(value = "reports/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Create reports")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created")})
+    @Operation(summary = "Create or append to report")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The reports have been successfully created or updated")})
     public void createReport(@PathVariable("id") UUID id, @RequestBody ReportNode reportNode) {
         service.createReport(id, reportNode);
+    }
+
+    @PutMapping(value = "reports/{id}/replace", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Create or replace report children")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The report has been successfully created or replaced")})
+    public void createOrReplaceReport(@PathVariable("id") UUID id, @RequestBody ReportNode reportNode) {
+        service.createOrReplaceReport(id, reportNode);
     }
 
     @PostMapping(value = "reports/{id}/duplicate", consumes = MediaType.APPLICATION_JSON_VALUE)

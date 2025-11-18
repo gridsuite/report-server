@@ -89,6 +89,7 @@ public class ReportControllerTest {
     private static final String REPORT_CONCAT = "/reportConcat.json";
     private static final String REPORT_CONCAT2 = "/reportConcat2.json";
     private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1 = "/expectedStructureAndElementsReportOne.json";
+    private static final String EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT2 = "/expectedStructureAndElementsReportTwo.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITH_MESSAGE_FILTER = "/expectedReportMessagesWithMessageFilter.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITHOUT_FILTERS = "/expectedReportMessagesWithoutFilters.json";
     private static final String EXPECTED_REPORT_MESSAGE_WITH_SEVERITY_FILTERS = "/expectedReportMessagesWithSeverityFilter.json";
@@ -130,6 +131,41 @@ public class ReportControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
         assertReportsAreEqualIgnoringIds(resultAfterDeletion, toString(DEFAULT_EMPTY_REPORT1));
+    }
+
+    @Test
+    public void testCreateOrReplaceReport() throws Exception {
+        // Test 1: Create a new report when ID doesn't exist (should behave like normal create)
+        String testReport1 = toString(REPORT_ONE);
+
+        mvc.perform(put(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/replace")
+                        .content(testReport1)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        MvcResult resultAfterCreate = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertReportsAreEqualIgnoringIds(resultAfterCreate, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
+
+        // Test 2: Replace children of existing report - root should persist with the same ID
+        String testReport2 = toString(REPORT_TWO);
+
+        mvc.perform(put(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/replace")
+                        .content(testReport2)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        MvcResult resultAfterReplace = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // Verify the report ID remains the same but content is from REPORT_TWO
+        Report replacedReport = objectMapper.readValue(resultAfterReplace.getResponse().getContentAsString(), Report.class);
+        assertEquals(REPORT_UUID, replacedReport.getId().toString());
+
+        // Verify the structure matches REPORT_TWO
+        assertReportsAreEqualIgnoringIds(resultAfterReplace, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT2));
     }
 
     @Test
