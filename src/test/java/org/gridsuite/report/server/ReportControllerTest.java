@@ -470,6 +470,24 @@ public class ReportControllerTest {
         assertEquals(26, matches.size());
     }
 
+    @Test
+    public void testReplaceReport() throws Exception {
+        String testReport1 = toString(REPORT_TWO);
+        insertReport(REPORT_UUID, testReport1);
+
+        // Replace the report with a new one
+        String newReportContent = toString(REPORT_ONE);
+        mvc.perform(put(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?replace=true")
+            .content(newReportContent)
+            .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk());
+
+        MvcResult resultAfterReplacement = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+            .andExpect(status().isOk())
+            .andReturn();
+        assertReportsAreEqualIgnoringIds(resultAfterReplacement, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
+    }
+
     private void testImported(String report1Id, String reportConcat2) throws Exception {
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + report1Id + "?severityLevels=INFO&severityLevels=TRACE&severityLevels=ERROR"))
             .andExpect(status().isOk())
