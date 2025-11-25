@@ -15,6 +15,7 @@ import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.entities.ReportProjection;
+import org.gridsuite.report.server.entities.ReportTreeItem;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import jakarta.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -164,7 +166,8 @@ public class ReportService {
      */
     private void replaceReportChildren(ReportNodeEntity rootEntity, ReportNode newReportNode) {
         // Delete only the children, not the root
-        deleteChildren(rootEntity.getId());
+        Predicate<ReportTreeItem> notRoot = report -> rootEntity.getId() != null && !rootEntity.getId().equals(UUID.fromString(report.id()));
+        deleteRoot(rootEntity.getId(), notRoot);
 
         // Update root entity properties
         SizedReportNode sizedReportNode = SizedReportNode.from(newReportNode);
@@ -186,29 +189,6 @@ public class ReportService {
         if (!entitiesToSave.isEmpty()) {
             self.saveBatchedReports(entitiesToSave);
         }
-    }
-
-    /**
-     * Deletes only the children of a report, keeping the root intact.
-     */
-    private void deleteChildren(UUID rootReportId) {
-        reportNodeRepository.findTreeFromRootReport(rootReportId)
-            .stream()
-            .filter(result -> !rootReportId.equals(UUID.fromString((String) result[1]))) // Exclude root
-            .collect(Collectors.groupingBy(
-                    result -> (Integer) result[0],
-                    Collectors.mapping(
-                            result -> UUID.fromString((String) result[1]),
-                            Collectors.toList()
-                    )
-            ))
-            .entrySet()
-            .stream()
-            .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
-            .forEach(entry ->
-                    Lists.partition(entry.getValue(), SQL_QUERY_MAX_PARAM_NUMBER)
-                            .forEach(reportNodeRepository::deleteByIdIn)
-            );
     }
 
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
@@ -332,28 +312,29 @@ public class ReportService {
     @Transactional
     public void deleteReport(UUID reportUuid) {
         ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(reportUuid).orElseThrow(() -> new EmptyResultDataAccessException("No element found", 1));
-        deleteRoot(reportNodeEntity.getId());
+        deleteRoot(reportNodeEntity.getId(), report -> true);
     }
 
     @Transactional
     public void deleteReports(List<UUID> reportUuids) {
         Objects.requireNonNull(reportUuids);
-        reportUuids.forEach(this::deleteRoot);
+        reportUuids.forEach(r -> deleteRoot(r, report -> true));
     }
 
     /**
      * delete all the reports depending on a root report
      */
-    private void deleteRoot(UUID rootTreeReportId) {
+    private void deleteRoot(UUID rootTreeReportId, Predicate<ReportTreeItem> filter) {
         AtomicReference<Long> startTime = new AtomicReference<>();
         startTime.set(System.nanoTime());
 
         reportNodeRepository.findTreeFromRootReport(rootTreeReportId)
             .stream()
+            .filter(filter)
             .collect(Collectors.groupingBy(
-                result -> (Integer) result[0],
+                ReportTreeItem::level,
                 Collectors.mapping(
-                    result -> UUID.fromString((String) result[1]),
+                    result -> UUID.fromString(result.id()),
                     Collectors.toList()
                 )
             ))
