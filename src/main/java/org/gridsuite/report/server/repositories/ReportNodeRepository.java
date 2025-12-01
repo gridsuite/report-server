@@ -8,6 +8,7 @@ package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.entities.ReportProjection;
+import org.gridsuite.report.server.entities.ReportTreeItem;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -109,7 +110,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         )
         SELECT DISTINCT level, cast(id as varchar) FROM included_nodes;
         """, nativeQuery = true)
-    List<Object[]> findTreeFromRootReport(UUID id);
+    List<ReportTreeItem> findTreeFromRootReport(UUID id);
 
     @Query(value = """
         WITH filtered_rows AS (
