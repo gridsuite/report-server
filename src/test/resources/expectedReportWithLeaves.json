@@ -1,0 +1,190 @@
+{
+  "id": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+  "parentId": null,
+  "message": "Test importing UCTE file frVoltageRegulatingXnode.uct",
+  "severity": "ERROR",
+  "depth": 0,
+  "subReports": [
+    {
+      "id": "94046da3-4aff-4abf-8a3d-c05262e3ee41",
+      "parentId": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+      "message": "Reading UCTE network file",
+      "severity": "ERROR",
+      "depth": 1,
+      "subReports": [
+        {
+          "id": "eccd1dd5-4f22-4622-bca6-8cdf6da1f51b",
+          "parentId": "94046da3-4aff-4abf-8a3d-c05262e3ee41",
+          "message": "Fix UCTE lines",
+          "severity": "ERROR",
+          "depth": 2,
+          "subReports": [
+            {
+              "id": "6216dcf4-d812-44c1-848c-713eb3b02f06",
+              "parentId": "eccd1dd5-4f22-4622-bca6-8cdf6da1f51b",
+              "message": "FFFFFF11 XXXXXX11 1 - Real line resistance cannot be negative (0 ohm)",
+              "severity": "ERROR",
+              "depth": 3,
+              "subReports": []
+            },
+            {
+              "id": "46e29ac5-0214-40f8-99e4-6625aa52e990",
+              "parentId": "eccd1dd5-4f22-4622-bca6-8cdf6da1f51b",
+              "message": "FFFFFF11 XXXXXX12 1 - Real line resistance cannot be negative (0 ohm)",
+              "severity": "ERROR",
+              "depth": 3,
+              "subReports": []
+            },
+            {
+              "id": "8174c44d-59ef-4791-9014-e1c77297ae57",
+              "parentId": "eccd1dd5-4f22-4622-bca6-8cdf6da1f51b",
+              "message": "FFFFFF13 XXXXXX13 1 - Real line resistance cannot be negative (0 ohm)",
+              "severity": "ERROR",
+              "depth": 3,
+              "subReports": []
+            },
+            {
+              "id": "f28ca0a8-df4a-425c-b828-6afc94ccbdfa",
+              "parentId": "eccd1dd5-4f22-4622-bca6-8cdf6da1f51b",
+              "message": "FFFFFF13 XXXXXX14 1 - Real line resistance cannot be negative (0 ohm)",
+              "severity": "ERROR",
+              "depth": 3,
+              "subReports": []
+            }
+          ]
+        },
+        {
+          "id": "fbfef57b-ffdf-462f-9bdb-7bd77f1a4a3d",
+          "parentId": "94046da3-4aff-4abf-8a3d-c05262e3ee41",
+          "message": "Fix UCTE nodes",
+          "severity": "UNKNOWN",
+          "depth": 2,
+          "subReports": []
+        },
+        {
+          "id": "8ae5cf91-685b-449a-874a-825850b44dfb",
+          "parentId": "94046da3-4aff-4abf-8a3d-c05262e3ee41",
+          "message": "Fix UCTE transformers",
+          "severity": "UNKNOWN",
+          "depth": 2,
+          "subReports": []
+        },
+        {
+          "id": "ece4bd5b-0ef4-4511-b6ec-883420ed8301",
+          "parentId": "94046da3-4aff-4abf-8a3d-c05262e3ee41",
+          "message": "Fix UCTE regulations",
+          "severity": "UNKNOWN",
+          "depth": 2,
+          "subReports": []
+        }
+      ]
+    },
+    {
+      "id": "8c31cbe8-3261-4db0-a506-603d9e72310e",
+      "parentId": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+      "message": "Create buses",
+      "severity": "TRACE",
+      "depth": 1,
+      "subReports": [
+        {
+          "id": "57862141-4bdf-4f20-9c93-a245f05e34ac",
+          "parentId": "8c31cbe8-3261-4db0-a506-603d9e72310e",
+          "message": "Create buses for substation FFFFFF",
+          "severity": "TRACE",
+          "depth": 2,
+          "subReports": [
+            {
+              "id": "45792cc7-2416-419c-a7e2-bad0d4744db3",
+              "parentId": "57862141-4bdf-4f20-9c93-a245f05e34ac",
+              "message": "Create substation FFFFFF",
+              "severity": "TRACE",
+              "depth": 3,
+              "subReports": []
+            },
+            {
+              "id": "4fb1019b-0194-4d0c-8957-3ff179ded017",
+              "parentId": "57862141-4bdf-4f20-9c93-a245f05e34ac",
+              "message": "Create voltage level FFFFFF1",
+              "severity": "TRACE",
+              "depth": 3,
+              "subReports": []
+            },
+            {
+              "id": "fd8ce1cf-3c6a-4250-86df-2869e54208cd",
+              "parentId": "57862141-4bdf-4f20-9c93-a245f05e34ac",
+              "message": "Create bus FFFFFF11",
+              "severity": "TRACE",
+              "depth": 3,
+              "subReports": []
+            },
+            {
+              "id": "33bb2e78-ecea-4d99-8192-4d1aa60e54c2",
+              "parentId": "57862141-4bdf-4f20-9c93-a245f05e34ac",
+              "message": "Create bus FFFFFF13",
+              "severity": "TRACE",
+              "depth": 3,
+              "subReports": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "345949df-d8da-4460-a6c2-3ea6ff2ee0ac",
+      "parentId": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+      "message": "Create lines",
+      "severity": "TRACE",
+      "depth": 1,
+      "subReports": [
+        {
+          "id": "fe2c4643-01dd-4ebd-bbea-57482b096124",
+          "parentId": "345949df-d8da-4460-a6c2-3ea6ff2ee0ac",
+          "message": "Create dangling line 'FFFFFF11 XXXXXX11 1' (Xnode='XXXXXX11')",
+          "severity": "TRACE",
+          "depth": 2,
+          "subReports": []
+        },
+        {
+          "id": "0adda2fe-6087-4b5d-833f-b9942ef5e4bd",
+          "parentId": "345949df-d8da-4460-a6c2-3ea6ff2ee0ac",
+          "message": "Create dangling line 'FFFFFF11 XXXXXX12 1' (Xnode='XXXXXX12')",
+          "severity": "TRACE",
+          "depth": 2,
+          "subReports": []
+        },
+        {
+          "id": "ee2870ed-9164-4954-984e-781c0312a8d8",
+          "parentId": "345949df-d8da-4460-a6c2-3ea6ff2ee0ac",
+          "message": "Create dangling line 'FFFFFF13 XXXXXX13 1' (Xnode='XXXXXX13')",
+          "severity": "TRACE",
+          "depth": 2,
+          "subReports": []
+        },
+        {
+          "id": "b13f079c-980b-4dda-9320-db0481c854a4",
+          "parentId": "345949df-d8da-4460-a6c2-3ea6ff2ee0ac",
+          "message": "Create dangling line 'FFFFFF13 XXXXXX14 1' (Xnode='XXXXXX14')",
+          "severity": "TRACE",
+          "depth": 2,
+          "subReports": []
+        }
+      ]
+    },
+    {
+      "id": "b21d5f8a-6b3b-43c1-9761-4c0dfa934053",
+      "parentId": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+      "message": "No value report",
+      "severity": "INFO",
+      "depth": 1,
+      "subReports": []
+    },
+    {
+      "id": "6c7d3f07-740b-41e4-b25d-ece2fc1fff4a",
+      "parentId": "7165e1a1-6aa5-47a9-ba55-d1ee4e234d13",
+      "message": "Create transformers",
+      "severity": "TRACE",
+      "depth": 1,
+      "subReports": []
+    }
+  ]
+}

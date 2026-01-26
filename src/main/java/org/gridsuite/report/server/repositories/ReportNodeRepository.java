@@ -39,10 +39,11 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.parent.id
         )
         FROM ReportNodeEntity rn
-        WHERE rn.rootNode.id = :rootNodeId AND rn.isLeaf = false
+        WHERE rn.rootNode.id = :rootNodeId
+        AND (:withLeaves = true OR rn.isLeaf = false)
         ORDER BY rn.order ASC
         """)
-    List<ReportProjection> findAllContainersByRootNodeId(UUID rootNodeId);
+    List<ReportProjection> findAllContainersByRootNodeId(UUID rootNodeId, boolean withLeaves);
 
     @Query("""
         SELECT DISTINCT rn.severity

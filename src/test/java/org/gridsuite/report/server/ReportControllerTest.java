@@ -97,6 +97,7 @@ public class ReportControllerTest {
     private static final String EXPECTED_REPORT_ONE = "/expectedReportOne.json";
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
+    private static final String EXPECTED_REPORT_WITH_LEAVES = "/expectedReportWithLeaves.json";
 
     public String toString(String resourceName) {
         try {
@@ -179,6 +180,20 @@ public class ReportControllerTest {
             .andReturn();
 
         assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_STRUCTURE_AND_ELEMENTS_REPORT1));
+        assertRequestsCount(1, 0, 0, 0);
+    }
+
+    @Test
+    public void testGetReportWithLeaves() throws Exception {
+        String testReport1 = toString(REPORT_ONE);
+        insertReport(REPORT_UUID, testReport1);
+
+        SQLStatementCountValidator.reset();
+        MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?withLeaves=true"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        assertReportsAreEqualIgnoringIds(result, toString(EXPECTED_REPORT_WITH_LEAVES));
         assertRequestsCount(1, 0, 0, 0);
     }
 

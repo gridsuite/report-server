@@ -58,9 +58,10 @@ public class ReportController {
     @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters")})
     public ResponseEntity<Report> getReport(@PathVariable("id") UUID id,
-                                            @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+                                            @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName,
+                                            @Parameter(description = "Whether we want also leaf reports") @RequestParam(name = "withLeaves", required = false, defaultValue = "false") boolean withLeaves) {
         try {
-            Report report = service.getReport(id);
+            Report report = service.getReport(id, withLeaves);
             return report == null ?
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(service.getEmptyReport(id, defaultName)) :
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);

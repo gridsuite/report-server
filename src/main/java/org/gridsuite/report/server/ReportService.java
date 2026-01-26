@@ -63,9 +63,9 @@ public class ReportService {
     }
 
     @Transactional(readOnly = true)
-    public Report getReport(UUID reportId) {
+    public Report getReport(UUID reportId, boolean withLeaves) {
         Objects.requireNonNull(reportId);
-        return ReportMapper.map(reportNodeRepository.findAllContainersByRootNodeId(reportId));
+        return ReportMapper.map(reportNodeRepository.findAllContainersByRootNodeId(reportId, withLeaves));
     }
 
     public Page<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter, boolean paged, Pageable pageable) {
