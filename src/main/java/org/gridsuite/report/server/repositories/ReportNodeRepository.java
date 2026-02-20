@@ -90,9 +90,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
 
     @Modifying
     @Query(value = """
-        BEGIN;
         DELETE FROM report_node WHERE id IN :ids ;
-        COMMIT;
         """, nativeQuery = true)
     void deleteByIdIn(List<UUID> ids);
 
