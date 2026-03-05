@@ -32,6 +32,17 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
 
     @Query("""
         SELECT new org.gridsuite.report.server.entities.ReportProjection(
+            rn.id, rn.message, rn.severity, rn.depth, rn.parent.id,
+            rn.order, rn.endOrder, rn.isLeaf
+        )
+        FROM ReportNodeEntity rn
+        WHERE rn.rootNode.id = :rootNodeId
+        ORDER BY rn.depth, rn.order
+        """)
+    List<ReportProjection> findAllNodeDataByRootNodeId(UUID rootNodeId);
+
+    @Query("""
+        SELECT new org.gridsuite.report.server.entities.ReportProjection(
             rn.id,
             rn.message,
             rn.severity,

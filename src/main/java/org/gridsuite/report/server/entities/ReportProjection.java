@@ -11,5 +11,10 @@ import java.util.UUID;
 /**
  * @author Joris Mancini <joris.mancini_externe at rte-france.com>
  */
-public record ReportProjection(UUID id, String message, String severity, int depth, UUID parentId) {
+public record ReportProjection(UUID id, String message, String severity, int depth, UUID parentId,
+                                int order, int endOrder, boolean isLeaf) {
+    // Compact constructor used by queries that don't need order/endOrder/isLeaf.
+    public ReportProjection(UUID id, String message, String severity, int depth, UUID parentId) {
+        this(id, message, severity, depth, parentId, 0, 0, false);
+    }
 }

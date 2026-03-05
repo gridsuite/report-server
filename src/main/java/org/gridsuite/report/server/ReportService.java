@@ -276,37 +276,48 @@ public class ReportService {
 
     @Transactional
     public UUID duplicateReport(UUID rootNodeId) {
-        ReportNodeEntity rootNode = reportNodeRepository.findById(rootNodeId)
-            .orElseThrow(() -> new NoSuchElementException("Root node not found"));
-
-        ReportNodeEntity duplicatedRootNode = duplicateReportNodeRecursively(rootNode, null);
-        return duplicatedRootNode.getId();
-    }
-
-    private ReportNodeEntity duplicateReportNodeRecursively(ReportNodeEntity node, ReportNodeEntity newParent) {
-        ReportNodeEntity duplicatedNode = ReportNodeEntity.builder()
-            .message(node.getMessage())
-            .order(node.getOrder())
-            .endOrder(node.getEndOrder())
-            .isLeaf(node.isLeaf())
-            .parent(newParent)
-            .severity(node.getSeverity())
-            .depth(node.getDepth())
-            .build();
-
-        reportNodeRepository.save(duplicatedNode);
-
-        if (newParent == null) {
-            duplicatedNode.setRootNode(duplicatedNode);
-        } else {
-            duplicatedNode.setRootNode(newParent.getRootNode());
+        List<ReportProjection> sourceNodes = reportNodeRepository.findAllNodeDataByRootNodeId(rootNodeId);
+        if (sourceNodes.isEmpty()) {
+            throw new NoSuchElementException("Root node not found");
         }
 
-        for (ReportNodeEntity child : node.getChildren()) {
-            duplicateReportNodeRecursively(child, duplicatedNode);
+        // Map old UUIDs to new entities (ordered by depth, so parents are created first)
+        Map<UUID, ReportNodeEntity> entityMapping = new HashMap<>();
+        List<ReportNodeEntity> batch = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
+        UUID newRootId = UUID.randomUUID();
+
+        for (ReportProjection source : sourceNodes) {
+            boolean isRoot = source.id().equals(rootNodeId);
+            ReportNodeEntity rootRef = isRoot ? null : entityMapping.get(rootNodeId);
+            ReportNodeEntity parentRef = source.parentId() != null ? entityMapping.get(source.parentId()) : null;
+
+            ReportNodeEntity duplicate = ReportNodeEntity.builder()
+                .id(isRoot ? newRootId : UUID.randomUUID())
+                .message(source.message())
+                .order(source.order())
+                .endOrder(source.endOrder())
+                .isLeaf(source.isLeaf())
+                .severity(source.severity())
+                .depth(source.depth())
+                .rootNode(rootRef)
+                .parent(parentRef)
+                .build();
+
+            if (isRoot) {
+                duplicate.setRootNode(duplicate);
+            }
+
+            entityMapping.put(source.id(), duplicate);
+            batch.add(duplicate);
+            if (batch.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
+                self.saveBatchedReports(batch);
+            }
+        }
+        if (!batch.isEmpty()) {
+            self.saveBatchedReports(batch);
         }
 
-        return duplicatedNode;
+        return newRootId;
     }
 
     @Transactional
