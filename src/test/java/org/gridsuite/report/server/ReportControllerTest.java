@@ -265,10 +265,15 @@ public class ReportControllerTest {
     public void testDuplicateReport() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
+
+        SQLStatementCountValidator.reset();
         MvcResult result = mvc.perform(post(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/duplicate")
             .contentType(APPLICATION_JSON))
             .andExpect(status().isOk())
             .andReturn();
+        // 1 SELECT (findAllNodeDataByRootNodeId) + 1 INSERT (single batch for all 23 nodes)
+        assertRequestsCount(1, 1, 0, 0);
+
         UUID duplicatedReportId = objectMapper.readValue(result.getResponse().getContentAsString(), UUID.class);
         MvcResult resultAfterDuplication = mvc.perform(get(URL_TEMPLATE + "/reports/" + duplicatedReportId))
             .andExpect(status().isOk())
