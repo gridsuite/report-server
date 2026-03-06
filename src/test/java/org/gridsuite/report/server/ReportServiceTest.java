@@ -133,7 +133,7 @@ class ReportServiceTest {
 
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(3, 1, 1, 0);
+        assertRequestsCount(1, 1, 1, 0);
 
         assertEquals(2, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -166,7 +166,7 @@ class ReportServiceTest {
             .add();
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(3, 1, 1, 0);
+        assertRequestsCount(1, 1, 1, 0);
 
         assertEquals(3, reportNodeRepository.findAll().size());
         var parentReportEntity = reportService.getReportNodeEntity(parentReportId);
@@ -219,7 +219,7 @@ class ReportServiceTest {
             .add();
         SQLStatementCountValidator.reset();
         reportService.createReport(parentReportId, anotherReport);
-        assertRequestsCount(3, 1, 1, 0);
+        assertRequestsCount(1, 1, 1, 0);
 
         var rootReportNodeEntityBis = reportService.getReportNodeEntity(parentReportId).orElseThrow();
         var reportNodeEntityBis = reportService.getReportNodeEntity(rootReportNodeEntityBis.getChildren().get(3).getId()).orElseThrow();
@@ -298,7 +298,7 @@ class ReportServiceTest {
         var reportUuid = UUID.randomUUID();
         SQLStatementCountValidator.reset();
         reportService.createReport(reportUuid, rootReportNode);
-        assertRequestsCount(5, 5, 0, 0);
+        assertRequestsCount(1, 5, 0, 0);
     }
 
     private static void assertReportsAreEqual(ReportNodeEntity entity, ReportNode reportNode, String severity) {

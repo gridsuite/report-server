@@ -19,7 +19,6 @@ import org.gridsuite.report.server.entities.ReportTreeItem;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -47,13 +46,10 @@ public class ReportService {
 
     private static final int MAX_SIZE_INSERT_REPORT_BATCH = 512;
 
-    private final ReportService self;
-
     private final ReportNodeRepository reportNodeRepository;
 
-    public ReportService(ReportNodeRepository reportNodeRepository, @Lazy ReportService reportService) {
+    public ReportService(ReportNodeRepository reportNodeRepository) {
         this.reportNodeRepository = reportNodeRepository;
-        this.self = reportService;
     }
 
     // To use only for tests to fetch an entity with all the relationships
@@ -68,6 +64,7 @@ public class ReportService {
         return ReportMapper.map(reportNodeRepository.findAllContainersByRootNodeId(reportId));
     }
 
+    @Transactional(readOnly = true)
     public Page<ReportLog> getReportLogs(UUID rootReportNodeId, @Nullable Set<String> severityLevelsFilter, @Nullable String messageFilter, boolean paged, Pageable pageable) {
         Pageable page = paged ? pageable : Pageable.unpaged();
         String messageSqlPattern = createMessageSqlPattern(messageFilter);
@@ -95,6 +92,7 @@ public class ReportService {
             .orElse(Page.empty());
     }
 
+    @Transactional(readOnly = true)
     public Page<ReportLog> getMultipleReportsLogsPage(List<UUID> reportIds, @Nullable Set<String> severityLevelsFilter,
             @Nullable String messageFilter, boolean paged, Pageable pageable) {
 
@@ -116,6 +114,7 @@ public class ReportService {
         return new PageImpl<>(logs, pageable, projections.getTotalElements());
     }
 
+    @Transactional(readOnly = true)
     public Set<String> getReportAggregatedSeverities(UUID reportId) {
         return reportNodeRepository.findById(reportId)
             .map(entity -> reportNodeRepository.findDistinctSeveritiesByRootNodeIdAndOrder(
@@ -133,6 +132,7 @@ public class ReportService {
         return emptyReport;
     }
 
+    @Transactional
     public void createReport(UUID id, ReportNode reportNode) {
         reportNodeRepository.findById(id).ifPresentOrElse(
             reportEntity -> {
@@ -187,7 +187,7 @@ public class ReportService {
         );
 
         if (!entitiesToSave.isEmpty()) {
-            self.saveBatchedReports(entitiesToSave);
+            saveBatchedReports(entitiesToSave);
         }
     }
 
@@ -215,7 +215,7 @@ public class ReportService {
         sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(reportEntity, reportEntity, c, entitiesToSave));
 
         if (!entitiesToSave.isEmpty()) {
-            self.saveBatchedReports(entitiesToSave);
+            saveBatchedReports(entitiesToSave);
         }
     }
 
@@ -239,7 +239,7 @@ public class ReportService {
         );
 
         if (!entitiesToSave.isEmpty()) {
-            self.saveBatchedReports(entitiesToSave);
+            saveBatchedReports(entitiesToSave);
         }
     }
 
@@ -262,14 +262,13 @@ public class ReportService {
 
         entitiesToSave.add(reportNodeEntity);
         if (entitiesToSave.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
-            self.saveBatchedReports(entitiesToSave);
+            saveBatchedReports(entitiesToSave);
         }
         sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(rootReportNodeEntity, reportNodeEntity, child, entitiesToSave));
 
     }
 
-    @Transactional
-    public void saveBatchedReports(List<ReportNodeEntity> batch) {
+    private void saveBatchedReports(List<ReportNodeEntity> batch) {
         reportNodeRepository.saveAllAndFlush(batch);
         batch.clear();
     }
@@ -310,11 +309,11 @@ public class ReportService {
             entityMapping.put(source.id(), duplicate);
             batch.add(duplicate);
             if (batch.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
-                self.saveBatchedReports(batch);
+                saveBatchedReports(batch);
             }
         }
         if (!batch.isEmpty()) {
-            self.saveBatchedReports(batch);
+            saveBatchedReports(batch);
         }
 
         return newRootId;
@@ -366,6 +365,7 @@ public class ReportService {
     /**
      * Searches for term matches in filtered log messages and returns their positions
      */
+    @Transactional(readOnly = true)
     public List<MatchPosition> searchTermMatchesInFilteredLogs(
         UUID rootReportNodeId,
         @Nullable Set<String> severityLevelsFilter,
@@ -398,6 +398,7 @@ public class ReportService {
     /**
      * Searches for term matches in filtered log messages across multiple reports and returns their positions
      */
+    @Transactional(readOnly = true)
     public List<MatchPosition> searchTermMatchesInMultipleReportsFilteredLogs(
         List<UUID> reportIds,
         @Nullable Set<String> severityLevelsFilter,
