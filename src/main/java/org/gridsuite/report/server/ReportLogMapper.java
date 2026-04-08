@@ -19,6 +19,6 @@ public final class ReportLogMapper {
     }
 
     public static ReportLog map(ReportProjection entity) {
-        return new ReportLog(entity.message(), Severity.fromValue(entity.severity()), entity.depth(), entity.parentId());
+        return new ReportLog(entity.message(), Severity.fromValue(entity.severity()), entity.depth(), entity.parentOrder());
     }
 }

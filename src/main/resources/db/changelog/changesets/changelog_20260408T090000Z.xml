@@ -1,0 +1,78 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260408T090000Z-1" author="report-server">
+        <dropForeignKeyConstraint baseTableName="report_node" constraintName="parent_fk"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-2" author="report-server">
+        <dropForeignKeyConstraint baseTableName="report_node" constraintName="root_node_fk"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-3" author="report-server">
+        <dropIndex tableName="report_node" indexName="report_node_parent_id_idx"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-4" author="report-server">
+        <dropIndex tableName="report_node" indexName="root_node_orders_idx"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-5" author="report-server">
+        <dropIndex tableName="report_node" indexName="root_node_and_container_idx"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-6" author="report-server">
+        <dropPrimaryKey tableName="report_node" constraintName="report_nodePK"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-7" author="report-server">
+        <preConditions onFail="CONTINUE">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>UPDATE report_node SET id = root_node_id WHERE root_node_id IS NOT NULL;</sql>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-8" author="report-server">
+        <addColumn tableName="report_node">
+            <column name="parent_order" type="integer"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-9" author="report-server">
+        <preConditions onFail="CONTINUE">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            UPDATE report_node child
+            SET parent_order = parent.order_
+            FROM report_node parent
+            WHERE child.parent_id = parent.id AND child.parent_id IS NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-10" author="report-server">
+        <addNotNullConstraint tableName="report_node" columnName="order_" columnDataType="integer" defaultNullValue="0"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-11" author="report-server">
+        <addPrimaryKey tableName="report_node" columnNames="id, order_" constraintName="report_nodePK"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-12" author="report-server">
+        <dropColumn tableName="report_node" columnName="root_node_id"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-13" author="report-server">
+        <dropColumn tableName="report_node" columnName="parent_id"/>
+    </changeSet>
+
+    <changeSet id="20260408T090000Z-14" author="report-server">
+        <createIndex tableName="report_node" indexName="report_node_container_idx">
+            <column name="id"/>
+            <column name="is_leaf"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -7,9 +7,8 @@
 package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.ReportNodeEntity;
+import org.gridsuite.report.server.entities.ReportNodeId;
 import org.gridsuite.report.server.entities.ReportProjection;
-import org.gridsuite.report.server.entities.ReportTreeItem;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -25,21 +25,30 @@ import java.util.UUID;
  * @author Joris Mancini <joris.mancini_externe at rte-france.com>
  */
 @Repository
-public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UUID> {
+public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, ReportNodeId> {
 
-    @EntityGraph(attributePaths = {"children"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<ReportNodeEntity> findAllWithChildrenById(UUID rootNodeId);
+    Optional<ReportNodeEntity> findByIdAndOrder(UUID id, int order);
+
+    List<ReportNodeEntity> findByIdOrderByOrder(UUID id);
+
+    @Modifying
+    @Query(value = "DELETE FROM report_node WHERE id = :reportId", nativeQuery = true)
+    void deleteAllByReportId(UUID reportId);
+
+    @Modifying
+    @Query(value = "DELETE FROM report_node WHERE id = :reportId AND order_ > 0", nativeQuery = true)
+    void deleteChildrenByReportId(UUID reportId);
 
     @Query("""
         SELECT new org.gridsuite.report.server.entities.ReportProjection(
-            rn.id, rn.message, rn.severity, rn.depth, rn.parent.id,
+            rn.id, rn.message, rn.severity, rn.depth, rn.parentOrder,
             rn.order, rn.endOrder, rn.isLeaf
         )
         FROM ReportNodeEntity rn
-        WHERE rn.rootNode.id = :rootNodeId
+        WHERE rn.id = :reportId
         ORDER BY rn.depth, rn.order
         """)
-    List<ReportProjection> findAllNodeDataByRootNodeId(UUID rootNodeId);
+    List<ReportProjection> findAllNodeDataByReportId(UUID reportId);
 
     @Query("""
         SELECT new org.gridsuite.report.server.entities.ReportProjection(
@@ -47,22 +56,25 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.message,
             rn.severity,
             rn.depth,
-            rn.parent.id
+            rn.parentOrder,
+            rn.order,
+            rn.endOrder,
+            rn.isLeaf
         )
         FROM ReportNodeEntity rn
-        WHERE rn.rootNode.id = :rootNodeId AND rn.isLeaf = false
+        WHERE rn.id = :reportId AND rn.isLeaf = false
         ORDER BY rn.order ASC
         """)
-    List<ReportProjection> findAllContainersByRootNodeId(UUID rootNodeId);
+    List<ReportProjection> findAllContainersByReportId(UUID reportId);
 
     @Query("""
         SELECT DISTINCT rn.severity
         FROM ReportNodeEntity rn
         WHERE
-            rn.rootNode.id = :rootNodeId
+            rn.id = :reportId
             AND rn.order BETWEEN :orderAfter AND :orderBefore
         """)
-    Set<String> findDistinctSeveritiesByRootNodeIdAndOrder(UUID rootNodeId, int orderAfter, int orderBefore);
+    Set<String> findDistinctSeveritiesByReportIdAndOrder(UUID reportId, int orderAfter, int orderBefore);
 
     @Query("""
         SELECT new org.gridsuite.report.server.entities.ReportProjection(
@@ -70,16 +82,16 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.message,
             rn.severity,
             rn.depth,
-            rn.parent.id
+            rn.parentOrder
         )
         FROM ReportNodeEntity rn
         WHERE
-                rn.rootNode.id = :rootNodeId
+                rn.id = :reportId
                 AND rn.order BETWEEN :orderAfter AND :orderBefore
                 AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
         ORDER BY rn.order ASC
         """)
-    Page<ReportProjection> findPagedReportsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message, Pageable pageable);
+    Page<ReportProjection> findPagedReportsByReportIdAndOrderAndMessage(UUID reportId, int orderAfter, int orderBefore, String message, Pageable pageable);
 
     @Query("""
         SELECT new org.gridsuite.report.server.entities.ReportProjection(
@@ -87,48 +99,24 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.message,
             rn.severity,
             rn.depth,
-            rn.parent.id
+            rn.parentOrder
         )
         FROM ReportNodeEntity rn
         WHERE
-                rn.rootNode.id = :rootNodeId
+                rn.id = :reportId
                 AND rn.order BETWEEN :orderAfter AND :orderBefore
                 AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
                 AND rn.severity IN (:severities)
         ORDER BY rn.order ASC
         """)
-    Page<ReportProjection> findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities, Pageable pageable);
-
-    @Modifying
-    @Query(value = """
-        BEGIN;
-        DELETE FROM report_node WHERE id IN :ids ;
-        COMMIT;
-        """, nativeQuery = true)
-    void deleteByIdIn(List<UUID> ids);
-
-    @Query(value = """
-        WITH RECURSIVE included_nodes(id, level) AS (
-            SELECT id, 0 as level
-            FROM report_node r
-            WHERE r.id = :id
-
-            UNION ALL
-
-            SELECT r.id, level + 1
-            FROM included_nodes incn
-            INNER JOIN report_node r ON r.parent_id = incn.id
-        )
-        SELECT DISTINCT level, cast(id as varchar) FROM included_nodes;
-        """, nativeQuery = true)
-    List<ReportTreeItem> findTreeFromRootReport(UUID id);
+    Page<ReportProjection> findPagedReportsByReportIdAndOrderAndMessageAndSeverities(UUID reportId, int orderAfter, int orderBefore, String message, Set<String> severities, Pageable pageable);
 
     @Query(value = """
         WITH filtered_rows AS (
             SELECT ROW_NUMBER() OVER (ORDER BY rn.order_ ASC) - 1 as row_position, rn.message
             FROM report_node rn
             WHERE
-                rn.root_node_id = :rootNodeId
+                rn.id = :reportId
                 AND rn.order_ BETWEEN :orderAfter AND :orderBefore
                 AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
         )
@@ -137,14 +125,14 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         WHERE UPPER(message) LIKE UPPER(:searchPattern) ESCAPE '\\'
         ORDER BY row_position ASC
         """, nativeQuery = true)
-    List<Integer> findRelativePositionsByRootNodeIdAndOrderAndMessage(UUID rootNodeId, int orderAfter, int orderBefore, String message, String searchPattern);
+    List<Integer> findRelativePositionsByReportIdAndOrderAndMessage(UUID reportId, int orderAfter, int orderBefore, String message, String searchPattern);
 
     @Query(value = """
         WITH filtered_rows AS (
             SELECT ROW_NUMBER() OVER (ORDER BY rn.order_ ASC) - 1 as row_position, rn.message
             FROM report_node rn
             WHERE
-                rn.root_node_id = :rootNodeId
+                rn.id = :reportId
                 AND rn.order_ BETWEEN :orderAfter AND :orderBefore
                 AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
                 AND rn.severity IN (:severities)
@@ -154,25 +142,25 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         WHERE UPPER(message) LIKE UPPER(:searchPattern) ESCAPE '\\'
         ORDER BY row_position ASC
         """, nativeQuery = true)
-    List<Integer> findRelativePositionsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, String searchPattern, Set<String> severities);
+    List<Integer> findRelativePositionsByReportIdAndOrderAndMessageAndSeverities(UUID reportId, int orderAfter, int orderBefore, String message, String searchPattern, Set<String> severities);
 
     @Query(value = """
-        SELECT CAST(rn.id AS VARCHAR), rn.message, rn.severity, rn.depth, CAST(rn.parent_id AS VARCHAR)
-        FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
-        JOIN report_node rn ON rn.root_node_id = input_id.id
+        SELECT CAST(rn.id AS VARCHAR), rn.message, rn.severity, rn.depth, rn.parent_order
+        FROM unnest(:reportIds) WITH ORDINALITY AS input_id(id, ord)
+        JOIN report_node rn ON rn.id = input_id.id
         WHERE
             UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
         ORDER BY
             input_id.ord,
             rn.order_ ASC
         """, nativeQuery = true)
-    Page<Object[]> findPagedReportsByMultipleRootNodeIdsAndOrderAndMessage(
-        UUID[] rootNodeIds, String message, Pageable pageable);
+    Page<Object[]> findPagedReportsByMultipleReportIdsAndOrderAndMessage(
+        UUID[] reportIds, String message, Pageable pageable);
 
     @Query(value = """
-        SELECT CAST(rn.id AS VARCHAR), rn.message, rn.severity, rn.depth, CAST(rn.parent_id AS VARCHAR)
-        FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
-        JOIN report_node rn ON rn.root_node_id = input_id.id
+        SELECT CAST(rn.id AS VARCHAR), rn.message, rn.severity, rn.depth, rn.parent_order
+        FROM unnest(:reportIds) WITH ORDINALITY AS input_id(id, ord)
+        JOIN report_node rn ON rn.id = input_id.id
         WHERE
             UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
             AND rn.severity IN (:severities)
@@ -180,8 +168,8 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             input_id.ord,
             rn.order_ ASC
         """, nativeQuery = true)
-    Page<Object[]> findPagedReportsByMultipleRootNodeIdsAndOrderAndMessageAndSeverities(
-        UUID[] rootNodeIds, String message, Set<String> severities, Pageable pageable);
+    Page<Object[]> findPagedReportsByMultipleReportIdsAndOrderAndMessageAndSeverities(
+        UUID[] reportIds, String message, Set<String> severities, Pageable pageable);
 
     @Query(value = """
         WITH ordered_reports AS (
@@ -190,8 +178,8 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
                     ORDER BY input_id.ord, rn.order_ ASC
                 ) - 1 as row_position,
                 rn.message
-            FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
-            JOIN report_node rn ON rn.root_node_id = input_id.id
+            FROM unnest(:reportIds) WITH ORDINALITY AS input_id(id, ord)
+            JOIN report_node rn ON rn.id = input_id.id
             WHERE UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
         )
         SELECT row_position
@@ -199,8 +187,8 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         WHERE UPPER(message) LIKE UPPER(:searchPattern) ESCAPE '\\'
         ORDER BY row_position
         """, nativeQuery = true)
-    List<Integer> findRelativePositionsByMultipleRootNodeIdsAndOrderAndMessage(
-        UUID[] rootNodeIds, String message, String searchPattern);
+    List<Integer> findRelativePositionsByMultipleReportIdsAndOrderAndMessage(
+        UUID[] reportIds, String message, String searchPattern);
 
     @Query(value = """
         WITH ordered_reports AS (
@@ -209,8 +197,8 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
                     ORDER BY input_id.ord, rn.order_ ASC
                 ) - 1 as row_position,
                 rn.message
-            FROM unnest(:rootNodeIds) WITH ORDINALITY AS input_id(id, ord)
-            JOIN report_node rn ON rn.root_node_id = input_id.id
+            FROM unnest(:reportIds) WITH ORDINALITY AS input_id(id, ord)
+            JOIN report_node rn ON rn.id = input_id.id
             WHERE UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
             AND rn.severity IN (:severities)
         )
@@ -219,6 +207,6 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         WHERE UPPER(message) LIKE UPPER(:searchPattern) ESCAPE '\\'
         ORDER BY row_position
         """, nativeQuery = true)
-    List<Integer> findRelativePositionsByMultipleRootNodeIdsAndOrderAndMessageAndSeverities(
-        UUID[] rootNodeIds, String message, String searchPattern, Set<String> severities);
+    List<Integer> findRelativePositionsByMultipleReportIdsAndOrderAndMessageAndSeverities(
+        UUID[] reportIds, String message, String searchPattern, Set<String> severities);
 }
