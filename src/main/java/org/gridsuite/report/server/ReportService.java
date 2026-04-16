@@ -193,19 +193,18 @@ public class ReportService {
 
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
         List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>(reportNode.getChildren().size());
-        int appendedSize = 0;
-        int startingOrder = reportEntity.getEndOrder() + 1;
+        int newEndOrder = reportEntity.getEndOrder();
+        int startingOrder = newEndOrder + 1;
         int depth = reportEntity.getDepth() + 1;
         for (ReportNode child : reportNode.getChildren()) {
             SizedReportNode sizedReportNode = SizedReportNode.from(child, startingOrder, depth);
             sizedReportNodeChildren.add(sizedReportNode);
-            appendedSize += sizedReportNode.getSize();
-            startingOrder = sizedReportNode.getOrder() + sizedReportNode.getSize() + 1;
+            newEndOrder = sizedReportNode.getOrder() + sizedReportNode.getSize() - 1;
+            startingOrder = newEndOrder + 2;
         }
-        reportEntity.setEndOrder(reportEntity.getEndOrder() + appendedSize);
-
-        // We don't have to update more ancestors because we only append at root level, and we know it
-        // But if we want to generalize appending to any report we should update the severity list of all the ancestors recursively
+        // Fix: compute endOrder from the actual last order position of the last child subtree,
+        // instead of adding appendedSize which does not account for the gaps between sibling subtrees.
+        reportEntity.setEndOrder(newEndOrder);
         String highestSeverity = sizedReportNodeChildren.stream().map(SizedReportNode::getSeverity).reduce((severity, severity2) -> Severity.fromValue(severity).getLevel() > Severity.fromValue(severity2).getLevel() ? severity : severity2).orElse(Severity.UNKNOWN.toString());
         if (Severity.fromValue(highestSeverity).getLevel() > Severity.fromValue(reportEntity.getSeverity()).getLevel()) {
             reportEntity.setSeverity(highestSeverity);
