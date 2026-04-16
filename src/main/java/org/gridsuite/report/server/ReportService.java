@@ -264,7 +264,7 @@ public class ReportService {
         if (entitiesToSave.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
             self.saveBatchedReports(entitiesToSave);
         }
-        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(rootReportNodeEntity, reportNodeEntity, child, entitiesToSave));
+        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(rootReportNodeEntity, parentReportNodeEntity, child, entitiesToSave));
 
     }
 
