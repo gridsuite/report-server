@@ -12,8 +12,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.AccessLevel;
 
-import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -22,17 +22,17 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@IdClass(ReportNodeId.class)
 @Table(name = "report_node", indexes = {
-    @Index(name = "report_node_parent_id_idx", columnList = "parent_id"),
-    @Index(name = "root_node_orders_idx", columnList = "root_node_id, order_, end_order"),
-    @Index(name = "root_node_and_container_idx", columnList = "root_node_id, is_leaf")
+    @Index(name = "report_node_container_idx", columnList = "id, is_leaf")
 })
-public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<UUID> {
+public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<ReportNodeId> {
 
     @Id
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    @Getter(AccessLevel.NONE)
+    private UUID id;
 
+    @Id
     @Column(name = "order_")
     private int order;
 
@@ -51,14 +51,15 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Column(name = "depth", columnDefinition = "integer default 0")
     private int depth;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "root_node_id", foreignKey = @ForeignKey(name = "root_node_fk"))
-    private ReportNodeEntity rootNode;
+    @Column(name = "parent_order")
+    private Integer parentOrder;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "parent_fk"))
-    private ReportNodeEntity parent;
+    public UUID getReportId() {
+        return id;
+    }
 
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private List<ReportNodeEntity> children;
+    @Override
+    public ReportNodeId getId() {
+        return new ReportNodeId(id, order);
+    }
 }

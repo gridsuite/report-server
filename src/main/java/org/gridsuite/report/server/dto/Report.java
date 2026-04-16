@@ -27,10 +27,11 @@ import java.util.UUID;
 @Schema(description = "Report data")
 public class Report {
     private UUID id;
-    private UUID parentId;
+    private Integer parentOrder;
     private String message;
     private Severity severity;
     private int depth;
+    private int order;
     private List<Report> subReports = new ArrayList<>();
 
     public Report addEmptyReport() {

@@ -24,42 +24,50 @@ public final class ReportMapper {
         if (reportProjections == null || reportProjections.isEmpty()) {
             return null;
         }
-        Map<UUID, Report> reportsMap = new HashMap<>();
-        mapRootNode(reportProjections.get(0), reportsMap);
-        reportProjections.subList(1, reportProjections.size()).forEach(entity -> mapReportNodeEntity(entity, reportsMap));
-        return reportsMap.get(reportProjections.get(0).id());
+
+        Map<Integer, Report> orderToReport = new HashMap<>();
+        Deque<int[]> stack = new ArrayDeque<>(); // [order, endOrder]
+
+        ReportProjection rootProj = reportProjections.get(0);
+        Report root = createReport(rootProj);
+        orderToReport.put(rootProj.order(), root);
+        stack.push(new int[]{rootProj.order(), rootProj.endOrder()});
+
+        for (int i = 1; i < reportProjections.size(); i++) {
+            ReportProjection proj = reportProjections.get(i);
+
+            // Pop nodes whose range no longer contains this node
+            while (!stack.isEmpty() && stack.peek()[1] < proj.order()) {
+                stack.pop();
+            }
+            if (stack.isEmpty()) {
+                break;
+            }
+
+            Report parent = orderToReport.get(stack.peek()[0]);
+            Report child = parent.addEmptyReport();
+            child.setMessage(proj.message());
+            child.setSeverity(Severity.fromValue(proj.severity()));
+            child.setDepth(proj.depth());
+            child.setId(proj.id());
+            child.setOrder(proj.order());
+            child.setParentOrder(proj.parentOrder());
+
+            orderToReport.put(proj.order(), child);
+            stack.push(new int[]{proj.order(), proj.endOrder()});
+        }
+
+        return root;
     }
 
-    private static void mapRootNode(ReportProjection reportProjection, Map<UUID, Report> reportsMap) {
-        Report rootReport = createReportFromNode(reportProjection);
-        reportsMap.put(reportProjection.id(), rootReport);
-    }
-
-    private static void mapReportNodeEntity(ReportProjection reportProjection, Map<UUID, Report> reports) {
-        Optional.ofNullable(reports.get(reportProjection.id()))
-            .ifPresentOrElse(
-                report -> report.setSeverity(Severity.fromValue(reportProjection.severity())),
-                () -> Optional.ofNullable(reportProjection.parentId())
-                    .map(reports::get)
-                    .ifPresent(parentReport -> {
-                        Report report = parentReport.addEmptyReport();
-                        report.setMessage(reportProjection.message());
-                        mapValues(reportProjection, report);
-                        reports.put(reportProjection.id(), report);
-                    }));
-    }
-
-    private static Report createReportFromNode(ReportProjection reportProjection) {
+    private static Report createReport(ReportProjection proj) {
         Report report = new Report();
-        report.setMessage(Optional.ofNullable(reportProjection.message()).orElse(reportProjection.id().toString()));
-        mapValues(reportProjection, report);
+        report.setMessage(Optional.ofNullable(proj.message()).orElse(proj.id().toString()));
+        report.setSeverity(Severity.fromValue(proj.severity()));
+        report.setDepth(proj.depth());
+        report.setId(proj.id());
+        report.setOrder(proj.order());
+        report.setParentOrder(proj.parentOrder());
         return report;
-    }
-
-    private static void mapValues(ReportProjection reportProjection, Report report) {
-        report.setSeverity(Severity.fromValue(reportProjection.severity()));
-        report.setDepth(reportProjection.depth());
-        report.setId(reportProjection.id());
-        report.setParentId(reportProjection.parentId());
     }
 }

@@ -11,8 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.gridsuite.report.server.Severity;
 
-import java.util.UUID;
-
 /**
  * @author Abdelsalem Hedhili <abdelsalem.hedhili at rte-france.com>
  */
@@ -22,14 +20,14 @@ public class ReportLog {
     private String message;
     private Severity severity;
     private int depth;
-    private UUID parentId;
+    private Integer parentOrder;
 
     @JsonCreator
-    public ReportLog(String message, Severity severity, int depth, UUID parentId) {
+    public ReportLog(String message, Severity severity, int depth, Integer parentOrder) {
         this.message = message;
         this.severity = severity;
         this.depth = depth;
-        this.parentId = parentId;
+        this.parentOrder = parentOrder;
     }
 
 }
