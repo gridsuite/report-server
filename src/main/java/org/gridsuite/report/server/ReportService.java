@@ -205,6 +205,8 @@ public class ReportService {
         // Fix: compute endOrder from the actual last order position of the last child subtree,
         // instead of adding appendedSize which does not account for the gaps between sibling subtrees.
         reportEntity.setEndOrder(newEndOrder);
+        // We don't have to update more ancestors because we only append at root level, and we know it
+        // But if we want to generalize appending to any report we should update the severity list of all the ancestors recursively
         String highestSeverity = sizedReportNodeChildren.stream().map(SizedReportNode::getSeverity).reduce((severity, severity2) -> Severity.fromValue(severity).getLevel() > Severity.fromValue(severity2).getLevel() ? severity : severity2).orElse(Severity.UNKNOWN.toString());
         if (Severity.fromValue(highestSeverity).getLevel() > Severity.fromValue(reportEntity.getSeverity()).getLevel()) {
             reportEntity.setSeverity(highestSeverity);
