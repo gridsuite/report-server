@@ -23,6 +23,7 @@ import java.util.UUID;
 import static org.gridsuite.report.server.SizedReportNode.MAX_MESSAGE_CHAR;
 import static org.gridsuite.report.server.utils.TestUtils.assertRequestsCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
@@ -174,6 +175,58 @@ class ReportServiceTest {
         // the two subreports "GENERATOR_MODIFICATION" and "TWO_WINDINGS_TRANSFORMER_MODIFICATION" are added to the same the parent report
         assertEquals(2, parentReportEntity.get().getChildren().size());
         assertEquals(0, reportService.getReportNodeEntity(parentReportEntity.get().getChildren().get(0).getId()).orElseThrow().getChildren().size());
+    }
+
+    @Test
+    void createChildReportUsesProvidedChildIdWithoutCreatingStandaloneDuplicate() {
+        var rootReportNode = ReportNode.newRootReportNode()
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("root")
+            .build();
+        UUID rootId = UUID.randomUUID();
+        reportService.createReport(rootId, rootReportNode);
+
+        var stepReportNode = ReportNode.newRootReportNode()
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("step")
+            .build();
+        stepReportNode.newReportNode()
+            .withMessageTemplate("step-child")
+            .add();
+        UUID stepReportId = UUID.randomUUID();
+
+        reportService.createChildReport(rootId, stepReportId, stepReportNode);
+
+        assertEquals(3, reportNodeRepository.findAll().size());
+        long parentLessNodes = reportNodeRepository.findAll().stream()
+            .filter(node -> node.getParent() == null)
+            .count();
+        assertEquals(1, parentLessNodes);
+
+        ReportNodeEntity rootReportEntity = reportService.getReportNodeEntity(rootId).orElseThrow();
+        assertEquals(1, rootReportEntity.getChildren().size());
+        assertEquals(stepReportId, rootReportEntity.getChildren().getFirst().getId());
+    }
+
+    @Test
+    void createChildReportFailsIfChildIdAlreadyExists() {
+        var rootReportNode = ReportNode.newRootReportNode()
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("root")
+            .build();
+        UUID rootId = UUID.randomUUID();
+        reportService.createReport(rootId, rootReportNode);
+
+        var stepReportNode = ReportNode.newRootReportNode()
+            .withResourceBundles("i18n.reports")
+            .withMessageTemplate("step")
+            .build();
+        UUID stepReportId = UUID.randomUUID();
+        reportService.createChildReport(rootId, stepReportId, stepReportNode);
+
+        assertThrows(
+            IllegalStateException.class,
+            () -> reportService.createChildReport(rootId, stepReportId, stepReportNode));
     }
 
     @Test
