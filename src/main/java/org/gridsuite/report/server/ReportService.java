@@ -200,7 +200,7 @@ public class ReportService {
             sizedReportNodeChildren.add(sizedReportNode);
             newEndOrder += sizedReportNode.getSize();
         }
-        // Fix: compute endOrder from the actual last order position of the last child subtree,
+        // compute endOrder from the actual last order position of the last child subtree
         reportEntity.setEndOrder(newEndOrder);
         // We don't have to update more ancestors because we only append at root level, and we know it
         // But if we want to generalize appending to any report we should update the severity list of all the ancestors recursively
