@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Nullable;
+import org.gridsuite.report.server.utils.UuidUtil;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -284,7 +285,7 @@ public class ReportService {
         // Map old UUIDs to new entities (ordered by depth, so parents are created first)
         Map<UUID, ReportNodeEntity> entityMapping = new HashMap<>();
         List<ReportNodeEntity> batch = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
-        UUID newRootId = UUID.randomUUID();
+        UUID newRootId = UuidUtil.generateV7();
 
         for (ReportProjection source : sourceNodes) {
             boolean isRoot = source.id().equals(rootNodeId);
@@ -292,7 +293,7 @@ public class ReportService {
             ReportNodeEntity parentRef = source.parentId() != null ? entityMapping.get(source.parentId()) : null;
 
             ReportNodeEntity duplicate = ReportNodeEntity.builder()
-                .id(isRoot ? newRootId : UUID.randomUUID())
+                .id(isRoot ? newRootId : UuidUtil.generateV7())
                 .message(source.message())
                 .order(source.order())
                 .endOrder(source.endOrder())

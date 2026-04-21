@@ -16,6 +16,8 @@ import lombok.Setter;
 import java.util.List;
 import java.util.UUID;
 
+import org.gridsuite.report.server.utils.UuidUtil;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -31,7 +33,7 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
 
     @Id
     @Builder.Default
-    private UUID id = UUID.randomUUID();
+    private UUID id = UuidUtil.generateV7();
 
     @Column(name = "order_")
     private int order;
