@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +26,6 @@ import org.gridsuite.report.server.utils.UuidUtil;
 @Getter
 @Setter
 @Table(name = "report_node", indexes = {
-    @Index(name = "report_node_parent_id_idx", columnList = "parent_id"),
     @Index(name = "root_node_orders_idx", columnList = "root_node_id, order_, end_order"),
     @Index(name = "root_node_and_container_idx", columnList = "root_node_id, is_leaf")
 })
@@ -53,14 +53,14 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Column(name = "depth", columnDefinition = "integer default 0")
     private int depth;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "root_node_id", foreignKey = @ForeignKey(name = "root_node_fk"))
-    private ReportNodeEntity rootNode;
+    @Column(name = "root_node_id")
+    private UUID rootNodeId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "parent_fk"))
-    private ReportNodeEntity parent;
+    @Column(name = "parent_id")
+    private UUID parentId;
 
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private List<ReportNodeEntity> children;
+    // Transient - not persisted, used by service test helper only
+    @Transient
+    @Builder.Default
+    private List<ReportNodeEntity> children = new ArrayList<>();
 }

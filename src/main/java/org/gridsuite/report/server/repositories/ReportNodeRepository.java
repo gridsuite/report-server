@@ -8,13 +8,12 @@ package org.gridsuite.report.server.repositories;
 
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.entities.ReportProjection;
-import org.gridsuite.report.server.entities.ReportTreeItem;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -27,16 +26,16 @@ import java.util.UUID;
 @Repository
 public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UUID> {
 
-    @EntityGraph(attributePaths = {"children"}, type = EntityGraph.EntityGraphType.LOAD)
-    List<ReportNodeEntity> findAllWithChildrenById(UUID rootNodeId);
+    // Used only by service test helper to navigate children in unit tests
+    List<ReportNodeEntity> findByParentIdOrderByOrderAsc(UUID parentId);
 
     @Query("""
         SELECT new org.gridsuite.report.server.entities.ReportProjection(
-            rn.id, rn.message, rn.severity, rn.depth, rn.parent.id,
+            rn.id, rn.message, rn.severity, rn.depth, rn.parentId,
             rn.order, rn.endOrder, rn.isLeaf
         )
         FROM ReportNodeEntity rn
-        WHERE rn.rootNode.id = :rootNodeId
+        WHERE rn.rootNodeId = :rootNodeId
         ORDER BY rn.depth, rn.order
         """)
     List<ReportProjection> findAllNodeDataByRootNodeId(UUID rootNodeId);
@@ -47,10 +46,10 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.message,
             rn.severity,
             rn.depth,
-            rn.parent.id
+            rn.parentId
         )
         FROM ReportNodeEntity rn
-        WHERE rn.rootNode.id = :rootNodeId AND rn.isLeaf = false
+        WHERE rn.rootNodeId = :rootNodeId AND rn.isLeaf = false
         ORDER BY rn.order ASC
         """)
     List<ReportProjection> findAllContainersByRootNodeId(UUID rootNodeId);
@@ -59,7 +58,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
         SELECT DISTINCT rn.severity
         FROM ReportNodeEntity rn
         WHERE
-            rn.rootNode.id = :rootNodeId
+            rn.rootNodeId = :rootNodeId
             AND rn.order BETWEEN :orderAfter AND :orderBefore
         """)
     Set<String> findDistinctSeveritiesByRootNodeIdAndOrder(UUID rootNodeId, int orderAfter, int orderBefore);
@@ -70,11 +69,11 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.message,
             rn.severity,
             rn.depth,
-            rn.parent.id
+            rn.parentId
         )
         FROM ReportNodeEntity rn
         WHERE
-                rn.rootNode.id = :rootNodeId
+                rn.rootNodeId = :rootNodeId
                 AND rn.order BETWEEN :orderAfter AND :orderBefore
                 AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
         ORDER BY rn.order ASC
@@ -87,11 +86,11 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
             rn.message,
             rn.severity,
             rn.depth,
-            rn.parent.id
+            rn.parentId
         )
         FROM ReportNodeEntity rn
         WHERE
-                rn.rootNode.id = :rootNodeId
+                rn.rootNodeId = :rootNodeId
                 AND rn.order BETWEEN :orderAfter AND :orderBefore
                 AND UPPER(rn.message) LIKE UPPER(:message) ESCAPE '\\'
                 AND rn.severity IN (:severities)
@@ -100,28 +99,12 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     Page<ReportProjection> findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities, Pageable pageable);
 
     @Modifying
-    @Query(value = """
-        BEGIN;
-        DELETE FROM report_node WHERE id IN :ids ;
-        COMMIT;
-        """, nativeQuery = true)
-    void deleteByIdIn(List<UUID> ids);
+    @Query("DELETE FROM ReportNodeEntity rn WHERE rn.rootNodeId = :rootNodeId")
+    void deleteAllByRootNodeId(@Param("rootNodeId") UUID rootNodeId);
 
-    @Query(value = """
-        WITH RECURSIVE included_nodes(id, level) AS (
-            SELECT id, 0 as level
-            FROM report_node r
-            WHERE r.id = :id
-
-            UNION ALL
-
-            SELECT r.id, level + 1
-            FROM included_nodes incn
-            INNER JOIN report_node r ON r.parent_id = incn.id
-        )
-        SELECT DISTINCT level, cast(id as varchar) FROM included_nodes;
-        """, nativeQuery = true)
-    List<ReportTreeItem> findTreeFromRootReport(UUID id);
+    @Modifying
+    @Query("DELETE FROM ReportNodeEntity rn WHERE rn.rootNodeId = :rootNodeId AND rn.parentId IS NOT NULL")
+    void deleteAllChildrenByRootNodeId(@Param("rootNodeId") UUID rootNodeId);
 
     @Query(value = """
         WITH filtered_rows AS (
