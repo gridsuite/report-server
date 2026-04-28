@@ -24,7 +24,7 @@ public final class UuidUtil {
     * Performance gains:
     *   - With the millisecond prefix, we already remove almost all problems of having many Full Page Images (FPIs) in the PostgreSQL WAL (the FPI come from the index pages, where a new random uuid would have been inserted in the index in a different page virtually every time).
     *   - With the submillisecond increments, it should additionally improve performance because of sequential writes to the index (not at as impactful as the milliseconds prefix but not hard to implement and may still be worthwile)
-    * NOTE: PostgreSQL 14 does not support uuid v7 natively (gen_uuidv7() was only introduced in PostgreSQL 17).
+    * NOTE: We currently use PostgreSQL 17, which does not support uuid v7 natively (gen_uuidv7() was only introduced in PostgreSQL 18).
     * This is not a problem because uuid v7 generation happens entirely in Java
     * PostgreSQL only stores the resulting value as a standard UUID column (it does not care about the uuid version, it treats all UUIDs as 128-bit values.)
     * NOTE: with this approach no data migration is needed since uuid v7 is stored as a plain UUID column (fully compatible with existing uuid v4 rows).
