@@ -6,6 +6,7 @@
  */
 package org.gridsuite.report.server;
 
+import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
 import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +16,7 @@ import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.entities.ReportProjection;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
+import org.gridsuite.report.server.utils.UuidUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
@@ -26,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Nullable;
-import org.gridsuite.report.server.utils.UuidUtil;
 import java.util.*;
 
 /**
@@ -176,8 +177,9 @@ public class ReportService {
 
         // Add new children
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedReportNode.getChildren().forEach(child ->
-                saveReportNodeRecursively(rootEntity.getId(), rootEntity.getId(), child, entitiesToSave)
+                saveReportNodeRecursively(uuidGenerator, rootEntity.getId(), rootEntity.getId(), child, entitiesToSave)
         );
 
         if (!entitiesToSave.isEmpty()) {
@@ -187,17 +189,15 @@ public class ReportService {
 
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
         List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>(reportNode.getChildren().size());
-        int appendedSize = 0;
-        int startingOrder = reportEntity.getEndOrder() + 1;
+        int newEndOrder = reportEntity.getEndOrder();
         int depth = reportEntity.getDepth() + 1;
         for (ReportNode child : reportNode.getChildren()) {
-            SizedReportNode sizedReportNode = SizedReportNode.from(child, startingOrder, depth);
+            SizedReportNode sizedReportNode = SizedReportNode.from(child, newEndOrder + 1, depth);
             sizedReportNodeChildren.add(sizedReportNode);
-            appendedSize += sizedReportNode.getSize();
-            startingOrder = sizedReportNode.getOrder() + sizedReportNode.getSize() + 1;
+            newEndOrder += sizedReportNode.getSize();
         }
-        reportEntity.setEndOrder(reportEntity.getEndOrder() + appendedSize);
-
+        // compute endOrder from the actual last order position of the last child subtree
+        reportEntity.setEndOrder(newEndOrder);
         // We don't have to update more ancestors because we only append at root level, and we know it
         // But if we want to generalize appending to any report we should update the severity list of all the ancestors recursively
         String highestSeverity = sizedReportNodeChildren.stream().map(SizedReportNode::getSeverity).reduce((severity, severity2) -> Severity.fromValue(severity).getLevel() > Severity.fromValue(severity2).getLevel() ? severity : severity2).orElse(Severity.UNKNOWN.toString());
@@ -206,7 +206,8 @@ public class ReportService {
         }
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
         entitiesToSave.add(reportEntity);
-        sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(reportEntity.getRootNodeId(), reportEntity.getId(), c, entitiesToSave));
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
+        sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(uuidGenerator, reportEntity.getRootNodeId(), reportEntity.getId(), c, entitiesToSave));
 
         if (!entitiesToSave.isEmpty()) {
             self.saveBatchedReports(entitiesToSave);
@@ -227,9 +228,10 @@ public class ReportService {
             .rootNodeId(id)
             .build();
 
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         entitiesToSave.add(persistedReport);
         sizedReportNode.getChildren().forEach(c ->
-            saveReportNodeRecursively(id, id, c, entitiesToSave)
+            saveReportNodeRecursively(uuidGenerator, id, id, c, entitiesToSave)
         );
 
         if (!entitiesToSave.isEmpty()) {
@@ -238,12 +240,14 @@ public class ReportService {
     }
 
     protected void saveReportNodeRecursively(
+        TimeBasedEpochGenerator uuidGenerator,
         UUID rootNodeId,
         UUID parentId,
         SizedReportNode sizedReportNode,
         List<ReportNodeEntity> entitiesToSave
     ) {
         var reportNodeEntity = ReportNodeEntity.builder()
+            .id(uuidGenerator.generate())
             .message(sizedReportNode.getMessage())
             .order(sizedReportNode.getOrder())
             .endOrder(sizedReportNode.getOrder() + sizedReportNode.getSize() - 1)
@@ -258,7 +262,8 @@ public class ReportService {
         if (entitiesToSave.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
             self.saveBatchedReports(entitiesToSave);
         }
-        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(rootNodeId, reportNodeEntity.getId(), child, entitiesToSave));
+        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(uuidGenerator, rootNodeId, reportNodeEntity.getId(), child, entitiesToSave));
+
     }
 
     @Transactional
@@ -269,6 +274,7 @@ public class ReportService {
 
     @Transactional
     public UUID duplicateReport(UUID rootNodeId) {
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         List<ReportProjection> sourceNodes = reportNodeRepository.findAllNodeDataByRootNodeId(rootNodeId);
         if (sourceNodes.isEmpty()) {
             throw new NoSuchElementException("Root node not found");
@@ -277,11 +283,11 @@ public class ReportService {
         // Map old UUIDs to new UUIDs (ordered by depth, so parents are processed before children)
         Map<UUID, UUID> oldToNewId = new HashMap<>();
         List<ReportNodeEntity> batch = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
-        UUID newRootId = UuidUtil.generateV7();
+        UUID newRootId = uuidGenerator.generate();
 
         for (ReportProjection source : sourceNodes) {
             boolean isRoot = source.id().equals(rootNodeId);
-            UUID newId = isRoot ? newRootId : UuidUtil.generateV7();
+            UUID newId = isRoot ? newRootId : uuidGenerator.generate();
             oldToNewId.put(source.id(), newId);
 
             UUID newParentId = source.parentId() != null ? oldToNewId.get(source.parentId()) : null;
