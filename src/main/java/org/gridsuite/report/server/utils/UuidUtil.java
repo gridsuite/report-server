@@ -30,7 +30,7 @@ public final class UuidUtil {
     * NOTE: with this approach no data migration is needed since uuid v7 is stored as a plain UUID column (fully compatible with existing uuid v4 rows).
     * we kept the UUID alongside order_ because frontend uses parentId UUIDs to navigate the tree, it is simpler than switching to a composite id (rootNodeId + order_) which would be a breaking API change.
     */
-    public static TimeBasedEpochGenerator newUUIDv7Generator() {
+    public static TimeBasedEpochGenerator newV7Generator() {
         return Generators.timeBasedEpochGenerator();
     }
 }
