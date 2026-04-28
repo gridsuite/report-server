@@ -220,16 +220,15 @@ public class ReportService {
 
     private void appendReportElements(ReportNodeEntity reportEntity, ReportNode reportNode) {
         List<SizedReportNode> sizedReportNodeChildren = new ArrayList<>(reportNode.getChildren().size());
-        int appendedSize = 0;
-        int startingOrder = reportEntity.getEndOrder() + 1;
+        int newEndOrder = reportEntity.getEndOrder();
         int depth = reportEntity.getDepth() + 1;
         for (ReportNode child : reportNode.getChildren()) {
-            SizedReportNode sizedReportNode = SizedReportNode.from(child, startingOrder, depth);
+            SizedReportNode sizedReportNode = SizedReportNode.from(child, newEndOrder + 1, depth);
             sizedReportNodeChildren.add(sizedReportNode);
-            appendedSize += sizedReportNode.getSize();
-            startingOrder = sizedReportNode.getOrder() + sizedReportNode.getSize() + 1;
+            newEndOrder += sizedReportNode.getSize();
         }
-        reportEntity.setEndOrder(reportEntity.getEndOrder() + appendedSize);
+        // compute endOrder from the actual last order position of the last child subtree
+        reportEntity.setEndOrder(newEndOrder);
         updateParentSeverity(reportEntity, sizedReportNodeChildren);
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
         entitiesToSave.add(reportEntity);
