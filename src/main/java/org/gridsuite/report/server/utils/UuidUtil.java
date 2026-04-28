@@ -7,13 +7,13 @@
 package org.gridsuite.report.server.utils;
 
 import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
+import com.fasterxml.uuid.impl.TimeBasedEpochRandomGenerator;
 
 import java.util.UUID;
 
 public final class UuidUtil {
 
-    private static final TimeBasedEpochGenerator GENERATOR = Generators.timeBasedEpochGenerator();
+    private static final TimeBasedEpochRandomGenerator GENERATOR = Generators.timeBasedEpochRandomGenerator();
 
     private UuidUtil() {
     }
