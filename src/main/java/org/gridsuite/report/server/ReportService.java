@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -148,6 +149,32 @@ public class ReportService {
         );
     }
 
+    /**
+     * Creates a new child report under an existing root report.
+     * Validates that the child ID does not already exist and that the target parent is a root report.
+     */
+    @Transactional
+    public void createChildReport(UUID rootId, UUID childId, ReportNode reportNode) {
+        if (reportNodeRepository.existsById(childId)) {
+            throw new IllegalStateException("Report id " + childId + " already exists");
+        }
+
+        ReportNodeEntity rootReportEntity = reportNodeRepository.findById(rootId)
+            .orElseThrow(() -> new EntityNotFoundException("Root report " + rootId + " not found"));
+
+        if (!isRootReport(rootReportEntity)) {
+            throw new IllegalStateException("Report id " + rootId + " is not a root report");
+        }
+
+        appendChildReportElements(rootReportEntity, childId, reportNode);
+    }
+
+    private static boolean isRootReport(ReportNodeEntity reportNodeEntity) {
+        return reportNodeEntity.getId() != null &&
+                reportNodeEntity.getId()
+                    .equals(reportNodeEntity.getRootNode().getId());
+    }
+
     @Transactional
     public void createOrReplaceReport(UUID id, ReportNode reportNode) {
         reportNodeRepository.findById(id).ifPresentOrElse(
@@ -205,12 +232,7 @@ public class ReportService {
         }
         // compute endOrder from the actual last order position of the last child subtree
         reportEntity.setEndOrder(newEndOrder);
-        // We don't have to update more ancestors because we only append at root level, and we know it
-        // But if we want to generalize appending to any report we should update the severity list of all the ancestors recursively
-        String highestSeverity = sizedReportNodeChildren.stream().map(SizedReportNode::getSeverity).reduce((severity, severity2) -> Severity.fromValue(severity).getLevel() > Severity.fromValue(severity2).getLevel() ? severity : severity2).orElse(Severity.UNKNOWN.toString());
-        if (Severity.fromValue(highestSeverity).getLevel() > Severity.fromValue(reportEntity.getSeverity()).getLevel()) {
-            reportEntity.setSeverity(highestSeverity);
-        }
+        updateParentSeverity(reportEntity, sizedReportNodeChildren);
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
         entitiesToSave.add(reportEntity);
         NoArgGenerator uuidGenerator = UuidUtil.newV7Generator();
@@ -218,6 +240,54 @@ public class ReportService {
 
         if (!entitiesToSave.isEmpty()) {
             self.saveBatchedReports(entitiesToSave);
+        }
+    }
+
+    /**
+     * Appends a report node as a new child entity under the given root, updating order bounds and severity.
+     */
+    private void appendChildReportElements(ReportNodeEntity rootReportEntity, UUID childId, ReportNode reportNode) {
+        int startingOrder = rootReportEntity.getEndOrder() + 1;
+        int depth = rootReportEntity.getDepth() + 1;
+        SizedReportNode sizedChildReportNode = SizedReportNode.from(reportNode, startingOrder, depth);
+
+        rootReportEntity.setEndOrder(rootReportEntity.getEndOrder() + sizedChildReportNode.getSize());
+        rootReportEntity.setLeaf(false);
+        updateParentSeverity(rootReportEntity, List.of(sizedChildReportNode));
+
+        List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
+        entitiesToSave.add(rootReportEntity);
+
+        ReportNodeEntity childReportEntity = ReportNodeEntity.builder()
+            .id(childId)
+            .message(sizedChildReportNode.getMessage())
+            .order(sizedChildReportNode.getOrder())
+            .endOrder(sizedChildReportNode.getOrder() + sizedChildReportNode.getSize() - 1)
+            .isLeaf(sizedChildReportNode.isLeaf())
+            .rootNode(rootReportEntity)
+            .parent(rootReportEntity)
+            .severity(sizedChildReportNode.getSeverity())
+            .depth(sizedChildReportNode.getDepth())
+            .build();
+        entitiesToSave.add(childReportEntity);
+
+        sizedChildReportNode.getChildren().forEach(child ->
+            saveReportNodeRecursively(rootReportEntity, childReportEntity, child, entitiesToSave));
+
+        if (!entitiesToSave.isEmpty()) {
+            self.saveBatchedReports(entitiesToSave);
+        }
+    }
+
+    // We don't have to update more ancestors because we only append at root level.
+    // If appending were generalized to deeper levels we would update severities recursively.
+    private static void updateParentSeverity(ReportNodeEntity reportEntity, List<SizedReportNode> children) {
+        String highestSeverity = children.stream()
+            .map(SizedReportNode::getSeverity)
+            .reduce((severity, severity2) -> Severity.fromValue(severity).getLevel() > Severity.fromValue(severity2).getLevel() ? severity : severity2)
+            .orElse(Severity.UNKNOWN.toString());
+        if (Severity.fromValue(highestSeverity).getLevel() > Severity.fromValue(reportEntity.getSeverity()).getLevel()) {
+            reportEntity.setSeverity(highestSeverity);
         }
     }
 
