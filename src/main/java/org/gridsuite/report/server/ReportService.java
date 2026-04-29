@@ -271,8 +271,9 @@ public class ReportService {
             .build();
         entitiesToSave.add(childReportEntity);
 
+        NoArgGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedChildReportNode.getChildren().forEach(child ->
-            saveReportNodeRecursively(rootReportEntity, childReportEntity, child, entitiesToSave));
+            saveReportNodeRecursively(uuidGenerator, rootReportEntity, childReportEntity, child, entitiesToSave));
 
         if (!entitiesToSave.isEmpty()) {
             self.saveBatchedReports(entitiesToSave);
@@ -305,8 +306,8 @@ public class ReportService {
             .build();
         persistedReport.setRootNode(persistedReport);
 
-        NoArgGenerator uuidGenerator = UuidUtil.newV7Generator();
         entitiesToSave.add(persistedReport);
+        NoArgGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedReportNode.getChildren().forEach(c ->
             saveReportNodeRecursively(uuidGenerator, persistedReport, persistedReport, c, entitiesToSave)
         );
