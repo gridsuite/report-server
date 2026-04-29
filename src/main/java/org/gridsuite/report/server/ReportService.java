@@ -6,7 +6,7 @@
  */
 package org.gridsuite.report.server;
 
-import com.fasterxml.uuid.NoArgGenerator;
+import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
 import com.google.common.collect.Lists;
 import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
@@ -211,7 +211,7 @@ public class ReportService {
 
         // Add new children
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
-        NoArgGenerator uuidGenerator = UuidUtil.newV7Generator();
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedReportNode.getChildren().forEach(child ->
                 saveReportNodeRecursively(uuidGenerator, rootEntity, rootEntity, child, entitiesToSave)
         );
@@ -235,7 +235,7 @@ public class ReportService {
         updateParentSeverity(reportEntity, sizedReportNodeChildren);
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
         entitiesToSave.add(reportEntity);
-        NoArgGenerator uuidGenerator = UuidUtil.newV7Generator();
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(uuidGenerator, reportEntity, reportEntity, c, entitiesToSave));
 
         if (!entitiesToSave.isEmpty()) {
@@ -271,7 +271,7 @@ public class ReportService {
             .build();
         entitiesToSave.add(childReportEntity);
 
-        NoArgGenerator uuidGenerator = UuidUtil.newV7Generator();
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedChildReportNode.getChildren().forEach(child ->
             saveReportNodeRecursively(uuidGenerator, rootReportEntity, childReportEntity, child, entitiesToSave));
 
@@ -307,7 +307,7 @@ public class ReportService {
         persistedReport.setRootNode(persistedReport);
 
         entitiesToSave.add(persistedReport);
-        NoArgGenerator uuidGenerator = UuidUtil.newV7Generator();
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedReportNode.getChildren().forEach(c ->
             saveReportNodeRecursively(uuidGenerator, persistedReport, persistedReport, c, entitiesToSave)
         );
@@ -318,7 +318,7 @@ public class ReportService {
     }
 
     protected void saveReportNodeRecursively(
-        NoArgGenerator uuidGenerator,
+        TimeBasedEpochGenerator uuidGenerator,
         ReportNodeEntity rootReportNodeEntity,
         ReportNodeEntity parentReportNodeEntity,
         SizedReportNode sizedReportNode,
@@ -352,7 +352,7 @@ public class ReportService {
 
     @Transactional
     public UUID duplicateReport(UUID rootNodeId) {
-        NoArgGenerator uuidGenerator = UuidUtil.newV7Generator();
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         List<ReportProjection> sourceNodes = reportNodeRepository.findAllNodeDataByRootNodeId(rootNodeId);
         if (sourceNodes.isEmpty()) {
             throw new NoSuchElementException("Root node not found");
