@@ -363,7 +363,7 @@ public class ReportService {
         // UUID v4 is intentionally used for the root node,
         // to avoid having two different UUID versions for root reports in the database which would be confusing and surprising
         // root report IDs are managed by study server which generates UUID v4 when creating root reports.
-        // Technical debt: switch to UUID v7 here once the study server generates UUID v7 for root report IDs.
+        // we need to switch to UUID v7 here if the study server generates UUID v7 for root report IDs.
         UUID newRootId = UUID.randomUUID();
         TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
 
