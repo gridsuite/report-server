@@ -24,6 +24,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "report_node", indexes = {
+    @Index(name = "report_node_parent_id_idx", columnList = "parent_id"),
     @Index(name = "root_node_orders_idx", columnList = "root_node_id, order_, end_order"),
     @Index(name = "root_node_and_container_idx", columnList = "root_node_id, is_leaf")
 })
@@ -56,7 +57,7 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Column(name = "parent_id")
     private UUID parentId;
 
-    // Transient - not persisted, used by service test helper only
+    // not persisted, used by service test helper only
     @Transient
     @Builder.Default
     private List<ReportNodeEntity> children = new ArrayList<>();

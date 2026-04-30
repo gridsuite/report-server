@@ -99,7 +99,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     Page<ReportProjection> findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(UUID rootNodeId, int orderAfter, int orderBefore, String message, Set<String> severities, Pageable pageable);
 
     // report_node has two self-referential FK constraints: root_node_fk (root_node_id -> id) and parent_fk (parent_id -> id).
-    // a single single statement DELETE WHERE root_node_id = ? is safe in PostgreSQL because it evaluates FK constraints
+    // a single statement DELETE WHERE root_node_id = ? is safe in PostgreSQL because it evaluates FK constraints
     // at statement end, once all rows in the tree are already removed.
     // See: https://www.postgresql.org/docs/current/sql-set-constraints.html
     @Modifying
