@@ -153,6 +153,26 @@ public class ReportController {
         service.createOrReplaceReport(id, reportNode);
     }
 
+    @PutMapping(value = "reports/{rootId}/children/{childId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Append report as a child with explicit identifier")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Child report has been appended"),
+        @ApiResponse(responseCode = "404", description = "Root report was not found"),
+        @ApiResponse(responseCode = "409", description = "Child report identifier conflicts with an existing report")
+    })
+    public ResponseEntity<Void> createChildReport(@PathVariable("rootId") UUID rootId,
+                                                  @PathVariable("childId") UUID childId,
+                                                  @RequestBody ReportNode reportNode) {
+        try {
+            service.createChildReport(rootId, childId, reportNode);
+            return ResponseEntity.ok().build();
+        } catch (EntityNotFoundException ignored) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException ignored) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
     @PostMapping(value = "reports/{id}/duplicate", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Duplicate a report")
     @ApiResponses(value = {
