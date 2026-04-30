@@ -169,6 +169,54 @@ public class ReportControllerTest {
     }
 
     @Test
+    public void testCreateChildReportEndpointAndGetByChildId() throws Exception {
+        insertReport(REPORT_UUID, toString(REPORT_ONE));
+        String childReportUuid = "b2c5e1a1-6aa5-47a9-ba55-d1ee4e234d14";
+        String childReportContent = toString(REPORT_TWO);
+
+        mvc.perform(put(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/children/" + childReportUuid)
+                        .content(childReportContent)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        MvcResult rootResult = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+                .andExpect(status().isOk())
+                .andReturn();
+        Report rootReport = objectMapper.readValue(rootResult.getResponse().getContentAsString(), Report.class);
+        assertEquals(REPORT_UUID, rootReport.getId().toString());
+        assertTrue(rootReport.getSubReports().stream()
+                .anyMatch(subReport -> childReportUuid.equals(subReport.getId().toString())));
+
+    }
+
+    @Test
+    public void testCreateChildReportEndpointReturnsNotFoundForUnknownRoot() throws Exception {
+        String unknownRootId = "b6f8f518-c4a2-4de0-8e30-5e5618f9856b";
+        String childReportUuid = "b2c5e1a1-6aa5-47a9-ba55-d1ee4e234d14";
+
+        mvc.perform(put(URL_TEMPLATE + "/reports/" + unknownRootId + "/children/" + childReportUuid)
+                        .content(toString(REPORT_ONE))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testCreateChildReportEndpointReturnsConflictWhenChildAlreadyExists() throws Exception {
+        insertReport(REPORT_UUID, toString(REPORT_ONE));
+        String childReportUuid = "b2c5e1a1-6aa5-47a9-ba55-d1ee4e234d14";
+
+        mvc.perform(put(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/children/" + childReportUuid)
+                        .content(toString(REPORT_ONE))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        mvc.perform(put(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/children/" + childReportUuid)
+                        .content(toString(REPORT_ONE))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     public void testGetReportWithNoSeverityFilters() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
