@@ -30,8 +30,7 @@ import java.util.UUID;
 public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<UUID> {
 
     @Id
-    @Builder.Default
-    private UUID id = UUID.randomUUID();
+    private UUID id;
 
     @Column(name = "order_")
     private int order;
