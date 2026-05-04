@@ -201,6 +201,22 @@ public class ReportControllerTest {
     }
 
     @Test
+    public void testCreateChildReportEndpointReturnsConflictWhenTargetIsNotARootReport() throws Exception {
+        insertReport(REPORT_UUID, toString(REPORT_ONE));
+
+        MvcResult rootResult = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+                .andExpect(status().isOk())
+                .andReturn();
+        Report rootReport = objectMapper.readValue(rootResult.getResponse().getContentAsString(), Report.class);
+        UUID nonRootId = rootReport.getSubReports().getFirst().getId();
+
+        mvc.perform(post(URL_TEMPLATE + "/reports/" + nonRootId + "/children")
+                        .content(toString(REPORT_TWO))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     public void testGetReportWithNoSeverityFilters() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
