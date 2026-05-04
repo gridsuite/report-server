@@ -255,7 +255,9 @@ public class ReportService {
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
         entitiesToSave.add(rootReportEntity);
 
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         ReportNodeEntity childReportEntity = ReportNodeEntity.builder()
+            .id(uuidGenerator.generate())
             .message(sizedChildReportNode.getMessage())
             .order(sizedChildReportNode.getOrder())
             .endOrder(sizedChildReportNode.getOrder() + sizedChildReportNode.getSize() - 1)
@@ -266,8 +268,6 @@ public class ReportService {
             .depth(sizedChildReportNode.getDepth())
             .build();
         entitiesToSave.add(childReportEntity);
-
-        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedChildReportNode.getChildren().forEach(child ->
             saveReportNodeRecursively(uuidGenerator, rootReportEntity, childReportEntity, child, entitiesToSave));
 
