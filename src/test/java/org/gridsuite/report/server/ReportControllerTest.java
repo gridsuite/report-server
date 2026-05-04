@@ -169,15 +169,17 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testCreateChildReportEndpointAndGetByChildId() throws Exception {
+    public void testCreateChildReportEndpointReturnsGeneratedChildId() throws Exception {
         insertReport(REPORT_UUID, toString(REPORT_ONE));
-        String childReportUuid = "b2c5e1a1-6aa5-47a9-ba55-d1ee4e234d14";
         String childReportContent = toString(REPORT_TWO);
 
-        mvc.perform(put(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/children/" + childReportUuid)
+        MvcResult createResult = mvc.perform(post(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/children")
                         .content(childReportContent)
                         .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UUID generatedChildId = objectMapper.readValue(createResult.getResponse().getContentAsString(), UUID.class);
 
         MvcResult rootResult = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
                 .andExpect(status().isOk())
@@ -185,35 +187,17 @@ public class ReportControllerTest {
         Report rootReport = objectMapper.readValue(rootResult.getResponse().getContentAsString(), Report.class);
         assertEquals(REPORT_UUID, rootReport.getId().toString());
         assertTrue(rootReport.getSubReports().stream()
-                .anyMatch(subReport -> childReportUuid.equals(subReport.getId().toString())));
-
+                .anyMatch(subReport -> generatedChildId.equals(subReport.getId())));
     }
 
     @Test
     public void testCreateChildReportEndpointReturnsNotFoundForUnknownRoot() throws Exception {
         String unknownRootId = "b6f8f518-c4a2-4de0-8e30-5e5618f9856b";
-        String childReportUuid = "b2c5e1a1-6aa5-47a9-ba55-d1ee4e234d14";
 
-        mvc.perform(put(URL_TEMPLATE + "/reports/" + unknownRootId + "/children/" + childReportUuid)
+        mvc.perform(post(URL_TEMPLATE + "/reports/" + unknownRootId + "/children")
                         .content(toString(REPORT_ONE))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void testCreateChildReportEndpointReturnsConflictWhenChildAlreadyExists() throws Exception {
-        insertReport(REPORT_UUID, toString(REPORT_ONE));
-        String childReportUuid = "b2c5e1a1-6aa5-47a9-ba55-d1ee4e234d14";
-
-        mvc.perform(put(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/children/" + childReportUuid)
-                        .content(toString(REPORT_ONE))
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        mvc.perform(put(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/children/" + childReportUuid)
-                        .content(toString(REPORT_ONE))
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isConflict());
     }
 
     @Test
