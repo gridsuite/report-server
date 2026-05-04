@@ -145,14 +145,10 @@ public class ReportService {
 
     /**
      * Creates a new child report under an existing root report.
-     * Validates that the child ID does not already exist and that the target parent is a root report.
+     * The child identifier is generated server-side and returned to the caller.
      */
     @Transactional
-    public void createChildReport(UUID rootId, UUID childId, ReportNode reportNode) {
-        if (reportNodeRepository.existsById(childId)) {
-            throw new IllegalStateException("Report id " + childId + " already exists");
-        }
-
+    public UUID createChildReport(UUID rootId, ReportNode reportNode) {
         ReportNodeEntity rootReportEntity = reportNodeRepository.findById(rootId)
             .orElseThrow(() -> new EntityNotFoundException("Root report " + rootId + " not found"));
 
@@ -160,7 +156,7 @@ public class ReportService {
             throw new IllegalStateException("Report id " + rootId + " is not a root report");
         }
 
-        appendChildReportElements(rootReportEntity, childId, reportNode);
+        return appendChildReportElements(rootReportEntity, reportNode);
     }
 
     private static boolean isRootReport(ReportNodeEntity reportNodeEntity) {
@@ -237,8 +233,9 @@ public class ReportService {
 
     /**
      * Appends a report node as a new child entity under the given root, updating order bounds and severity.
+     * Returns the identifier of the new child report.
      */
-    private void appendChildReportElements(ReportNodeEntity rootReportEntity, UUID childId, ReportNode reportNode) {
+    private UUID appendChildReportElements(ReportNodeEntity rootReportEntity, ReportNode reportNode) {
         int startingOrder = rootReportEntity.getEndOrder() + 1;
         int depth = rootReportEntity.getDepth() + 1;
         SizedReportNode sizedChildReportNode = SizedReportNode.from(reportNode, startingOrder, depth);
@@ -250,8 +247,9 @@ public class ReportService {
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
         entitiesToSave.add(rootReportEntity);
 
+        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         ReportNodeEntity childReportEntity = ReportNodeEntity.builder()
-            .id(childId)
+            .id(uuidGenerator.generate())
             .message(sizedChildReportNode.getMessage())
             .order(sizedChildReportNode.getOrder())
             .endOrder(sizedChildReportNode.getOrder() + sizedChildReportNode.getSize() - 1)
@@ -262,14 +260,13 @@ public class ReportService {
             .depth(sizedChildReportNode.getDepth())
             .build();
         entitiesToSave.add(childReportEntity);
-
-        TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedChildReportNode.getChildren().forEach(child ->
             saveReportNodeRecursively(uuidGenerator, rootReportEntity.getId(), childReportEntity.getId(), child, entitiesToSave));
 
         if (!entitiesToSave.isEmpty()) {
             self.saveBatchedReports(entitiesToSave);
         }
+        return childReportEntity.getId();
     }
 
     // We don't have to update more ancestors because we only append at root level.
@@ -355,7 +352,7 @@ public class ReportService {
         // UUID v4 is intentionally used for the root node,
         // to avoid having two different UUID versions for root reports in the database which would be confusing and surprising
         // root report IDs are managed by study server which generates UUID v4 when creating root reports.
-        // Technical debt: switch to UUID v7 here once the study server generates UUID v7 for root report IDs.
+        // we need to switch to UUID v7 here if the study server generates UUID v7 for root report IDs.
         UUID newRootId = UUID.randomUUID();
         TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
 

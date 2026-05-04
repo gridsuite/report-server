@@ -153,19 +153,17 @@ public class ReportController {
         service.createOrReplaceReport(id, reportNode);
     }
 
-    @PutMapping(value = "reports/{rootId}/children/{childId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Append report as a child with explicit identifier")
+    @PostMapping(value = "reports/{rootId}/children", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Append report as a child with a server-generated identifier")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Child report has been appended"),
+        @ApiResponse(responseCode = "200", description = "Child report has been appended; the generated identifier is returned in the body"),
         @ApiResponse(responseCode = "404", description = "Root report was not found"),
-        @ApiResponse(responseCode = "409", description = "Child report identifier conflicts with an existing report")
+        @ApiResponse(responseCode = "409", description = "Provided id does not refer to a root report")
     })
-    public ResponseEntity<Void> createChildReport(@PathVariable("rootId") UUID rootId,
-                                                  @PathVariable("childId") UUID childId,
+    public ResponseEntity<UUID> createChildReport(@PathVariable("rootId") UUID rootId,
                                                   @RequestBody ReportNode reportNode) {
         try {
-            service.createChildReport(rootId, childId, reportNode);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok(service.createChildReport(rootId, reportNode));
         } catch (EntityNotFoundException ignored) {
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException ignored) {

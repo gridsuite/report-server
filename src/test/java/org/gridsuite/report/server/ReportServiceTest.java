@@ -178,7 +178,7 @@ class ReportServiceTest {
     }
 
     @Test
-    void createChildReportUsesProvidedChildIdWithoutCreatingStandaloneDuplicate() {
+    void createChildReportGeneratesIdAndAppendsAsChild() {
         var rootReportNode = ReportNode.newRootReportNode()
             .withResourceBundles("i18n.reports")
             .withMessageTemplate("root")
@@ -193,9 +193,8 @@ class ReportServiceTest {
         stepReportNode.newReportNode()
             .withMessageTemplate("step-child")
             .add();
-        UUID stepReportId = UUID.randomUUID();
 
-        reportService.createChildReport(rootId, stepReportId, stepReportNode);
+        UUID generatedChildId = reportService.createChildReport(rootId, stepReportNode);
 
         assertEquals(3, reportNodeRepository.findAll().size());
         long parentLessNodes = reportNodeRepository.findAll().stream()
@@ -205,28 +204,32 @@ class ReportServiceTest {
 
         ReportNodeEntity rootReportEntity = reportService.getReportNodeEntity(rootId).orElseThrow();
         assertEquals(1, rootReportEntity.getChildren().size());
-        assertEquals(stepReportId, rootReportEntity.getChildren().getFirst().getId());
+        assertEquals(generatedChildId, rootReportEntity.getChildren().getFirst().getId());
     }
 
     @Test
-    void createChildReportFailsIfChildIdAlreadyExists() {
+    void createChildReportFailsWhenTargetIsNotARootReport() {
         var rootReportNode = ReportNode.newRootReportNode()
             .withResourceBundles("i18n.reports")
             .withMessageTemplate("root")
             .build();
+        rootReportNode.newReportNode()
+            .withMessageTemplate("child")
+            .add();
         UUID rootId = UUID.randomUUID();
         reportService.createReport(rootId, rootReportNode);
+
+        UUID nonRootId = reportService.getReportNodeEntity(rootId).orElseThrow()
+            .getChildren().getFirst().getId();
 
         var stepReportNode = ReportNode.newRootReportNode()
             .withResourceBundles("i18n.reports")
             .withMessageTemplate("step")
             .build();
-        UUID stepReportId = UUID.randomUUID();
-        reportService.createChildReport(rootId, stepReportId, stepReportNode);
 
         assertThrows(
             IllegalStateException.class,
-            () -> reportService.createChildReport(rootId, stepReportId, stepReportNode));
+            () -> reportService.createChildReport(nonRootId, stepReportNode));
     }
 
     @Test
