@@ -357,11 +357,16 @@ public class ReportService {
         TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
 
         for (ReportProjection source : sourceNodes) {
-            boolean isRoot = source.id().equals(rootNodeId);
-            UUID newId = isRoot ? newRootId : uuidGenerator.generate();
+            UUID newId = source.id().equals(rootNodeId) ? newRootId : uuidGenerator.generate();
             oldToNewId.put(source.id(), newId);
 
-            UUID newParentId = source.parentId() != null ? oldToNewId.get(source.parentId()) : null;
+            UUID newParentId = null;
+            if (source.parentId() != null) {
+                newParentId = oldToNewId.get(source.parentId());
+                if (newParentId == null) {
+                    throw new IllegalStateException("Parent node " + source.parentId() + " not found in remapping map during duplication");
+                }
+            }
 
             ReportNodeEntity duplicate = ReportNodeEntity.builder()
                 .id(newId)
@@ -389,10 +394,9 @@ public class ReportService {
 
     @Transactional
     public void deleteReport(UUID reportUuid) {
-        if (!reportNodeRepository.existsById(reportUuid)) {
+        if (reportNodeRepository.deleteAllByRootNodeId(reportUuid) == 0) {
             throw new EmptyResultDataAccessException("No element found", 1);
         }
-        reportNodeRepository.deleteAllByRootNodeId(reportUuid);
     }
 
     @Transactional

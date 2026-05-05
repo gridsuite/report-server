@@ -104,7 +104,7 @@ public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UU
     // See: https://www.postgresql.org/docs/current/sql-set-constraints.html
     @Modifying
     @Query("DELETE FROM ReportNodeEntity rn WHERE rn.rootNodeId = :rootNodeId")
-    void deleteAllByRootNodeId(@Param("rootNodeId") UUID rootNodeId);
+    int deleteAllByRootNodeId(@Param("rootNodeId") UUID rootNodeId);
 
     @Modifying
     @Query("DELETE FROM ReportNodeEntity rn WHERE rn.rootNodeId = :rootNodeId AND rn.id != :rootNodeId")
