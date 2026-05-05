@@ -183,6 +183,9 @@ public class ReportService {
      * This avoids Hibernate session conflicts when recreating reports with the same ID.
      */
     private void replaceReportChildren(ReportNodeEntity rootEntity, ReportNode newReportNode) {
+        if (!isRootReport(rootEntity)) {
+            throw new IllegalStateException("Report id " + rootEntity.getId() + " is not a root report");
+        }
         // Delete only the children, not the root itself
         reportNodeRepository.deleteAllChildrenByRootNodeId(rootEntity.getId());
 
