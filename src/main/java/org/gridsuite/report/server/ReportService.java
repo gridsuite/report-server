@@ -360,18 +360,12 @@ public class ReportService {
         TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
 
         for (ReportProjection source : sourceNodes) {
-            UUID newId = source.id().equals(rootNodeId) ? newRootId : uuidGenerator.generate();
+            boolean isRoot = source.id().equals(rootNodeId);
+            UUID newId = isRoot ? newRootId : uuidGenerator.generate();
             oldToNewId.put(source.id(), newId);
+            UUID newParentId = source.parentId() != null ? oldToNewId.get(source.parentId()) : null;
 
-            UUID newParentId = null;
-            if (source.parentId() != null) {
-                newParentId = oldToNewId.get(source.parentId());
-                if (newParentId == null) {
-                    throw new IllegalStateException("Parent node " + source.parentId() + " not found in remapping map during duplication");
-                }
-            }
-
-            ReportNodeEntity duplicate = ReportNodeEntity.builder()
+            batch.add(ReportNodeEntity.builder()
                 .id(newId)
                 .message(source.message())
                 .order(source.order())
@@ -381,9 +375,8 @@ public class ReportService {
                 .depth(source.depth())
                 .rootNodeId(newRootId)
                 .parentId(newParentId)
-                .build();
+                .build());
 
-            batch.add(duplicate);
             if (batch.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
                 self.saveBatchedReports(batch);
             }
