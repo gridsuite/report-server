@@ -16,5 +16,7 @@ logging:
 powsybl-ws:
   database:
     vendor: h2:mem
-    query: ;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    # H2 checks FK constraints row-by-row (unlike PostgreSQL which checks at statement end).
+    # Disabling referential integrity prevents false FK violations when deleting a report_node tree.
+    query: ;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;REFERENTIAL_INTEGRITY=FALSE
     hostPort: ":"

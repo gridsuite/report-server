@@ -7,7 +7,6 @@
 package org.gridsuite.report.server;
 
 import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
-import com.google.common.collect.Lists;
 import com.powsybl.commons.report.ReportNode;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +15,6 @@ import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.entities.ReportProjection;
-import org.gridsuite.report.server.entities.ReportTreeItem;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.UuidUtil;
 import org.slf4j.Logger;
@@ -32,10 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
@@ -44,9 +38,6 @@ import java.util.stream.Collectors;
 public class ReportService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportService.class);
-
-    // the maximum number of parameters allowed in an In query. Prevents the number of parameters to reach the maximum allowed (65,535)
-    private static final int SQL_QUERY_MAX_PARAM_NUMBER = 10000;
 
     private static final int MAX_SIZE_INSERT_REPORT_BATCH = 512;
 
@@ -57,12 +48,6 @@ public class ReportService {
     public ReportService(ReportNodeRepository reportNodeRepository, @Lazy ReportService reportService) {
         this.reportNodeRepository = reportNodeRepository;
         this.self = reportService;
-    }
-
-    // To use only for tests to fetch an entity with all the relationships
-    @Transactional(readOnly = true)
-    public Optional<ReportNodeEntity> getReportNodeEntity(UUID id) {
-        return Optional.ofNullable(reportNodeRepository.findAllWithChildrenById(id).get(0));
     }
 
     @Transactional(readOnly = true)
@@ -78,7 +63,7 @@ public class ReportService {
             .map(entity -> {
                 if (severityLevelsFilter == null) {
                     return reportNodeRepository.findPagedReportsByRootNodeIdAndOrderAndMessage(
-                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
+                        entity.getRootNodeId(),
                         entity.getOrder(),
                         entity.getEndOrder(),
                         messageSqlPattern,
@@ -86,7 +71,7 @@ public class ReportService {
                         .map(ReportLogMapper::map);
                 } else {
                     return reportNodeRepository.findPagedReportsByRootNodeIdAndOrderAndMessageAndSeverities(
-                        Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
+                        entity.getRootNodeId(),
                         entity.getOrder(),
                         entity.getEndOrder(),
                         messageSqlPattern,
@@ -122,7 +107,7 @@ public class ReportService {
     public Set<String> getReportAggregatedSeverities(UUID reportId) {
         return reportNodeRepository.findById(reportId)
             .map(entity -> reportNodeRepository.findDistinctSeveritiesByRootNodeIdAndOrder(
-                Optional.ofNullable(entity.getRootNode()).map(ReportNodeEntity::getId).orElse(entity.getId()),
+                entity.getRootNodeId(),
                 entity.getOrder(),
                 entity.getEndOrder()))
             .orElse(Collections.emptySet());
@@ -166,9 +151,8 @@ public class ReportService {
     }
 
     private static boolean isRootReport(ReportNodeEntity reportNodeEntity) {
-        return reportNodeEntity.getId() != null &&
-                reportNodeEntity.getId()
-                    .equals(reportNodeEntity.getRootNode().getId());
+        UUID id = reportNodeEntity.getId();
+        return id != null && id.equals(reportNodeEntity.getRootNodeId());
     }
 
     @Transactional
@@ -190,9 +174,11 @@ public class ReportService {
      * This avoids Hibernate session conflicts when recreating reports with the same ID.
      */
     private void replaceReportChildren(ReportNodeEntity rootEntity, ReportNode newReportNode) {
-        // Delete only the children, not the root
-        Predicate<ReportTreeItem> notRoot = report -> rootEntity.getId() != null && !rootEntity.getId().equals(UUID.fromString(report.id()));
-        deleteRoot(rootEntity.getId(), notRoot);
+        if (!isRootReport(rootEntity)) {
+            throw new IllegalStateException("Report id " + rootEntity.getId() + " is not a root report");
+        }
+        // Delete only the children, not the root itself
+        reportNodeRepository.deleteAllChildrenByRootNodeId(rootEntity.getId());
 
         // Update root entity properties
         SizedReportNode sizedReportNode = SizedReportNode.from(newReportNode);
@@ -209,7 +195,7 @@ public class ReportService {
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
         TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedReportNode.getChildren().forEach(child ->
-                saveReportNodeRecursively(uuidGenerator, rootEntity, rootEntity, child, entitiesToSave)
+                saveReportNodeRecursively(uuidGenerator, rootEntity.getId(), rootEntity.getId(), child, entitiesToSave)
         );
 
         if (!entitiesToSave.isEmpty()) {
@@ -232,7 +218,7 @@ public class ReportService {
         List<ReportNodeEntity> entitiesToSave = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
         entitiesToSave.add(reportEntity);
         TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
-        sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(uuidGenerator, reportEntity, reportEntity, c, entitiesToSave));
+        sizedReportNodeChildren.forEach(c -> saveReportNodeRecursively(uuidGenerator, reportEntity.getRootNodeId(), reportEntity.getId(), c, entitiesToSave));
 
         if (!entitiesToSave.isEmpty()) {
             self.saveBatchedReports(entitiesToSave);
@@ -262,14 +248,14 @@ public class ReportService {
             .order(sizedChildReportNode.getOrder())
             .endOrder(sizedChildReportNode.getOrder() + sizedChildReportNode.getSize() - 1)
             .isLeaf(sizedChildReportNode.isLeaf())
-            .rootNode(rootReportEntity)
-            .parent(rootReportEntity)
+            .rootNodeId(rootReportEntity.getId())
+            .parentId(rootReportEntity.getId())
             .severity(sizedChildReportNode.getSeverity())
             .depth(sizedChildReportNode.getDepth())
             .build();
         entitiesToSave.add(childReportEntity);
         sizedChildReportNode.getChildren().forEach(child ->
-            saveReportNodeRecursively(uuidGenerator, rootReportEntity, childReportEntity, child, entitiesToSave));
+            saveReportNodeRecursively(uuidGenerator, rootReportEntity.getId(), childReportEntity.getId(), child, entitiesToSave));
 
         if (!entitiesToSave.isEmpty()) {
             self.saveBatchedReports(entitiesToSave);
@@ -300,13 +286,13 @@ public class ReportService {
             .isLeaf(sizedReportNode.isLeaf())
             .severity(sizedReportNode.getSeverity())
             .depth(sizedReportNode.getDepth())
+            .rootNodeId(id)
             .build();
-        persistedReport.setRootNode(persistedReport);
 
         entitiesToSave.add(persistedReport);
         TimeBasedEpochGenerator uuidGenerator = UuidUtil.newV7Generator();
         sizedReportNode.getChildren().forEach(c ->
-            saveReportNodeRecursively(uuidGenerator, persistedReport, persistedReport, c, entitiesToSave)
+            saveReportNodeRecursively(uuidGenerator, id, id, c, entitiesToSave)
         );
 
         if (!entitiesToSave.isEmpty()) {
@@ -316,8 +302,8 @@ public class ReportService {
 
     protected void saveReportNodeRecursively(
         TimeBasedEpochGenerator uuidGenerator,
-        ReportNodeEntity rootReportNodeEntity,
-        ReportNodeEntity parentReportNodeEntity,
+        UUID rootNodeId,
+        UUID parentId,
         SizedReportNode sizedReportNode,
         List<ReportNodeEntity> entitiesToSave
     ) {
@@ -327,8 +313,8 @@ public class ReportService {
             .order(sizedReportNode.getOrder())
             .endOrder(sizedReportNode.getOrder() + sizedReportNode.getSize() - 1)
             .isLeaf(sizedReportNode.isLeaf())
-            .rootNode(rootReportNodeEntity)
-            .parent(parentReportNodeEntity)
+            .rootNodeId(rootNodeId)
+            .parentId(parentId)
             .severity(sizedReportNode.getSeverity())
             .depth(sizedReportNode.getDepth())
             .build();
@@ -337,7 +323,7 @@ public class ReportService {
         if (entitiesToSave.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
             self.saveBatchedReports(entitiesToSave);
         }
-        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(uuidGenerator, rootReportNodeEntity, reportNodeEntity, child, entitiesToSave));
+        sizedReportNode.getChildren().forEach(child -> saveReportNodeRecursively(uuidGenerator, rootNodeId, reportNodeEntity.getId(), child, entitiesToSave));
 
     }
 
@@ -354,8 +340,8 @@ public class ReportService {
             throw new NoSuchElementException("Root node not found");
         }
 
-        // Map old UUIDs to new entities (ordered by depth, so parents are created first)
-        Map<UUID, ReportNodeEntity> entityMapping = new HashMap<>();
+        // Map old UUIDs to new UUIDs (ordered by depth, so parents are processed before children)
+        Map<UUID, UUID> oldToNewId = new HashMap<>();
         List<ReportNodeEntity> batch = new ArrayList<>(MAX_SIZE_INSERT_REPORT_BATCH);
         // UUID v4 is intentionally used for the root node,
         // to avoid having two different UUID versions for root reports in the database which would be confusing and surprising
@@ -366,27 +352,22 @@ public class ReportService {
 
         for (ReportProjection source : sourceNodes) {
             boolean isRoot = source.id().equals(rootNodeId);
-            ReportNodeEntity rootRef = isRoot ? null : entityMapping.get(rootNodeId);
-            ReportNodeEntity parentRef = source.parentId() != null ? entityMapping.get(source.parentId()) : null;
+            UUID newId = isRoot ? newRootId : uuidGenerator.generate();
+            oldToNewId.put(source.id(), newId);
+            UUID newParentId = source.parentId() != null ? oldToNewId.get(source.parentId()) : null;
 
-            ReportNodeEntity duplicate = ReportNodeEntity.builder()
-                .id(isRoot ? newRootId : uuidGenerator.generate())
+            batch.add(ReportNodeEntity.builder()
+                .id(newId)
                 .message(source.message())
                 .order(source.order())
                 .endOrder(source.endOrder())
                 .isLeaf(source.isLeaf())
                 .severity(source.severity())
                 .depth(source.depth())
-                .rootNode(rootRef)
-                .parent(parentRef)
-                .build();
+                .rootNodeId(newRootId)
+                .parentId(newParentId)
+                .build());
 
-            if (isRoot) {
-                duplicate.setRootNode(duplicate);
-            }
-
-            entityMapping.put(source.id(), duplicate);
-            batch.add(duplicate);
             if (batch.size() % MAX_SIZE_INSERT_REPORT_BATCH == 0) {
                 self.saveBatchedReports(batch);
             }
@@ -400,40 +381,15 @@ public class ReportService {
 
     @Transactional
     public void deleteReport(UUID reportUuid) {
-        ReportNodeEntity reportNodeEntity = reportNodeRepository.findById(reportUuid).orElseThrow(() -> new EmptyResultDataAccessException("No element found", 1));
-        deleteRoot(reportNodeEntity.getId(), report -> true);
+        if (reportNodeRepository.deleteAllByRootNodeId(reportUuid) == 0) {
+            throw new EmptyResultDataAccessException("No element found", 1);
+        }
     }
 
     @Transactional
     public void deleteReports(List<UUID> reportUuids) {
         Objects.requireNonNull(reportUuids);
-        reportUuids.forEach(r -> deleteRoot(r, report -> true));
-    }
-
-    /**
-     * delete all the reports depending on a root report
-     */
-    private void deleteRoot(UUID rootTreeReportId, Predicate<ReportTreeItem> filter) {
-        AtomicReference<Long> startTime = new AtomicReference<>();
-        startTime.set(System.nanoTime());
-
-        reportNodeRepository.findTreeFromRootReport(rootTreeReportId)
-            .stream()
-            .filter(filter)
-            .collect(Collectors.groupingBy(
-                ReportTreeItem::level,
-                Collectors.mapping(
-                    result -> UUID.fromString(result.id()),
-                    Collectors.toList()
-                )
-            ))
-            .entrySet()
-            .stream()
-            .sorted(Map.Entry.<Integer, List<UUID>>comparingByKey().reversed())
-            .forEach(entry ->
-                Lists.partition(entry.getValue(), SQL_QUERY_MAX_PARAM_NUMBER).forEach(reportNodeRepository::deleteByIdIn)
-            );
-        LOGGER.debug("All the reports of '{}' have been deleted in {}ms", rootTreeReportId, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime.get()));
+        reportUuids.forEach(reportNodeRepository::deleteAllByRootNodeId);
     }
 
     // package private for tests
@@ -456,9 +412,7 @@ public class ReportService {
 
         List<Integer> positions = reportNodeRepository.findById(rootReportNodeId)
             .map(entity -> {
-                UUID rootId = Optional.ofNullable(entity.getRootNode())
-                    .map(ReportNodeEntity::getId)
-                    .orElse(entity.getId());
+                UUID rootId = entity.getRootNodeId();
 
                 return severityLevelsFilter == null ?
                     reportNodeRepository.findRelativePositionsByRootNodeIdAndOrderAndMessage(

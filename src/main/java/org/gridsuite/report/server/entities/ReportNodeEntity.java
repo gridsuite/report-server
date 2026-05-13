@@ -13,7 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -50,14 +49,9 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
     @Column(name = "depth", columnDefinition = "integer default 0")
     private int depth;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "root_node_id", foreignKey = @ForeignKey(name = "root_node_fk"))
-    private ReportNodeEntity rootNode;
+    @Column(name = "root_node_id")
+    private UUID rootNodeId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "parent_fk"))
-    private ReportNodeEntity parent;
-
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    private List<ReportNodeEntity> children;
+    @Column(name = "parent_id")
+    private UUID parentId;
 }
