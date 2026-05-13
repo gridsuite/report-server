@@ -13,8 +13,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor
@@ -56,9 +54,4 @@ public class ReportNodeEntity extends AbstractManuallyAssignedIdentifierEntity<U
 
     @Column(name = "parent_id")
     private UUID parentId;
-
-    // not persisted, used by service test helper only
-    @Transient
-    @Builder.Default
-    private List<ReportNodeEntity> children = new ArrayList<>();
 }

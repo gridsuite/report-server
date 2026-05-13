@@ -50,15 +50,6 @@ public class ReportService {
         this.self = reportService;
     }
 
-    // To use only for tests to fetch an entity with its direct children
-    @Transactional(readOnly = true)
-    public Optional<ReportNodeEntity> getReportNodeEntity(UUID id) {
-        return reportNodeRepository.findById(id).map(entity -> {
-            entity.setChildren(reportNodeRepository.findByParentIdOrderByOrderAsc(id));
-            return entity;
-        });
-    }
-
     @Transactional(readOnly = true)
     public Report getReport(UUID reportId) {
         Objects.requireNonNull(reportId);

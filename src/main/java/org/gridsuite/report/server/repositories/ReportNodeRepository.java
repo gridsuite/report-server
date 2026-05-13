@@ -26,9 +26,6 @@ import java.util.UUID;
 @Repository
 public interface ReportNodeRepository extends JpaRepository<ReportNodeEntity, UUID> {
 
-    // Used only by service test helper to navigate children in unit tests
-    List<ReportNodeEntity> findByParentIdOrderByOrderAsc(UUID parentId);
-
     @Query("""
         SELECT new org.gridsuite.report.server.entities.ReportProjection(
             rn.id, rn.message, rn.severity, rn.depth, rn.parentId,
