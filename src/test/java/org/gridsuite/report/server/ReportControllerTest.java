@@ -13,11 +13,10 @@ import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.Configuration;
 import com.vladmihalcea.sql.SQLStatementCountValidator;
 import lombok.SneakyThrows;
-
+import org.gridsuite.report.server.dto.MatchPosition;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.dto.ReportPage;
-import org.gridsuite.report.server.dto.MatchPosition;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.TestUtils;
 import org.junit.After;
@@ -32,13 +31,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
 import static org.gridsuite.report.server.utils.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

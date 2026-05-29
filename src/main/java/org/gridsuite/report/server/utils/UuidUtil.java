@@ -23,7 +23,8 @@ public final class UuidUtil {
     * - in the same milisecond, the ids will be incremented starting from the random value.
     * - in separate miliseconds, the random value will reset possibly to a smaller value, but the millisecond is greater and the milliseconds comes first.
     * Performance gains:
-    *   - With the millisecond prefix, we already remove almost all problems of having many Full Page Images (FPIs) in the PostgreSQL WAL (the FPI come from the index pages, where a new random uuid would have been inserted in the index in a different page virtually every time).
+    *   - With the millisecond prefix, we already remove almost all problems of having many Full Page Images (FPIs) in the PostgreSQL WAL (the FPI come from the index pages,
+            where a new random uuid would have been inserted in the index in a different page virtually every time).
     *   - With the submillisecond part, there are three options:
     *       1. milliseconds + full random (most random, worst sequential writes)
     *       2. milliseconds + submillisecond counter + random (what PostgreSQL gen_uuid_v7() does)

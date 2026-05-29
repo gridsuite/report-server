@@ -55,11 +55,11 @@ public class SizedReportNode {
 
         private int counter;
 
-        public SizedReportNodeMapper(int counter) {
+        SizedReportNodeMapper(int counter) {
             this.counter = counter;
         }
 
-        public SizedReportNodeMapper() {
+        SizedReportNodeMapper() {
             this(0);
         }
 
