@@ -58,7 +58,8 @@ public class ReportController {
     @Operation(summary = "Get the elements of a report, its reporters, and their subreporters")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The elements of the report, reporters and subreporters")})
     public ResponseEntity<Report> getReport(@PathVariable("id") UUID id,
-                                            @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false, defaultValue = "defaultName") String defaultName) {
+                                            @Parameter(description = "Empty report with default name") @RequestParam(name = "defaultName", required = false,
+                                                    defaultValue = "defaultName") String defaultName) {
         try {
             Report report = service.getReport(id);
             return report == null ?
@@ -83,8 +84,10 @@ public class ReportController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "The list of message (severity and parent id) of the reporter and its subreporters"),
         @ApiResponse(responseCode = "404", description = "The reporter does not exists")})
     public ResponseEntity<ReportPage> getReportLogs(@PathVariable("id") UUID id,
-                                                         @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
-                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+                                                         @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message",
+                                                                 required = false) String messageFilter,
+                                                         @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels",
+                                                                 required = false) Set<String> severityLevelsFilter,
                                                          @Parameter(description = "Whether we want paged logs") @RequestParam(name = "paged", required = false, defaultValue = "false") boolean paged,
                                                          Pageable pageable) {
         try {
@@ -102,7 +105,8 @@ public class ReportController {
     public ResponseEntity<Page<ReportLog>> getPagedReportLogsFromMultipleReports(
             @Parameter(description = "List of report UUIDs to fetch logs from") @RequestParam("reportIds") List<UUID> reportIds,
             @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
-            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels",
+                    required = false) Set<String> severityLevelsFilter,
             @Parameter(description = "Whether we want paged logs") @RequestParam(name = "paged", required = false, defaultValue = "false") boolean paged,
             Pageable pageable) {
 
@@ -117,7 +121,8 @@ public class ReportController {
     public ResponseEntity<List<MatchPosition>> searchTermMatchesInFilteredLogs(
             @PathVariable("id") UUID id,
             @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
-            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels",
+                    required = false) Set<String> severityLevelsFilter,
             @Parameter(description = "The search term to look for in the logs") @RequestParam(name = "searchTerm") String searchTerm,
             @Parameter(description = "The page size for the search results") @RequestParam(name = "pageSize") int pageSize) {
         return ResponseEntity.ok()
@@ -131,7 +136,8 @@ public class ReportController {
     public ResponseEntity<List<MatchPosition>> searchTermMatchesInFilteredLogsFromMultipleReports(
             @Parameter(description = "List of report UUIDs to fetch logs from") @RequestParam("reportIds") List<UUID> reportIds,
             @Parameter(description = "Filter on message. Will only return elements containing the filter message in them.") @RequestParam(name = "message", required = false) String messageFilter,
-            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels", required = false) Set<String> severityLevelsFilter,
+            @Parameter(description = "Filter on severity levels. Will only return elements with those severities") @RequestParam(name = "severityLevels",
+                    required = false) Set<String> severityLevelsFilter,
             @Parameter(description = "The search term to look for in the logs") @RequestParam(name = "searchTerm") String searchTerm,
             @Parameter(description = "The page size for the search results") @RequestParam(name = "pageSize") int pageSize) {
         return ResponseEntity.ok()
@@ -189,7 +195,8 @@ public class ReportController {
     @Operation(summary = "delete the report")
     @ApiResponse(responseCode = "200", description = "The report has been deleted")
     public ResponseEntity<Void> deleteReport(@PathVariable("id") UUID reportUuid,
-                                             @Parameter(description = "Return 404 if report is not found") @RequestParam(name = "errorOnReportNotFound", required = false, defaultValue = "true") boolean errorOnReportNotFound) {
+                                             @Parameter(description = "Return 404 if report is not found") @RequestParam(name = "errorOnReportNotFound", required = false,
+                                                     defaultValue = "true") boolean errorOnReportNotFound) {
         try {
             service.deleteReport(reportUuid);
         } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {

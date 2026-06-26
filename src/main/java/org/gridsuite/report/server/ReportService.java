@@ -8,6 +8,8 @@ package org.gridsuite.report.server;
 
 import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
 import com.powsybl.commons.report.ReportNode;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.report.server.dto.MatchPosition;
@@ -26,9 +28,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.annotation.Nullable;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.*;
 
 /**
