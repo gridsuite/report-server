@@ -19,16 +19,14 @@ import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.dto.ReportPage;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.TestUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import java.io.IOException;
@@ -37,7 +35,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import static org.gridsuite.report.server.utils.TestUtils.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -46,13 +44,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author Jacques Borsenberger <jacques.borsenberger at rte-france.com>
  */
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @ContextConfiguration(classes = {ReportApplication.class})
-public class ReportControllerTest {
+class ReportControllerTest {
 
-    public static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION;
+    static final String URL_TEMPLATE = "/" + ReportApi.API_VERSION;
 
     @Autowired
     private MockMvc mvc;
@@ -65,16 +62,16 @@ public class ReportControllerTest {
     @Autowired
     private ReportNodeRepository reportNodeRepository;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         Configuration.defaultConfiguration();
         MockitoAnnotations.openMocks(this);
         reportService.deleteAll();
         SQLStatementCountValidator.reset();
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    void tearDown() {
         reportService.deleteAll();
     }
 
@@ -95,7 +92,7 @@ public class ReportControllerTest {
     private static final String DEFAULT_EMPTY_REPORT1 = "/defaultEmpty1.json";
     private static final String DEFAULT_EMPTY_REPORT2 = "/defaultEmpty2.json";
 
-    public String toString(String resourceName) {
+    String toString(String resourceName) {
         try {
             return new String(ByteStreams.toByteArray(Objects.requireNonNull(getClass().getResourceAsStream(resourceName))), StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -104,7 +101,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testAppendReports() throws Exception {
+    void testAppendReports() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -131,7 +128,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testCreateOrReplaceReport() throws Exception {
+    void testCreateOrReplaceReport() throws Exception {
         // Test 1: Create a new report when ID doesn't exist (should behave like normal create)
         String testReport1 = toString(REPORT_ONE);
 
@@ -166,7 +163,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testCreateChildReportEndpointReturnsGeneratedChildId() throws Exception {
+    void testCreateChildReportEndpointReturnsGeneratedChildId() throws Exception {
         insertReport(REPORT_UUID, toString(REPORT_ONE));
         String childReportContent = toString(REPORT_TWO);
 
@@ -188,7 +185,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testCreateChildReportEndpointReturnsNotFoundForUnknownRoot() throws Exception {
+    void testCreateChildReportEndpointReturnsNotFoundForUnknownRoot() throws Exception {
         String unknownRootId = "b6f8f518-c4a2-4de0-8e30-5e5618f9856b";
 
         mvc.perform(post(URL_TEMPLATE + "/reports/" + unknownRootId + "/children")
@@ -198,7 +195,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testCreateChildReportEndpointReturnsConflictWhenTargetIsNotARootReport() throws Exception {
+    void testCreateChildReportEndpointReturnsConflictWhenTargetIsNotARootReport() throws Exception {
         insertReport(REPORT_UUID, toString(REPORT_ONE));
 
         MvcResult rootResult = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
@@ -214,7 +211,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetReportWithNoSeverityFilters() throws Exception {
+    void testGetReportWithNoSeverityFilters() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -228,7 +225,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetReportMessages() throws Exception {
+    void testGetReportMessages() throws Exception {
         String testReport4 = toString(REPORT_FOUR);
         insertReport(REPORT_UUID, testReport4);
 
@@ -294,7 +291,7 @@ public class ReportControllerTest {
 
     @SneakyThrows
     @Test
-    public void testDefaultEmptyReport() {
+    void testDefaultEmptyReport() {
         MvcResult result1 = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
             .andExpect(status().isOk())
             .andReturn();
@@ -307,7 +304,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testDuplicateReport() throws Exception {
+    void testDuplicateReport() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
 
@@ -327,14 +324,14 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testDuplicateReportNotFound() throws Exception {
+    void testDuplicateReportNotFound() throws Exception {
         mvc.perform(post(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/duplicate")
             .contentType(APPLICATION_JSON))
             .andExpect(status().isNotFound());
     }
 
     @Test
-    public void testDeleteReport() throws Exception {
+    void testDeleteReport() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
         List<UUID> reportUuids = Arrays.asList(UUID.fromString(REPORT_UUID));
@@ -347,7 +344,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetReportAggregatedSeverities() throws Exception {
+    void testGetReportAggregatedSeverities() throws Exception {
         String testReport1 = toString(REPORT_ONE);
         insertReport(REPORT_UUID, testReport1);
         MvcResult result = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/aggregated-severities"))
@@ -358,7 +355,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetPagedReportLogs() throws Exception {
+    void testGetPagedReportLogs() throws Exception {
         String testReport = toString(REPORT_FOUR);
         insertReport(REPORT_UUID, testReport);
 
@@ -447,7 +444,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testSearchTermMatchesInFilteredLogs() throws Exception {
+    void testSearchTermMatchesInFilteredLogs() throws Exception {
         String testReport = toString(REPORT_FOUR);
         insertReport(REPORT_UUID, testReport);
 
@@ -509,7 +506,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testGetPagedReportLogsFromMultipleReports() throws Exception {
+    void testGetPagedReportLogsFromMultipleReports() throws Exception {
         String testReport = toString(REPORT_FOUR);
         insertReport(REPORT_UUID, testReport);
 
@@ -534,7 +531,7 @@ public class ReportControllerTest {
     }
 
     @Test
-    public void testSearchTermMatchesInFilteredLogsFromMultipleReports() throws Exception {
+    void testSearchTermMatchesInFilteredLogsFromMultipleReports() throws Exception {
         String testReport = toString(REPORT_FOUR);
         insertReport(REPORT_UUID, testReport);
 
