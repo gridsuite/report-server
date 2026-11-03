@@ -24,7 +24,6 @@ There is a single table, `report_node`, that stores every node of every report t
 
 | Index name | Columns | Purpose |
 |---|---|---|
-| `report_node_parent_id_idx` | `parent_id` | Recursive CTE traversal during delete. |
 | `root_node_orders_idx` | `root_node_id, order_, end_order` | All subtree range scans (logs, severities, search). |
 | `root_node_and_container_idx` | `root_node_id, is_leaf` | Fetching only container (non-leaf) nodes for the tree view. |
 
@@ -202,21 +201,13 @@ Implementation: a native SQL CTE first numbers all rows matching the display fil
 
 ### 5. Deletion (`DELETE /v1/reports/{id}`)
 
-Deletion uses a **recursive CTE** (`findTreeFromRootReport`) to discover all descendant node IDs grouped by tree level:
+Deletion uses root_node_id to delete all nodes in a single statement:
 
 ```sql
-WITH RECURSIVE included_nodes(id, level) AS (
-    SELECT id, 0 FROM report_node WHERE id = :id
-    UNION ALL
-    SELECT r.id, level + 1
-    FROM included_nodes i INNER JOIN report_node r ON r.parent_id = i.id
-)
-SELECT DISTINCT level, cast(id as varchar) FROM included_nodes;
+DELETE FROM ReportNodeEntity rn WHERE rn.rootNodeId = :rootNodeId
 ```
 
-This uses `report_node_parent_id_idx`. The results are grouped by level and deleted from deepest level to shallowest to respect the (now soft) parent reference. Each level's IDs are chunked to groups of 10 000 (`SQL_QUERY_MAX_PARAM_NUMBER`) to avoid hitting PostgreSQL's 65 535-parameter limit.
-
-> **Note:** The FK constraint `parent_fk` was dropped in `changelog_20250422T150510Z.xml`. This avoids cascading constraint checks on bulk deletes but means referential integrity is enforced only by application logic.
+This uses `root_node_orders_idx`.
 
 ### 6. Duplication (`POST /v1/reports/{id}/duplicate`)
 
@@ -229,7 +220,6 @@ Fetches all nodes via `findAllNodeDataByRootNodeId` (ordered by `depth`, `order_
 | Constant | Value | Location |
 |---|---|---|
 | `MAX_SIZE_INSERT_REPORT_BATCH` | 512 | `ReportService` — controls flush frequency during tree inserts. |
-| `SQL_QUERY_MAX_PARAM_NUMBER` | 10 000 | `ReportService` — chunks `IN` lists to stay under PG's 65 535-param limit. |
 | `MAX_MESSAGE_CHAR` | 500 | `SizedReportNode` — messages longer than 500 chars are truncated and an ERROR is logged. |
 | Hibernate `jdbc.batch_size` | 512 | `application.yaml` — must match `MAX_SIZE_INSERT_REPORT_BATCH`. |
 | `reWriteBatchedInserts` | `true` | JDBC URL flag — enables PostgreSQL driver-level batch rewriting. |
