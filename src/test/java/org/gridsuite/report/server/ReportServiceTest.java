@@ -10,6 +10,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.commons.report.TypedValue;
 import com.vladmihalcea.sql.SQLStatementCountValidator;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
+import org.gridsuite.report.server.error.ReportException;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.repositories.ReportNodeTestRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -240,7 +241,7 @@ class ReportServiceTest {
             .build();
 
         assertThrows(
-            IllegalStateException.class,
+            ReportException.class,
             () -> reportService.createChildReport(nonRootId, stepReportNode));
     }
 
