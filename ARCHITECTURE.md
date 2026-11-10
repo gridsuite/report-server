@@ -27,6 +27,26 @@ There is a single table, `report_node`, that stores every node of every report t
 | `root_node_orders_idx` | `root_node_id, order_, end_order` | All subtree range scans (logs, severities, search). |
 | `root_node_and_container_idx` | `root_node_id, is_leaf` | Fetching only container (non-leaf) nodes for the tree view. |
 
+### Known drift between the JPA mapping and the deployed schema
+
+The entity mapping and the Liquibase changelogs do not describe exactly the same schema. Running `mvn liquibase:diff` on an existing database therefore produces a non-empty diff. The generated changeset below has **deliberately not been added** to `db.changelog-master.yaml`, in order not to alter existing deployments (just in case some environment, query plan or tooling still relies on these objects):
+
+```xml
+<changeSet author="***" id="1794210278103-1">
+    <dropForeignKeyConstraint baseTableName="REPORT_NODE" constraintName="PARENT_FK"/>
+</changeSet>
+<changeSet author="***" id="1794210278103-2">
+    <dropForeignKeyConstraint baseTableName="REPORT_NODE" constraintName="ROOT_NODE_FK"/>
+</changeSet>
+<changeSet author="**" id="1794210278103-3">
+    <dropIndex tableName="REPORT_NODE" schemaName="public" indexName="report_node_parent_id_idx"/>
+</changeSet>
+```
+
+Consequences to keep in mind:
+
+- `PARENT_FK`, `ROOT_NODE_FK` and `report_node_parent_id_idx` may still exist in already-deployed databases, even though the current mapping no longer requires them.
+
 ---
 
 ## The Nested-Sets Storage Model
