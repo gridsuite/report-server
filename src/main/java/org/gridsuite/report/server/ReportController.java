@@ -17,10 +17,9 @@ import org.gridsuite.report.server.dto.MatchPosition;
 import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.dto.ReportPage;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.gridsuite.report.server.error.ReportException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,7 +35,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 
@@ -90,13 +88,9 @@ public class ReportController {
                                                                  required = false) Set<String> severityLevelsFilter,
                                                          @Parameter(description = "Whether we want paged logs") @RequestParam(name = "paged", required = false, defaultValue = "false") boolean paged,
                                                          Pageable pageable) {
-        try {
-            return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new ReportPage(service.getReportLogs(id, severityLevelsFilter, decodeMessageFilter(messageFilter), paged, pageable)));
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(new ReportPage(service.getReportLogs(id, severityLevelsFilter, decodeMessageFilter(messageFilter), paged, pageable)));
     }
 
     @GetMapping(value = "/reports/logs", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -168,13 +162,7 @@ public class ReportController {
     })
     public ResponseEntity<UUID> createChildReport(@PathVariable("rootId") UUID rootId,
                                                   @RequestBody ReportNode reportNode) {
-        try {
-            return ResponseEntity.ok(service.createChildReport(rootId, reportNode));
-        } catch (EntityNotFoundException ignored) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException ignored) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        return ResponseEntity.ok(service.createChildReport(rootId, reportNode));
     }
 
     @PostMapping(value = "reports/{id}/duplicate", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -184,11 +172,7 @@ public class ReportController {
         @ApiResponse(responseCode = "404", description = "Report not found")
     })
     public ResponseEntity<UUID> duplicateReport(@PathVariable("id") UUID id) {
-        try {
-            return ResponseEntity.ok(service.duplicateReport(id));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        return ResponseEntity.ok(service.duplicateReport(id));
     }
 
     @DeleteMapping(value = "reports/{id}")
@@ -199,7 +183,7 @@ public class ReportController {
                                                      defaultValue = "true") boolean errorOnReportNotFound) {
         try {
             service.deleteReport(reportUuid);
-        } catch (EmptyResultDataAccessException | EntityNotFoundException ignored) {
+        } catch (ReportException _) {
             return errorOnReportNotFound ? ResponseEntity.notFound().build() : ResponseEntity.ok().build();
         }
         return ResponseEntity.ok().build();
