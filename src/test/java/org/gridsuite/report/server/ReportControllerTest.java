@@ -8,6 +8,7 @@ package org.gridsuite.report.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.Configuration;
@@ -36,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import static org.gridsuite.report.server.utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -188,10 +190,13 @@ class ReportControllerTest {
     void testCreateChildReportEndpointReturnsNotFoundForUnknownRoot() throws Exception {
         String unknownRootId = "b6f8f518-c4a2-4de0-8e30-5e5618f9856b";
 
-        mvc.perform(post(URL_TEMPLATE + "/reports/" + unknownRootId + "/children")
+        String res = mvc.perform(post(URL_TEMPLATE + "/reports/" + unknownRootId + "/children")
                         .content(toString(REPORT_ONE))
                         .contentType(APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "report.notFound");
     }
 
     @Test
@@ -204,10 +209,32 @@ class ReportControllerTest {
         Report rootReport = objectMapper.readValue(rootResult.getResponse().getContentAsString(), Report.class);
         UUID nonRootId = rootReport.getSubReports().getFirst().getId();
 
-        mvc.perform(post(URL_TEMPLATE + "/reports/" + nonRootId + "/children")
+        String res = mvc.perform(post(URL_TEMPLATE + "/reports/" + nonRootId + "/children")
                         .content(toString(REPORT_TWO))
                         .contentType(APPLICATION_JSON))
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "report.notARoot");
+    }
+
+    @Test
+    void testCreateOrReplaceReportReturnsConflictWhenTargetIsNotARootReport() throws Exception {
+        insertReport(REPORT_UUID, toString(REPORT_ONE));
+
+        MvcResult rootResult = mvc.perform(get(URL_TEMPLATE + "/reports/" + REPORT_UUID))
+                .andExpect(status().isOk())
+                .andReturn();
+        Report rootReport = objectMapper.readValue(rootResult.getResponse().getContentAsString(), Report.class);
+        UUID nonRootId = rootReport.getSubReports().getFirst().getId();
+
+        String res = mvc.perform(put(URL_TEMPLATE + "/reports/" + nonRootId + "/replace")
+                        .content(toString(REPORT_TWO))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "report.notARoot");
     }
 
     @Test
@@ -325,9 +352,12 @@ class ReportControllerTest {
 
     @Test
     void testDuplicateReportNotFound() throws Exception {
-        mvc.perform(post(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/duplicate")
+        String res = mvc.perform(post(URL_TEMPLATE + "/reports/" + REPORT_UUID + "/duplicate")
             .contentType(APPLICATION_JSON))
-            .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound())
+            .andReturn().getResponse().getContentAsString();
+
+        assertProblemDetailBody(res, "report.notFound");
     }
 
     @Test
@@ -341,6 +371,12 @@ class ReportControllerTest {
             .andExpect(status().isOk())
             .andReturn();
         assertReportsAreEqualIgnoringIds(result, toString(DEFAULT_EMPTY_REPORT1));
+    }
+
+    @Test
+    void testDeleteUnknownReportWithErrorOnReportNotFoundFalse() throws Exception {
+        mvc.perform(delete(URL_TEMPLATE + "/reports/" + REPORT_UUID + "?errorOnReportNotFound=false"))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -551,6 +587,18 @@ class ReportControllerTest {
         List<MatchPosition> matches = objectMapper.readValue(result.getResponse().getContentAsString(), listTypeReference);
 
         assertEquals(26, matches.size());
+    }
+
+    private void assertProblemDetailBody(String responseBody, String expectedBusinessErrorCode) throws JsonProcessingException {
+        JsonNode body = objectMapper.readTree(responseBody);
+        assertEquals(expectedBusinessErrorCode, body.get("businessErrorCode").asText());
+        assertTrue(body.has("detail"));
+        assertFalse(body.get("detail").asText().isBlank());
+        assertTrue(body.has("server"));
+        assertFalse(body.get("server").asText().isBlank());
+        assertTrue(body.has("timestamp"));
+        assertFalse(body.get("timestamp").asText().isBlank());
+        assertTrue(body.has("traceId"));
     }
 
     private void testImported(String report1Id, String reportConcat2) throws Exception {

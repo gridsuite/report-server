@@ -9,7 +9,6 @@ package org.gridsuite.report.server;
 import com.fasterxml.uuid.impl.TimeBasedEpochGenerator;
 import com.powsybl.commons.report.ReportNode;
 import jakarta.annotation.Nullable;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.gridsuite.report.server.dto.MatchPosition;
@@ -17,12 +16,12 @@ import org.gridsuite.report.server.dto.Report;
 import org.gridsuite.report.server.dto.ReportLog;
 import org.gridsuite.report.server.entities.ReportNodeEntity;
 import org.gridsuite.report.server.entities.ReportProjection;
+import org.gridsuite.report.server.error.ReportException;
 import org.gridsuite.report.server.repositories.ReportNodeRepository;
 import org.gridsuite.report.server.utils.UuidUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -140,10 +139,10 @@ public class ReportService {
     @Transactional
     public UUID createChildReport(UUID rootId, ReportNode reportNode) {
         ReportNodeEntity rootReportEntity = reportNodeRepository.findById(rootId)
-            .orElseThrow(() -> new EntityNotFoundException("Root report " + rootId + " not found"));
+            .orElseThrow(() -> ReportException.createReportNotFound(rootId));
 
         if (!isRootReport(rootReportEntity)) {
-            throw new IllegalStateException("Report id " + rootId + " is not a root report");
+            throw ReportException.createNotARootReport(rootId);
         }
 
         return appendChildReportElements(rootReportEntity, reportNode);
@@ -173,8 +172,12 @@ public class ReportService {
      * This avoids Hibernate session conflicts when recreating reports with the same ID.
      */
     private void replaceReportChildren(ReportNodeEntity rootEntity, ReportNode newReportNode) {
+        UUID rootEntityId = rootEntity.getId();
+        if (rootEntityId == null) {
+            throw new IllegalStateException("Root report entity has no id");
+        }
         if (!isRootReport(rootEntity)) {
-            throw new IllegalStateException("Report id " + rootEntity.getId() + " is not a root report");
+            throw ReportException.createNotARootReport(rootEntityId);
         }
         // Delete only the children, not the root itself
         reportNodeRepository.deleteAllChildrenByRootNodeId(rootEntity.getId());
@@ -336,7 +339,7 @@ public class ReportService {
     public UUID duplicateReport(UUID rootNodeId) {
         List<ReportProjection> sourceNodes = reportNodeRepository.findAllNodeDataByRootNodeId(rootNodeId);
         if (sourceNodes.isEmpty()) {
-            throw new NoSuchElementException("Root node not found");
+            throw ReportException.createReportNotFound(rootNodeId);
         }
 
         // Map old UUIDs to new UUIDs (ordered by depth, so parents are processed before children)
@@ -381,7 +384,7 @@ public class ReportService {
     @Transactional
     public void deleteReport(UUID reportUuid) {
         if (reportNodeRepository.deleteAllByRootNodeId(reportUuid) == 0) {
-            throw new EmptyResultDataAccessException("No element found", 1);
+            throw ReportException.createReportNotFound(reportUuid);
         }
     }
 
