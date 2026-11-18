@@ -24,6 +24,7 @@ There is a single table, `report_node`, that stores every node of every report t
 
 | Index name | Columns | Purpose |
 |---|---|---|
+| `report_node_parent_id_idx` | `parent_id` | no longer used, keep for legacy|
 | `root_node_orders_idx` | `root_node_id, order_, end_order` | All subtree range scans (logs, severities, search). |
 | `root_node_and_container_idx` | `root_node_id, is_leaf` | Fetching only container (non-leaf) nodes for the tree view. |
 
@@ -37,9 +38,6 @@ The entity mapping and the Liquibase changelogs do not describe exactly the same
 </changeSet>
 <changeSet author="***" id="1794210278103-2">
     <dropForeignKeyConstraint baseTableName="REPORT_NODE" constraintName="ROOT_NODE_FK"/>
-</changeSet>
-<changeSet author="**" id="1794210278103-3">
-    <dropIndex tableName="REPORT_NODE" schemaName="public" indexName="report_node_parent_id_idx"/>
 </changeSet>
 ```
 
